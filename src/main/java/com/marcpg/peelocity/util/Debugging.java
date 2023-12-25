@@ -1,6 +1,8 @@
-package com.marcpg.peelocity;
+package com.marcpg.peelocity.util;
 
-import com.marcpg.text.Completer;
+import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PlayerEvents;
+import com.marcpg.peelocity.chat.MessageLogging;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
@@ -8,9 +10,11 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-public class DebugCommand implements SimpleCommand {
+public class Debugging implements SimpleCommand {
     @Override
     public void execute(@NotNull Invocation invocation) {
         CommandSource source = invocation.source();
@@ -19,13 +23,17 @@ public class DebugCommand implements SimpleCommand {
         if (args[0].equals("history") && args.length == 2) {
             Optional<Player> target = Peelocity.SERVER.getPlayer(args[1]);
             if (target.isPresent()) {
-                Map<Date, String> history = MessageLogging.getHistory(target.get());
+                List<MessageLogging.MessageData> history = MessageLogging.getHistory(target.get());
                 if (history == null || history.isEmpty()) {
                     source.sendMessage(Component.text("The player '" + args[1] + "' does not have any chat history!", TextColor.color(255, 127, 0)));
                 } else {
-                    for (Map.Entry<Date, String> entry : history.entrySet()) {
-                        source.sendMessage(Component.text(MessageLogging.DATE_FORMAT.format(entry.getKey()) + " : " + entry.getValue()));
+                    source.sendMessage(Component.text("⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺", TextColor.color(80, 133, 80)));
+                    source.sendMessage(Component.text(args[1] + "'s message history:", TextColor.color(0, 180, 0)));
+                    for (MessageLogging.MessageData data : history) {
+                        String additional = data.type() == MessageLogging.MessageData.Type.NORMAL ? "" : (data.type() == MessageLogging.MessageData.Type.STAFF ? "(Staff Chat)" : "(" + (data.type() == MessageLogging.MessageData.Type.PRIVATE ? "Private" : "Friend") + " -> " + data.receiver() + ")");
+                        source.sendMessage(Component.text(MessageLogging.DATE_FORMAT.format(data.time()) + additional + ": " + data.content().replace(" \\==|==\\==|== ", " || "), TextColor.color(180, 255, 180)));
                     }
+                    source.sendMessage(Component.text("⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺", TextColor.color(80, 133, 80)));
                 }
             } else {
                 source.sendMessage(Component.text("The player '" + args[1] + "' was not found!", TextColor.color(255, 64, 0)));
@@ -46,14 +54,14 @@ public class DebugCommand implements SimpleCommand {
     public List<String> suggest(Invocation invocation) {
         String[] args = invocation.arguments();
         if (args.length == 1) {
-            return Completer.startComplete(args[0], List.of("history", "allow-player"));
+            return Stream.of("history", "allow-player")
+                    .filter(string -> string.startsWith(args[0]))
+                    .toList();
         } else if (args.length == 2 && (args[0].equals("history") || args[0].equals("allow-player"))) {
-            return Completer.startComplete(
-                    args[1],
-                    Peelocity.SERVER.getAllPlayers().stream()
-                            .map(Player::getUsername)
-                            .toList()
-            );
+            return Peelocity.SERVER.getAllPlayers().stream()
+                    .map(Player::getUsername)
+                    .filter(string -> string.startsWith(args[1]))
+                    .toList();
         }
 
         return List.of();

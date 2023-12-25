@@ -6,7 +6,7 @@
 
     <groupId>com.marcpg</groupId>
     <artifactId>Peelocity</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.7-ALPHA</version>
     <packaging>jar</packaging>
 
     <name>Peelocity</name>
@@ -17,49 +17,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>https://marcpg.com/peelocity</url>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.0</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                    </resource>
-                </resources>
-            </build>
-        </profile>
-    </profiles>
 
     <build>
         <resources>
@@ -128,10 +85,6 @@
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>snapshots</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -140,11 +93,6 @@
             <artifactId>velocity-api</artifactId>
             <version>3.3.0-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.marcpg</groupId>
-            <artifactId>libpg</artifactId>
-            <version>0.0.2</version>
         </dependency>
     </dependencies>
 </project>

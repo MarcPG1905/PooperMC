@@ -1,5 +1,6 @@
-package com.marcpg.peelocity;
+package com.marcpg.peelocity.util;
 
+import com.marcpg.peelocity.Peelocity;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -16,7 +17,7 @@ public class Config {
     public static boolean CLOSED_TESTING;
     public static List<UUID> OPERATOR_UUIDS;
     public static boolean WHITELIST;
-    public static List<UUID> WHITELISTED_UUIDS;
+    public static List<String> WHITELISTED_NAMES;
 
     public static void load() {
         Properties properties = new Properties();
@@ -31,7 +32,7 @@ public class Config {
         CLOSED_TESTING = Boolean.parseBoolean(properties.getProperty("closed-testing"));
         OPERATOR_UUIDS = parseUUIDs(properties.getProperty("op-uuids"));
         WHITELIST = Boolean.parseBoolean(properties.getProperty("whitelist"));
-        WHITELISTED_UUIDS = parseUUIDs(properties.getProperty("whitelisted-uuids"));
+        WHITELISTED_NAMES = List.of(properties.getProperty("whitelisted-names").split(","));
     }
 
     public static void save() {
@@ -40,7 +41,7 @@ public class Config {
         properties.setProperty("closed-testing", String.valueOf(CLOSED_TESTING));
         properties.setProperty("op-uuids", parseUUIDs(OPERATOR_UUIDS));
         properties.setProperty("whitelist", String.valueOf(WHITELIST));
-        properties.setProperty("whitelisted-uuids", parseUUIDs(WHITELISTED_UUIDS));
+        properties.setProperty("whitelisted-names", String.join(",", WHITELISTED_NAMES));
 
         try (FileOutputStream stream = new FileOutputStream(new File(Peelocity.DATA_DIRECTORY.toFile(), "pee.properties"))) {
             properties.store(stream, "Save Peelocity configuration to pee.properties file");

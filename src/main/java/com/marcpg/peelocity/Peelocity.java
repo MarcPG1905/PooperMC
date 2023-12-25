@@ -1,6 +1,12 @@
 package com.marcpg.peelocity;
 
 import com.google.inject.Inject;
+import com.marcpg.peelocity.chat.MessageLogging;
+import com.marcpg.peelocity.chat.PrivateMessaging;
+import com.marcpg.peelocity.chat.StaffChat;
+import com.marcpg.peelocity.social.FriendSystem;
+import com.marcpg.peelocity.util.Config;
+import com.marcpg.peelocity.util.Debugging;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
@@ -23,23 +29,23 @@ import org.slf4j.Logger;
 
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Plugin(
         id = "peelocity",
         name = "Peelocity",
-        version = "0.0.1",
+        version = "0.0.7",
         description = "General purpose Velocity plugin for MarcPG's Minecraft projects, like SpellBound.",
         url = "https://marcpg.com/peelocity",
         authors = { "MarcPG" }
 )
 public class Peelocity {
+    @SuppressWarnings("unused")
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }
+
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.ALPHA;
-    public static final String PEELOCITY_VERSION = "1.0.0";
-    public static final String PEELOCITY_BUILD_NUMBER = "9";
+    public static final String PEELOCITY_VERSION = "0.0.7";
+    public static final String PEELOCITY_BUILD_NUMBER = "7";
 
     public static ProxyServer SERVER;
     public static Logger LOG;
@@ -57,16 +63,22 @@ public class Peelocity {
         SERVER.getEventManager().register(this, new PlayerEvents());
         SERVER.getEventManager().register(this, new MessageLogging());
 
-        CommandManager cm = SERVER.getCommandManager();
+        CommandManager commandManager = SERVER.getCommandManager();
 
         // ========== /DEBUG COMMAND ==========
-        cm.register("debug", new DebugCommand());
+        commandManager.register("debug", new Debugging());
 
         // =========== /MSG COMMAND ===========
-        cm.register("msg", new MsgCommand(), "pm", "w");
+        commandManager.register("msg", PrivateMessaging.createMsgBrigadier(SERVER), "pm", "w");
+
+        // ======= /STAFF-CHAT COMMAND =======
+        commandManager.register("staff", StaffChat.createStaffChatBrigadier(SERVER), "sc", "staff-chat");
+
+        // ========= /FRIEND COMMAND =========
+        commandManager.register("friend", FriendSystem.createFriendBrigadierCommand(SERVER));
 
         // ========== /PING COMMAND ==========
-        cm.register("ping", (SimpleCommand) invocation -> {
+        commandManager.register("ping", (SimpleCommand) invocation -> {
             CommandSource source = invocation.source();
             long ping = ((Player) source).getPing();
             int limitedPing = (int) Math.min(254, ping);
@@ -76,7 +88,7 @@ public class Peelocity {
         }, "latency");
 
         // ======== /PEELOCITY COMMAND ========
-        cm.register("peelocity", (SimpleCommand) invocation -> {
+        commandManager.register("peelocity", (SimpleCommand) invocation -> {
             CommandSource source = invocation.source();
             source.sendMessage(Component.text("Peelocity").decorate(TextDecoration.BOLD).append(Component.text(" " + PEELOCITY_VERSION + "-" + PEELOCITY_RELEASE_TYPE + " (" + PEELOCITY_BUILD_NUMBER + ")").decoration(TextDecoration.BOLD, false)).color(TextColor.color(0, 170, 170)));
             source.sendMessage(Component.text("Copyright 2023 MarcPG.COM. All rights reserved. \nFor requests regarding plugin use, contact me on Discord:"));
@@ -84,7 +96,7 @@ public class Peelocity {
         }, "velocity-plugin");
 
         // ========== /PLAY COMMAND ==========
-        cm.register("play", (SimpleCommand) invocation -> {
+        commandManager.register("play", (SimpleCommand) invocation -> {
             Player player = (Player) invocation.source();
             player.sendMessage(Component.text("Finding a match for you...", TextColor.color(255, 255, 0)));
             for (RegisteredServer regServer : SERVER.getAllServers()) {
@@ -101,7 +113,7 @@ public class Peelocity {
                         player.sendMessage(Component.text("Connected you successfully!", TextColor.color(0, 255, 0)));
                         return;
                     }
-                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
