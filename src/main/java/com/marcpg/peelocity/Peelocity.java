@@ -5,6 +5,7 @@ import com.marcpg.peelocity.chat.MessageLogging;
 import com.marcpg.peelocity.chat.PrivateMessaging;
 import com.marcpg.peelocity.chat.StaffChat;
 import com.marcpg.peelocity.social.FriendSystem;
+import com.marcpg.peelocity.social.PartySystem;
 import com.marcpg.peelocity.util.Config;
 import com.marcpg.peelocity.util.Debugging;
 import com.velocitypowered.api.command.CommandManager;
@@ -34,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 @Plugin(
         id = "peelocity",
         name = "Peelocity",
-        version = "0.0.7",
+        version = "0.0.8",
         description = "General purpose Velocity plugin for MarcPG's Minecraft projects, like SpellBound.",
         url = "https://marcpg.com/peelocity",
         authors = { "MarcPG" }
@@ -44,8 +45,8 @@ public class Peelocity {
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.ALPHA;
-    public static final String PEELOCITY_VERSION = "0.0.7";
-    public static final String PEELOCITY_BUILD_NUMBER = "7";
+    public static final String PEELOCITY_VERSION = "0.0.8";
+    public static final String PEELOCITY_BUILD_NUMBER = "18";
 
     public static ProxyServer SERVER;
     public static Logger LOG;
@@ -76,6 +77,9 @@ public class Peelocity {
 
         // ========= /FRIEND COMMAND =========
         commandManager.register("friend", FriendSystem.createFriendBrigadierCommand(SERVER));
+
+        // ========== /PARTY COMMAND ==========
+        commandManager.register("party", PartySystem.createPartyBrigadierCommand(SERVER));
 
         // ========== /PING COMMAND ==========
         commandManager.register("ping", (SimpleCommand) invocation -> {

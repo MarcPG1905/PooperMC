@@ -10,7 +10,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
@@ -26,7 +26,7 @@ public class StaffChat {
                                 MessageLogging.saveMessage(sender, new MessageLogging.MessageData(new Date(), message, MessageLogging.MessageData.Type.STAFF, null));
                                 for (Player player : proxy.getAllPlayers()) {
                                     if (player.hasPermission("pee.staff")) {
-                                        player.sendMessage(Component.text("{" + sender.getUsername() + "} " + message, TextColor.color(0, 160, 255)));
+                                        player.sendMessage(Component.text("[STAFF] <" + sender.getUsername() + "> " + message, NamedTextColor.BLUE));
                                     }
                                 }
                             }

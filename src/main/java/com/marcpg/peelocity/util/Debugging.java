@@ -30,7 +30,7 @@ public class Debugging implements SimpleCommand {
                     source.sendMessage(Component.text("⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺", TextColor.color(80, 133, 80)));
                     source.sendMessage(Component.text(args[1] + "'s message history:", TextColor.color(0, 180, 0)));
                     for (MessageLogging.MessageData data : history) {
-                        String additional = data.type() == MessageLogging.MessageData.Type.NORMAL ? "" : (data.type() == MessageLogging.MessageData.Type.STAFF ? "(Staff Chat)" : "(" + (data.type() == MessageLogging.MessageData.Type.PRIVATE ? "Private" : "Friend") + " -> " + data.receiver() + ")");
+                        String additional = data.type() == MessageLogging.MessageData.Type.NORMAL ? "" : (data.type() == MessageLogging.MessageData.Type.PARTY ? "(Party Chat)" : (data.type() == MessageLogging.MessageData.Type.STAFF ? "(Staff Chat)" : "(Private -> " + data.receiver() + ")"));
                         source.sendMessage(Component.text(MessageLogging.DATE_FORMAT.format(data.time()) + additional + ": " + data.content().replace(" \\==|==\\==|== ", " || "), TextColor.color(180, 255, 180)));
                     }
                     source.sendMessage(Component.text("⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺", TextColor.color(80, 133, 80)));

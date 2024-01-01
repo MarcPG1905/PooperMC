@@ -20,13 +20,13 @@ import java.util.List;
 
 public class MessageLogging {
     public record MessageData(Date time, String content, Type type, @Nullable String receiver) {
-        public enum Type { NORMAL, STAFF, PRIVATE, FRIEND }
+        public enum Type { NORMAL, STAFF, PRIVATE, PARTY }
 
         @Contract("_ -> new")
         public static @NotNull MessageData parse(@NotNull String line) throws ParseException {
             String[] elements = line.split(" \\|\\| ");
             Type type = Type.valueOf(elements[2]);
-            return new MessageData(DATE_FORMAT.parse(elements[0]), elements[1], type, (type == Type.PRIVATE || type == Type.FRIEND ? elements[3] : null));
+            return new MessageData(DATE_FORMAT.parse(elements[0]), elements[1], type, (type == Type.PRIVATE ? elements[3] : null));
         }
     }
 

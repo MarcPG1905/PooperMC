@@ -1,7 +1,6 @@
 package com.marcpg.peelocity.social;
 
 import com.marcpg.peelocity.Peelocity;
-import com.marcpg.peelocity.chat.MessageLogging;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -16,13 +15,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 public class FriendSystem {
     public static @NotNull BrigadierCommand createFriendBrigadierCommand(final ProxyServer proxy) {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("friend")
+                .requires(source -> source.hasPermission("pee.friends"))
                 .then(LiteralArgumentBuilder.<CommandSource>literal("add")
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                                 .suggests((context, builder) -> {
@@ -80,29 +79,6 @@ public class FriendSystem {
 
                                     return Command.SINGLE_SUCCESS;
                                 })
-                        )
-                )
-                .then(LiteralArgumentBuilder.<CommandSource>literal("message")
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.string())
-                                .suggests((context, builder) -> {
-                                    // Get all friends and suggest them here
-                                    List.of("Name1", "Name2").forEach(name -> Peelocity.SERVER.getPlayer(name).ifPresent(player -> builder.suggest(player.getUsername())));
-                                    return builder.buildFuture();
-                                })
-                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("message", StringArgumentType.greedyString())
-                                        .executes(context -> {
-                                            Optional<Player> receiverOptional = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
-
-                                            if (receiverOptional.isPresent() && context.getSource() instanceof Player player) {
-                                                // Check if the receiver is actually friends with the player
-                                                String message = context.getArgument("message", String.class);
-                                                receiverOptional.get().sendMessage(Component.text(message));
-                                                MessageLogging.saveMessage(player, new MessageLogging.MessageData(new Date(), message, MessageLogging.MessageData.Type.FRIEND, receiverOptional.get().getUsername()));
-                                            }
-
-                                            return Command.SINGLE_SUCCESS;
-                                        })
-                                )
                         )
                 )
                 .build();

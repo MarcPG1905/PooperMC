@@ -17,7 +17,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import java.util.*;
 
 public class PrivateMessaging {
-    public static final Map<UUID, String> PENDING_MESSAGES = new LinkedHashMap<>();
     public static final Map<UUID, UUID> LAST_SEND_RECEIVERS = new HashMap<>();
 
     public static BrigadierCommand createMsgBrigadier(final ProxyServer proxy) {
