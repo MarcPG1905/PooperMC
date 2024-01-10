@@ -23,10 +23,14 @@ public class MessageLogging {
         public enum Type { NORMAL, STAFF, PRIVATE, PARTY }
 
         @Contract("_ -> new")
-        public static @NotNull MessageData parse(@NotNull String line) throws ParseException {
+        public static @NotNull MessageData parse(@NotNull String line) {
             String[] elements = line.split(" \\|\\| ");
             Type type = Type.valueOf(elements[2]);
-            return new MessageData(DATE_FORMAT.parse(elements[0]), elements[1], type, (type == Type.PRIVATE ? elements[3] : null));
+            try {
+                return new MessageData(DATE_FORMAT.parse(elements[0]), elements[1], type, (type == Type.PRIVATE ? elements[3] : null));
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -35,19 +39,17 @@ public class MessageLogging {
 
     @Subscribe(order = PostOrder.LAST)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
-        saveMessage(event.getPlayer(), new MessageData(new Date(), event.getMessage().replace(" || ", " \\==|==\\==|== "), MessageData.Type.NORMAL, null));
+        if (event.getResult().isAllowed()) saveMessage(event.getPlayer(), new MessageData(new Date(), event.getMessage().replace(" || ", " \\==|==\\==|== "), MessageData.Type.NORMAL, null));
     }
 
     public static void saveMessage(@NotNull Player player, @NotNull MessageData data) {
         final Path filePath = Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + player.getUniqueId().toString());
 
         try {
-            if (!filePath.toFile().exists() || !Files.exists(filePath))
-                Files.createFile(filePath);
+            if (!filePath.toFile().exists() || !Files.exists(filePath)) Files.createFile(filePath);
 
             List<String> lines = Files.readAllLines(filePath);
             lines.add(DATE_FORMAT.format(data.time) + " ||  " + data.content + " || " + data.type + (data.receiver == null ? "" : " || " + data.receiver));
-
             if (lines.size() > MAX_HISTORY)
                 lines.subList(0, lines.size() - MAX_HISTORY).clear();
 
@@ -58,22 +60,11 @@ public class MessageLogging {
     }
 
     public static List<MessageData> getHistory(@NotNull Player player) {
-        final Path filePath = Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + player.getUniqueId().toString());
-
         try {
-            return Files.readAllLines(filePath).stream()
-                    .map(line -> {
-                        try {
-                            return MessageData.parse(line);
-                        } catch (ParseException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .toList();
+            return Files.readAllLines(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + player.getUniqueId().toString())).stream().map(MessageData::parse).toList();
         } catch (IOException e) {
             Peelocity.LOG.error("Error while getting/loading history of " + player.getUsername() + ": " + e.getMessage());
         }
-
         return List.of();
     }
 }

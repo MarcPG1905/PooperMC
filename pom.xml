@@ -6,7 +6,7 @@
 
     <groupId>com.marcpg</groupId>
     <artifactId>Peelocity</artifactId>
-    <version>0.0.8-ALPHA</version>
+    <version>0.1.0-BETA</version>
     <packaging>jar</packaging>
 
     <name>Peelocity</name>
@@ -77,10 +77,27 @@
                     <releaseProfiles>release</releaseProfiles>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <repositories>
+        <repository>
+            <id>marcpg-repo</id>
+            <url>https://marcpg.com/repo/</url>
+        </repository>
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
@@ -93,6 +110,16 @@
             <artifactId>velocity-api</artifactId>
             <version>3.3.0-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.marcpg</groupId>
+            <artifactId>libpg</artifactId>
+            <version>0.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>net.hectus</groupId>
+            <artifactId>HectusUtilities</artifactId>
+            <version>0.1.1</version>
         </dependency>
     </dependencies>
 </project>

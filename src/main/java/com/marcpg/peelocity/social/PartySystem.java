@@ -185,7 +185,7 @@ public class PartySystem {
 
                                     if (PARTIES.containsKey(PLAYER_PARTIES.get(player.getUniqueId()))) {
                                         if (!PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).get(player.getUniqueId())) {
-                                            player.sendMessage(Component.text("You need to be the leader of a party to invite someone!", RED));
+                                            player.sendMessage(Component.text("You need to be the leader of a party to promote someone!", RED));
                                             return 1;
                                         }
 
@@ -196,6 +196,7 @@ public class PartySystem {
                                                 PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).put(target.get().getUniqueId(), true);
 
                                                 player.sendMessage(Component.text("Successfully promoted " + target.get().getUsername() + " to be the new party leader!", GREEN));
+                                                target.get().sendMessage(Component.text("You are now the party leader!", GREEN));
                                             } else {
                                                 player.sendMessage(Component.text("The player " + target.get().getUsername() + " is not in your party!", RED));
                                             }
