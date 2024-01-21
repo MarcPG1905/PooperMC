@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class MessageLogging {
     public record MessageData(Date time, String content, Type type, @Nullable String receiver) {
@@ -59,11 +60,11 @@ public class MessageLogging {
         }
     }
 
-    public static List<MessageData> getHistory(@NotNull Player player) {
+    public static List<MessageData> getHistory(@NotNull UUID uuid) {
         try {
-            return Files.readAllLines(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + player.getUniqueId().toString())).stream().map(MessageData::parse).toList();
+            return Files.readAllLines(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + uuid)).stream().map(MessageData::parse).toList();
         } catch (IOException e) {
-            Peelocity.LOG.error("Error while getting/loading history of " + player.getUsername() + ": " + e.getMessage());
+            Peelocity.LOG.error("Error while getting/loading history of user " + uuid + ": " + e.getMessage());
         }
         return List.of();
     }

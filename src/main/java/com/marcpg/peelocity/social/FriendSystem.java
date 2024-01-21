@@ -9,18 +9,17 @@ import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.hectus.PostgreConnection;
+import net.hectus.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.marcpg.peelocity.Peelocity.CONFIG;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -36,7 +35,7 @@ public class FriendSystem {
         }
     }
 
-    public static @NotNull BrigadierCommand createFriendBrigadierCommand() {
+    public static @NotNull BrigadierCommand createFriendBrigadier() {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("friend")
                 .requires(source -> source.hasPermission("pee.friends"))
                 .then(LiteralArgumentBuilder.<CommandSource>literal("add")
@@ -49,27 +48,28 @@ public class FriendSystem {
                                     return builder.buildFuture();
                                 })
                                 .executes(context -> {
+                                    Player player = (Player) context.getSource();
                                     Optional<Player> optionalTarget = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
-                                    if (optionalTarget.isPresent() && context.getSource() instanceof Player player) {
+                                    if (optionalTarget.isPresent()) {
                                         Player target = optionalTarget.get();
                                         if (getFriendship(player, target).getKey()) {
-                                            player.sendMessage(Component.text("You are already friends with " + target.getUsername(), YELLOW));
+                                            player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.already_friends", target.getUsername()).color(YELLOW));
                                         } else {
                                             if ((FRIEND_REQUESTS.containsKey(player.getUniqueId()) && FRIEND_REQUESTS.containsValue(target.getUniqueId())) ||
                                                     (FRIEND_REQUESTS.containsKey(target.getUniqueId()) && FRIEND_REQUESTS.containsValue(player.getUniqueId()))) {
-                                                player.sendMessage(Component.text("You already have an incoming/outgoing friend request from/to " + target.getUsername() + ".", YELLOW));
+                                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.add.already_requested", target.getUsername()).color(YELLOW));
                                             } else {
                                                 FRIEND_REQUESTS.put(player.getUniqueId(), target.getUniqueId());
-                                                player.sendMessage(Component.text("Successfully sent " + target.getUsername() + " a friend request!", GREEN));
-                                                target.sendMessage(Component.text("You just got a friend request by " + player.getUsername() + ". ", GREEN)
-                                                        .append(Component.text("Click here", YELLOW)
-                                                                .hoverEvent(HoverEvent.showText(Component.text("Click to accept the friend request.")))
+                                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.add.confirm", target.getUsername()).color(GREEN));
+                                                target.sendMessage(Translation.component(target.getEffectiveLocale(), "friend.add.msg.1", player.getUsername()).color(GREEN)
+                                                        .append(Translation.component(target.getEffectiveLocale(), "friend.add.msg.2").color(YELLOW)
+                                                                .hoverEvent(HoverEvent.showText(Translation.component(target.getEffectiveLocale(), "friend.add.msg.2.tooltip")))
                                                                 .clickEvent(ClickEvent.runCommand("/friend accept " + player.getUsername())))
-                                                        .append(Component.text(" to accept the friend request.")));
+                                                        .append(Translation.component(target.getEffectiveLocale(), "friend.add.msg.3")));
                                             }
                                         }
                                     } else {
-                                        context.getSource().sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " couldn't be found!", RED));
+                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED));
                                     }
                                     return 1;
                                 })
@@ -85,11 +85,12 @@ public class FriendSystem {
                                     return builder.buildFuture();
                                 })
                                 .executes(context -> {
+                                    Player player = (Player) context.getSource();
                                     Optional<Player> target = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
-                                    if (target.isPresent() && context.getSource() instanceof Player player) {
+                                    if (target.isPresent()) {
                                         Map.Entry<Boolean, ResultSet> result = getFriendship(player, target.get());
                                         if (result.getKey()) {
-                                            player.sendMessage(Component.text("You're already friends with " + target.get().getUsername(), YELLOW));
+                                            player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.already_friends", target.get().getUsername()).color(YELLOW));
                                         } else {
                                             if (FRIEND_REQUESTS.containsKey(target.get().getUniqueId())) {
                                                 try {
@@ -99,11 +100,11 @@ public class FriendSystem {
                                                     throw new RuntimeException(e);
                                                 }
                                             } else {
-                                                player.sendMessage(Component.text(target.get().getUsername() + " didn't send you a friend request!", RED));
+                                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.accept.not_requested", target.get().getUsername()).color(RED));
                                             }
                                         }
                                     } else {
-                                        context.getSource().sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " couldn't be found!", RED));
+                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED));
                                     }
                                     return 1;
                                 })
@@ -119,20 +120,23 @@ public class FriendSystem {
                                     return builder.buildFuture();
                                 })
                                 .executes(context -> {
+                                    Player player = (Player) context.getSource();
                                     Optional<Player> target = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
-                                    if (target.isPresent() && context.getSource() instanceof Player player) {
+                                    if (target.isPresent()) {
                                         Map.Entry<Boolean, ResultSet> result = getFriendship(player, target.get());
                                         if (result.getKey()) {
                                             try {
                                                 DATABASE.remove(result.getValue().getObject("uuid", UUID.class));
-                                                player.sendMessage(Component.text("Successfully removed " + target.get().getUsername() + " from your friend list.", YELLOW));
-                                                target.get().sendMessage(Component.text(player.getUsername() + " removed you from his friend list.", GOLD));
+                                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.remove.confirm", target.get().getUsername()).color(YELLOW));
+                                                target.get().sendMessage(Translation.component(target.get().getEffectiveLocale(), "friend.remove.confirm", player.getUsername()).color(YELLOW));
                                             } catch (SQLException e) {
                                                 throw new RuntimeException(e);
                                             }
                                         } else {
-                                            player.sendMessage(Component.text("You aren't friends with " + target.get().getUsername(), RED));
+                                            player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.not_friends", target.get().getUsername()).color(RED));
                                         }
+                                    } else {
+                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED));
                                     }
                                     return 1;
                                 })
@@ -149,8 +153,8 @@ public class FriendSystem {
                                     }
 
                                     String sql2 = "SELECT * FROM friendships WHERE player2_uuid = '" + player.getUniqueId() + "';";
-                                    ResultSet resultSet2 = DATABASE.statement().executeQuery(sql1);
-                                    while (resultSet1.next()) {
+                                    ResultSet resultSet2 = DATABASE.statement().executeQuery(sql2);
+                                    while (resultSet2.next()) {
                                         player.sendMessage(Component.text("- " + Peelocity.DATABASE.get(resultSet1.getObject("player2_uuid", UUID.class), "player_name"), AQUA));
                                     }
                                 } catch (SQLException e) {

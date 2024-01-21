@@ -9,6 +9,7 @@ import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.hectus.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -28,25 +29,26 @@ public class PartySystem {
     /** Inviter UUID | Invited player UUID */
     public static final Map<UUID, UUID> INVITES = new HashMap<>();
 
-    public static @NotNull BrigadierCommand createPartyBrigadierCommand(final ProxyServer proxy) {
+    public static @NotNull BrigadierCommand createPartyBrigadier(final ProxyServer proxy) {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("party")
                 .requires(source -> source.hasPermission("pee.parties") && source instanceof Player)
                 .then(LiteralArgumentBuilder.<CommandSource>literal("create")
                         .executes(context -> {
                             Player player = (Player) context.getSource();
+                            Locale l = player.getEffectiveLocale();
                             if (PLAYER_PARTIES.containsKey(player.getUniqueId())) {
-                                player.sendMessage(Component.text("You are already in a party! ", RED)
-                                        .append(Component.text("Click here", GOLD)
+                                player.sendMessage(Translation.component(l, "party.leave-msg.1").color(RED)
+                                        .append(Translation.component(l, "party.leave-msg.2", GOLD)
                                                 .clickEvent(ClickEvent.runCommand("/party leave"))
                                                 .hoverEvent(HoverEvent.showText(Component.text("/party leave"))))
-                                        .append(Component.text(" to leave your current party.", RED)));
+                                        .append(Translation.component(l, "party.leave-msg.3", RED)));
                             } else {
                                 UUID uuid = UUID.randomUUID();
                                 PARTIES.put(uuid, new HashMap<>(Map.of(player.getUniqueId(), true)));
                                 PLAYER_PARTIES.put(player.getUniqueId(), uuid);
 
-                                player.sendMessage(Component.text("You just created your own party! You can now ", GREEN)
-                                        .append(Component.text("invite your friends", YELLOW)
+                                player.sendMessage(Translation.component(l, "party.create.confirm.1").color(GREEN)
+                                        .append(Translation.component(l, "party.create.confirm.2").color(YELLOW)
                                                 .clickEvent(ClickEvent.suggestCommand("/party invite "))
                                                 .hoverEvent(HoverEvent.showText(Component.text("/party invite <player>")))));
                             }
@@ -56,10 +58,11 @@ public class PartySystem {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("leave")
                         .executes(context -> {
                             Player player = (Player) context.getSource();
+                            Locale l = player.getEffectiveLocale();
                             if (PLAYER_PARTIES.containsKey(player.getUniqueId())) {
                                 if (PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).get(player.getUniqueId())) {
                                     if (PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).size() > 1) {
-                                        player.sendMessage(Component.text("You need to promote someone else, before leaving the party!", RED));
+                                        player.sendMessage(Translation.component(l, "party.leave.leader").color(RED));
                                         return 1;
                                     } else {
                                         PARTIES.remove(PLAYER_PARTIES.get(player.getUniqueId()));
@@ -67,9 +70,9 @@ public class PartySystem {
                                 }
                                 PARTIES.forEach((uuid, players) -> players.remove(player.getUniqueId()));
                                 PLAYER_PARTIES.remove(player.getUniqueId());
-                                player.sendMessage(Component.text("You just left the party!", YELLOW));
+                                player.sendMessage(Translation.component(l, "party.leave.confirm").color(YELLOW));
                             } else {
-                                player.sendMessage(Component.text("You aren't in any party!", RED));
+                                player.sendMessage(Translation.component(l, "party.not_in_any").color(RED));
                             }
                             return 1;
                         })
@@ -89,30 +92,31 @@ public class PartySystem {
                                 })
                                 .executes(context -> {
                                     Player player = (Player) context.getSource();
+                                    Locale l = player.getEffectiveLocale();
 
                                     if (PARTIES.containsKey(PLAYER_PARTIES.get(player.getUniqueId()))) {
                                         if (!PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).get(player.getUniqueId())) {
-                                            player.sendMessage(Component.text("You need to be the leader of a party to invite someone!", RED));
+                                            player.sendMessage(Translation.component(l, "party.invite.not_leader").color(RED));
                                             return 1;
                                         }
 
                                         Optional<Player> optionalTarget = proxy.getPlayer(context.getArgument("player", String.class));
                                         if (optionalTarget.isPresent()) {
                                             Player target = optionalTarget.get();
-                                            target.sendMessage(Component.text(player.getUsername() + " invited you to his party! ", YELLOW)
-                                                    .append(Component.text("Click here", GOLD)
+                                            target.sendMessage(Translation.component(l, "party.invite.msg.1", player.getUsername()).color(YELLOW)
+                                                    .append(Translation.component(l, "party.invite.msg.2").color(GOLD)
                                                             .clickEvent(ClickEvent.runCommand("/party accept " + player.getUsername()))
-                                                            .hoverEvent(HoverEvent.showText(Component.text("Click to accept the party invite!", GOLD))))
-                                                    .append(Component.text(" to accept the invite!", YELLOW)));
+                                                            .hoverEvent(HoverEvent.showText(Translation.component(l, "party.invite.msg.2.tooltip").color(GOLD))))
+                                                    .append(Translation.component(l, "party.invite.msg.3").color(YELLOW)));
 
-                                            player.sendMessage(Component.text("You just sent a party invite to " + target.getUsername() + "!", GREEN));
+                                            player.sendMessage(Translation.component(l, "party.invite.confirm", target.getUsername()).color(GREEN));
 
                                             INVITES.put(player.getUniqueId(), target.getUniqueId());
                                         } else {
-                                            player.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " was not found!", RED));
+                                            player.sendMessage(Translation.component(l, "cmd.player_not_found", context.getArgument("player", String.class)).color(RED));
                                         }
                                     } else {
-                                        player.sendMessage(Component.text("You aren't in any party!", RED));
+                                        player.sendMessage(Translation.component(l, "party.not_in_any").color(RED));
                                     }
                                     return 1;
                                 })
@@ -131,17 +135,18 @@ public class PartySystem {
                                 })
                                 .executes(context -> {
                                     Player player = (Player) context.getSource();
+                                    Locale l = player.getEffectiveLocale();
 
                                     Optional<Player> optionalPlayer = proxy.getPlayer(context.getArgument("player", String.class));
                                     if (optionalPlayer.isPresent()) {
                                         Player inviter = optionalPlayer.get();
 
                                         if (PLAYER_PARTIES.containsKey(player.getUniqueId())) {
-                                            player.sendMessage(Component.text("You are already in a party! ", RED)
-                                                    .append(Component.text("Click here", GOLD)
+                                            player.sendMessage(Translation.component(l, "party.leave-msg.1").color(RED)
+                                                    .append(Translation.component(l, "party.leave-msg.2", GOLD)
                                                             .clickEvent(ClickEvent.runCommand("/party leave"))
                                                             .hoverEvent(HoverEvent.showText(Component.text("/party leave"))))
-                                                    .append(Component.text(" to leave your current party.", RED)));
+                                                    .append(Translation.component(l, "party.leave-msg.3", RED)));
                                             return 1;
                                         }
 
@@ -150,17 +155,17 @@ public class PartySystem {
                                                 PLAYER_PARTIES.put(player.getUniqueId(), PLAYER_PARTIES.get(inviter.getUniqueId()));
                                                 PARTIES.get(PLAYER_PARTIES.get(inviter.getUniqueId())).put(player.getUniqueId(), false);
 
-                                                player.sendMessage(Component.text("Successfully joined the party!", GREEN));
+                                                player.sendMessage(Translation.component(l, "party.accept.confirm").color(GREEN));
                                                 PARTIES.get(PLAYER_PARTIES.get(inviter.getUniqueId())).keySet().forEach(uuid -> proxy.getPlayer(uuid).ifPresent(player1 -> player1.sendMessage(Component.text(player.getUsername() + " joined the party!", YELLOW))));
                                             } else {
-                                                player.sendMessage(Component.text(inviter.getUsername() + " already left the party, so you can't accept the party invite!", RED));
+                                                player.sendMessage(Translation.component(l, "party.accept.too_late", inviter.getUsername()).color(RED));
                                             }
                                             INVITES.remove(inviter.getUniqueId(), player.getUniqueId());
                                         } else {
-                                            player.sendMessage(Component.text(inviter.getUsername() + " didn't send you a party invite!", RED));
+                                            player.sendMessage(Translation.component(l, "party.accept.no_invite", inviter.getUsername()).color(RED));
                                         }
                                     } else {
-                                        player.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " couldn't be found!", RED));
+                                        player.sendMessage(Translation.component(l, "cmd.player_not_found", context.getArgument("player", String.class)).color(RED));
                                     }
 
                                     return 1;
@@ -182,10 +187,11 @@ public class PartySystem {
                                 })
                                 .executes(context -> {
                                     Player player = (Player) context.getSource();
+                                    Locale l = player.getEffectiveLocale();
 
                                     if (PARTIES.containsKey(PLAYER_PARTIES.get(player.getUniqueId()))) {
                                         if (!PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).get(player.getUniqueId())) {
-                                            player.sendMessage(Component.text("You need to be the leader of a party to promote someone!", RED));
+                                            player.sendMessage(Translation.component(l, "party.promote.not_leader").color(RED));
                                             return 1;
                                         }
 
@@ -195,16 +201,16 @@ public class PartySystem {
                                                 PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).put(player.getUniqueId(), false);
                                                 PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).put(target.get().getUniqueId(), true);
 
-                                                player.sendMessage(Component.text("Successfully promoted " + target.get().getUsername() + " to be the new party leader!", GREEN));
-                                                target.get().sendMessage(Component.text("You are now the party leader!", GREEN));
+                                                player.sendMessage(Translation.component(l, "party.promote.confirm", target.get().getUsername()).color(GREEN));
+                                                target.get().sendMessage(Translation.component(l, "party.promote.msg").color(GREEN));
                                             } else {
-                                                player.sendMessage(Component.text("The player " + target.get().getUsername() + " is not in your party!", RED));
+                                                player.sendMessage(Translation.component(l, "party.promote.player_not_in_party", target.get().getUsername()).color(RED));
                                             }
                                         } else {
-                                            player.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " was not found!", RED));
+                                            player.sendMessage(Translation.component(l, "cmd.player_not_found", context.getArgument("player", String.class)).color(RED));
                                         }
                                     } else {
-                                        player.sendMessage(Component.text("You aren't in any party!", RED));
+                                        player.sendMessage(Translation.component(l, "party.not_in_any").color(RED));
                                     }
                                     return 1;
                                 })
@@ -213,17 +219,17 @@ public class PartySystem {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("message")
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("content", StringArgumentType.greedyString())
                                 .executes(context -> {
-                                    Player sender = (Player) context.getSource();
+                                    Player player = (Player) context.getSource();
 
-                                    if (PLAYER_PARTIES.containsKey(sender.getUniqueId())) {
+                                    if (PLAYER_PARTIES.containsKey(player.getUniqueId())) {
                                         String content = context.getArgument("content", String.class);
 
-                                        MessageLogging.saveMessage(sender, new MessageLogging.MessageData(new Date(), content, MessageLogging.MessageData.Type.PARTY, null));
-                                        for (UUID uuid : PARTIES.get(PLAYER_PARTIES.get(sender.getUniqueId())).keySet()) {
-                                            proxy.getPlayer(uuid).ifPresent(player -> player.sendMessage(Component.text("[PARTY] <" + sender.getUsername() + "> " + content, DARK_AQUA)));
+                                        MessageLogging.saveMessage(player, new MessageLogging.MessageData(new Date(), content, MessageLogging.MessageData.Type.PARTY, null));
+                                        for (UUID uuid : PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).keySet()) {
+                                            proxy.getPlayer(uuid).ifPresent(target -> target.sendMessage(Translation.component(target.getEffectiveLocale(), "party.message", player.getUsername(), content).color(DARK_AQUA)));
                                         }
                                     } else {
-                                        sender.sendMessage(Component.text("You aren't in any party!", RED));
+                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "party.not_in_any").color(RED));
                                     }
 
                                     return 1;
@@ -232,14 +238,14 @@ public class PartySystem {
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("list")
                         .executes(context -> {
-                            Player sender = (Player) context.getSource();
-                            if (PLAYER_PARTIES.containsKey(sender.getUniqueId())) {
-                                for (Map.Entry<UUID, Boolean> playerData : PARTIES.get(PLAYER_PARTIES.get(sender.getUniqueId())).entrySet()) {
+                            Player player = (Player) context.getSource();
+                            if (PLAYER_PARTIES.containsKey(player.getUniqueId())) {
+                                for (Map.Entry<UUID, Boolean> playerData : PARTIES.get(PLAYER_PARTIES.get(player.getUniqueId())).entrySet()) {
                                     Optional<Player> optionalPlayer = proxy.getPlayer(playerData.getKey());
-                                    optionalPlayer.ifPresent(player -> sender.sendMessage(Component.text("- ").append(Component.text(player.getUsername() + (playerData.getValue() ? " (Leader)" : ""), playerData.getValue() ? GOLD : WHITE))));
+                                    optionalPlayer.ifPresent(target -> player.sendMessage(Component.text("- ").append(Component.text(target.getUsername() + (playerData.getValue() ? Translation.string(player.getEffectiveLocale(), "party.list.leader") : ""), playerData.getValue() ? GOLD : WHITE))));
                                 }
                             } else {
-                                sender.sendMessage(Component.text("You aren't in any party!", RED));
+                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "party.not_in_any").color(RED));
                             }
                             return 1;
                         })

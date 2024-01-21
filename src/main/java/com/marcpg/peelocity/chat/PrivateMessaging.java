@@ -9,8 +9,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.api.proxy.ProxyServer;
-import net.kyori.adventure.text.Component;
+import net.hectus.Translation;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
@@ -31,17 +30,18 @@ public class PrivateMessaging {
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("message", StringArgumentType.greedyString())
                                 .executes(context -> {
+                                    Player player = (Player) context.getSource();
                                     Optional<Player> receiverOptional = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
-                                    if (receiverOptional.isPresent() && context.getSource() instanceof Player player) {
+                                    if (receiverOptional.isPresent()) {
                                         String message = context.getArgument("message", String.class);
 
-                                        receiverOptional.get().sendMessage(Component.text("[From: " + player.getUsername() + "] " + message, NamedTextColor.GRAY, TextDecoration.ITALIC));
-                                        player.sendMessage(Component.text("[To: " + receiverOptional.get().getUsername() + "] " + message, NamedTextColor.GRAY, TextDecoration.ITALIC));
+                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "private_message.send", receiverOptional.get().getUsername(), message).color(NamedTextColor.GRAY).decorate(TextDecoration.ITALIC));
+                                        receiverOptional.get().sendMessage(Translation.component(receiverOptional.get().getEffectiveLocale(), "private_message.receive", player.getUsername(), message).color(NamedTextColor.GRAY).decorate(TextDecoration.ITALIC));
 
                                         MessageLogging.saveMessage(player, new MessageLogging.MessageData(new Date(), message, MessageLogging.MessageData.Type.PRIVATE, receiverOptional.get().getUsername()));
                                         LAST_SEND_RECEIVERS.put(player.getUniqueId(), receiverOptional.get().getUniqueId());
                                     } else {
-                                        context.getSource().sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " was not found!", NamedTextColor.RED));
+                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED));
                                     }
                                     return 1;
                                 })
@@ -52,7 +52,7 @@ public class PrivateMessaging {
         return new BrigadierCommand(node);
     }
 
-    public static BrigadierCommand createWBrigadier() {
+    public static @NotNull BrigadierCommand createWBrigadier() {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("w")
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("message", StringArgumentType.greedyString())
                         .executes(context -> {
@@ -61,11 +61,13 @@ public class PrivateMessaging {
                                 if (receiverOptional.isPresent()) {
                                     String message = context.getArgument("message", String.class);
 
-                                    receiverOptional.get().sendMessage(Component.text("[From: " + player.getUsername() + "] " + message, NamedTextColor.GRAY, TextDecoration.ITALIC));
-                                    player.sendMessage(Component.text("[To: " + receiverOptional.get().getUsername() + "] " + message, NamedTextColor.GRAY, TextDecoration.ITALIC));
+                                    player.sendMessage(Translation.component(player.getEffectiveLocale(), "private_message.send", receiverOptional.get().getUsername(), message).color(NamedTextColor.GRAY).decorate(TextDecoration.ITALIC));
+                                    receiverOptional.get().sendMessage(Translation.component(receiverOptional.get().getEffectiveLocale(), "private_message.receive", player.getUsername(), message).color(NamedTextColor.GRAY).decorate(TextDecoration.ITALIC));
 
                                     MessageLogging.saveMessage(player, new MessageLogging.MessageData(new Date(), message, MessageLogging.MessageData.Type.PRIVATE, receiverOptional.get().getUsername()));
                                     LAST_SEND_RECEIVERS.put(player.getUniqueId(), receiverOptional.get().getUniqueId());
+                                } else {
+                                    player.sendMessage(Translation.component(player.getEffectiveLocale(), "private_message.no_last").color(NamedTextColor.RED));
                                 }
                             }
                             return Command.SINGLE_SUCCESS;

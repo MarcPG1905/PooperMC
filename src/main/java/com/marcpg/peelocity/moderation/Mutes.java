@@ -12,8 +12,8 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.api.proxy.ProxyServer;
 import net.hectus.PostgreConnection;
+import net.hectus.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
@@ -26,9 +26,6 @@ import java.util.*;
 import static com.marcpg.peelocity.Peelocity.CONFIG;
 
 public class Mutes {
-    public record Mute(Date expiration, Time duration, String reason) {}
-
-    public static final Map<UUID, Mute> MUTES = new HashMap<>();
     public static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo");
     public static final PostgreConnection DATABASE;
     static {
@@ -44,7 +41,7 @@ public class Mutes {
                 .requires(source -> source.hasPermission("pee.mute"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            Peelocity.SERVER.getAllPlayers().stream()
+                            Peelocity.SERVER.getAllPlayers().parallelStream()
                                     .filter(player -> !player.hasPermission("pee.mute") && player != context.getSource())
                                     .map(Player::getUsername)
                                     .forEach(builder::suggest);
@@ -57,41 +54,42 @@ public class Mutes {
                                 })
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.greedyString())
                                         .executes(context -> {
-                                            CommandSource source = context.getSource();
+                                            Player source = (Player) context.getSource();
                                             Peelocity.SERVER.getPlayer(context.getArgument("player", String.class)).ifPresentOrElse(
                                                     target -> {
                                                         if (target.hasPermission("pee.mute") && !source.hasPermission("pee.op")) {
-                                                            source.sendMessage(Component.text("You can't mute that player!", NamedTextColor.RED));
+                                                            source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.cant").color(NamedTextColor.RED));
                                                             return;
                                                         }
 
                                                         Time time = Time.parse(context.getArgument("time", String.class));
                                                         if (time.get() <= 0) {
-                                                            source.sendMessage(Component.text("The time " + time.getPreciselyFormatted() + " is not valid!", NamedTextColor.RED));
+                                                            source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.time.invalid", time.getPreciselyFormatted()));
                                                             return;
                                                         }
 
                                                         String reason = context.getArgument("reason", String.class);
 
-                                                        target.sendMessage(Component.text("You are now muted on this server!", NamedTextColor.RED)
+                                                        Locale tl = target.getEffectiveLocale();
+                                                        target.sendMessage(Translation.component(tl, "moderation.mute.msg.title").color(NamedTextColor.RED)
                                                                 .appendNewline()
-                                                                .append(Component.text("Time: ", NamedTextColor.GRAY).append(Component.text(time.getOneUnitFormatted(), NamedTextColor.BLUE))
+                                                                .append(Translation.component(tl, "moderation.expiration", "").color(NamedTextColor.GRAY).append(Component.text(time.getOneUnitFormatted(), NamedTextColor.BLUE))
                                                                 .appendNewline()
-                                                                .append(Component.text("Reason: ", NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE)))));
+                                                                .append(Translation.component(tl, "moderation.reason", "").color(NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE)))));
 
 
                                                         try {
                                                             if (!DATABASE.contains(target.getUniqueId())) {
                                                                 DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())).toString(), String.valueOf(time.get()), reason);
-                                                                source.sendMessage(Component.text("Successfully muted " + target.getUsername() + "for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"", NamedTextColor.YELLOW));
+                                                                source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.confirm", target.getUsername(), time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                            } else {
-                                                                source.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " is already muted!", NamedTextColor.RED));
+                                                                source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.already_muted", target.getUsername()).color(NamedTextColor.RED));
                                                             }
                                                         } catch (SQLException e) {
                                                             throw new RuntimeException(e);
                                                         }
                                                     },
-                                                    () -> source.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " could not be found!"))
+                                                    () -> source.sendMessage(Translation.component(source.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                                             );
                                             return 1;
                                         })
@@ -115,28 +113,28 @@ public class Mutes {
                             return builder.buildFuture();
                         })
                         .executes(context -> {
-                            CommandSource source = context.getSource();
+                            Player source = (Player) context.getSource();
                             Peelocity.SERVER.getPlayer(context.getArgument("player", String.class)).ifPresentOrElse(
                                     target -> {
                                         if (target.hasPermission("pee.mute") && !source.hasPermission("pee.op")) {
-                                            source.sendMessage(Component.text("You can't unmute that player!", NamedTextColor.RED));
+                                            source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.unmute.cant").color(NamedTextColor.RED));
                                             return;
                                         }
 
-                                        target.sendMessage(Component.text("You are now unmuted on this server!", NamedTextColor.GREEN));
+                                        target.sendMessage(Translation.component(target.getEffectiveLocale(), "moderation.unmute.msg").color(NamedTextColor.GREEN));
 
                                         try {
                                             if (DATABASE.contains(target.getUniqueId())) {
                                                 DATABASE.remove(target.getUniqueId());
-                                                source.sendMessage(Component.text("Successfully unmuted " + target.getUsername(), NamedTextColor.YELLOW));
+                                                source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.unmute.confirm", target.getUsername()).color(NamedTextColor.YELLOW));
                                             } else {
-                                                source.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " is not muted!", NamedTextColor.RED));
+                                                source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.unmute.not_muted", target.getUsername()).color(NamedTextColor.RED));
                                             }
                                         } catch (SQLException e) {
                                             throw new RuntimeException(e);
                                         }
                                     },
-                                    () -> source.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " could not be found!"))
+                                    () -> source.sendMessage(Translation.component(source.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                             );
                             return 1;
                         })
@@ -147,16 +145,21 @@ public class Mutes {
     }
 
     @Subscribe(order = PostOrder.FIRST)
-    public void onPlayerChat(@NotNull PlayerChatEvent event) {
+    public void onPlayerChat(@NotNull PlayerChatEvent event) throws SQLException {
         Player player = event.getPlayer();
-        if (MUTES.containsKey(player.getUniqueId())) {
-            Mute mute = MUTES.get(player.getUniqueId());
-            if (new Date().after(mute.expiration())) {
-                MUTES.remove(player.getUniqueId());
+        Locale l = player.getEffectiveLocale();
+        if (DATABASE.contains(player.getUniqueId())) {
+            Object[] row = DATABASE.getRowArray(player.getUniqueId());
+
+            Instant expiration = ((PGTimestamp) row[1]).toInstant().plusSeconds(Long.parseLong((String) row[2]));
+            if (expiration.isBefore(Instant.now())) {
+                DATABASE.remove(player.getUniqueId());
+                player.sendMessage(Translation.component(l, "moderation.mute.expired.msg").color(NamedTextColor.RED));
             } else {
                 event.setResult(PlayerChatEvent.ChatResult.denied());
-                player.sendMessage(Component.text("You are currently muted, so you can't chat!", NamedTextColor.RED));
-                player.sendMessage(Component.text("Your mute will expire in: " + new Time(Instant.now().getEpochSecond() - mute.expiration.toInstant().getEpochSecond()).getOneUnitFormatted(), NamedTextColor.GOLD));
+                player.sendMessage(Translation.component(l, "moderation.mute.warning").color(NamedTextColor.RED));
+                player.sendMessage(Translation.component(l, "moderation.expiration", new Time(Instant.now().getEpochSecond() - expiration.getEpochSecond()).getPreciselyFormatted()).color(NamedTextColor.GOLD));
+                player.sendMessage(Translation.component(l, "moderation.reason", row[3]).color(NamedTextColor.GOLD));
             }
         }
     }

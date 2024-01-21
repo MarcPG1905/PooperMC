@@ -8,10 +8,12 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.api.proxy.ProxyServer;
+import net.hectus.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Locale;
 
 public class Kicks {
     public static @NotNull BrigadierCommand createKickBrigadier() {
@@ -27,18 +29,19 @@ public class Kicks {
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.greedyString())
                                 .executes(context -> {
-                                    CommandSource source = context.getSource();
+                                    Player source = (Player) context.getSource();
                                     Peelocity.SERVER.getPlayer(context.getArgument("player", String.class)).ifPresentOrElse(
                                             target -> {
                                                 String reason = context.getArgument("reason", String.class);
 
-                                                target.disconnect(Component.text("You were kicked off the server!", NamedTextColor.GOLD)
+                                                Locale tl = target.getEffectiveLocale();
+                                                target.disconnect(Translation.component(tl, "moderation.kick.msg.title").color(NamedTextColor.GOLD)
                                                         .appendNewline().appendNewline()
-                                                        .append(Component.text("Reason: ", NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE))));
+                                                        .append(Translation.component(tl, "moderation.reason").color(NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE))));
 
-                                                source.sendMessage(Component.text("Successfully kicked " + target.getUsername() + " for \"" + reason + "\"", NamedTextColor.YELLOW));
+                                                source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.kick.confirm", target.getUsername(), reason).color(NamedTextColor.YELLOW));
                                             },
-                                            () -> source.sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " could not be found!"))
+                                            () -> source.sendMessage(Translation.component(source.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                                     );
                                     return 1;
                                 })
