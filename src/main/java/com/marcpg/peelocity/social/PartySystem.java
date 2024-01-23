@@ -9,7 +9,7 @@ import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.hectus.Translation;
+import net.hectus.lang.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -247,6 +247,24 @@ public class PartySystem {
                             } else {
                                 player.sendMessage(Translation.component(player.getEffectiveLocale(), "party.not_in_any").color(RED));
                             }
+                            return 1;
+                        })
+                )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("help")
+                        .executes(context -> {
+                            context.getSource().sendMessage(Component.text("""
+                                    §l§nHelp:§r §l/party§r
+                                    The command /party provides all kinds of utilities for managing your party/group.
+                                    
+                                    §l§nArguments:§r
+                                    - §lcreate§r: Creates a brand new party with only you.
+                                    - §lleave§r: Leaves your current party, if in any.
+                                    - §linvite§r: Invites someone from your friend list into your party.
+                                    - §laccept§r: Accepts someone's party invite, if he sent any.
+                                    - §lpromote§r: Promotes someone else to be the party leader
+                                    - §lmessage§r: Sends a message to your party's private chat.
+                                    - §llist§r: Lists of players in your current party.
+                                    """));
                             return 1;
                         })
                 )

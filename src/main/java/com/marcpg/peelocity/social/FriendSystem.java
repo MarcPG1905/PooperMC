@@ -1,5 +1,6 @@
 package com.marcpg.peelocity.social;
 
+import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -8,8 +9,8 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import net.hectus.PostgreConnection;
-import net.hectus.Translation;
+import net.hectus.lang.Translation;
+import net.hectus.sql.PostgreConnection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -19,9 +20,11 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
-import static com.marcpg.peelocity.Peelocity.CONFIG;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class FriendSystem {
@@ -29,7 +32,7 @@ public class FriendSystem {
     public static final PostgreConnection DATABASE;
     static {
         try {
-            DATABASE = new PostgreConnection(CONFIG.getProperty("db-url"), CONFIG.getProperty("db-user"), CONFIG.getProperty("db-passwd"), "friendships");
+            DATABASE = new PostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "friendships");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -161,6 +164,21 @@ public class FriendSystem {
                                     throw new RuntimeException(e);
                                 }
                             }
+                            return 1;
+                        })
+                )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("help")
+                        .executes(context -> {
+                            context.getSource().sendMessage(Component.text("""
+                                    §l§nHelp:§r §l/friend§r
+                                    The command /friend provides all kinds of utilities for managing your friendships.
+                                    
+                                    §l§nArguments:§r
+                                    - §ladd§r: To which audience the announcement should be sent.
+                                    - §laccept§r: Accept someone's friend request, if you got one.
+                                    - §lremove§r: Removes a specific player from your friend list, if you're friends.
+                                    - §llist§r: Lists of all your current friends.
+                                    """));
                             return 1;
                         })
                 )

@@ -9,7 +9,8 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import net.hectus.Translation;
+import net.hectus.lang.Translation;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +48,19 @@ public class PrivateMessaging {
                                 })
                         )
                 )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("help")
+                        .executes(context -> {
+                            context.getSource().sendMessage(Component.text("""
+                                    §l§nHelp:§r §l/announcement§r
+                                    The command /msg will "whisper" a message to another player.
+                                    
+                                    §l§nArguments:§r
+                                    - §lplayer§r: The player to send the message to.
+                                    - §lmessage§r: The content of the message to send.
+                                    """));
+                            return 1;
+                        })
+                )
                 .build();
 
         return new BrigadierCommand(node);
@@ -71,6 +85,18 @@ public class PrivateMessaging {
                                 }
                             }
                             return Command.SINGLE_SUCCESS;
+                        })
+                )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("help")
+                        .executes(context -> {
+                            context.getSource().sendMessage(Component.text("""
+                                    §l§nHelp:§r §l/w§r
+                                    The command /w will send a message to the last player you private messaged. Acts as a /msg without the player argument.
+                                    
+                                    §l§nArguments:§r
+                                    - §lmessage§r: The content of the message to send.
+                                    """));
+                            return 1;
                         })
                 )
                 .build();

@@ -8,7 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import net.hectus.Translation;
+import net.hectus.lang.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
@@ -40,12 +40,26 @@ public class Kicks {
                                                         .append(Translation.component(tl, "moderation.reason").color(NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE))));
 
                                                 source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.kick.confirm", target.getUsername(), reason).color(NamedTextColor.YELLOW));
+                                                Peelocity.LOG.info(source.getUsername() + " kicked " + target.getUsername() + " with the reason: \"" + reason + "\"");
                                             },
                                             () -> source.sendMessage(Translation.component(source.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                                     );
                                     return 1;
                                 })
                         )
+                )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("help")
+                        .executes(context -> {
+                            context.getSource().sendMessage(Component.text("""
+                                    §l§nHelp:§r §l/kick§r
+                                    The command /kick will kick a player off the server, as a very light punishment.
+                                    
+                                    §l§nArguments:§r
+                                    - §lplayer§r: The player to kick off the server.
+                                    - §lreason§r: A good reason for kicking the player.
+                                    """));
+                            return 1;
+                        })
                 )
                 .build();
 
