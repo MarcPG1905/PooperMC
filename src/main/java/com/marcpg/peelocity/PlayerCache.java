@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class UserCache {
+public class PlayerCache {
     public static final Path CACHE_PATH = Path.of(Peelocity.DATA_DIRECTORY.toString(), "playercache");
     public static final HashMap<UUID, String> CACHED_USERS = new HashMap<>();
 
@@ -27,7 +27,7 @@ public class UserCache {
         List<String> lines = CACHED_USERS.entrySet().parallelStream()
                 .map(entry -> entry.getKey().toString() + "," + entry.getValue())
                 .toList();
-        Files.write(CACHE_PATH, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(CACHE_PATH, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         Peelocity.LOG.info("Saved all cached users to the 'usercache' file!");
     }
 

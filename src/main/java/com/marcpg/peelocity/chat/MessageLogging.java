@@ -68,4 +68,8 @@ public class MessageLogging {
         }
         return List.of();
     }
+
+    public static boolean hasHistory(UUID uuid) {
+        return Files.exists(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + uuid));
+    }
 }

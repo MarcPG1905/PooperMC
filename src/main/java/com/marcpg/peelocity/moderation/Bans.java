@@ -3,7 +3,7 @@ package com.marcpg.peelocity.moderation;
 import com.marcpg.data.time.Time;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
-import com.marcpg.peelocity.UserCache;
+import com.marcpg.peelocity.PlayerCache;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.postgresql.util.PGTimestamp;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -33,7 +34,7 @@ public class Bans {
     public static final AutoCatchingPostgreConnection DATABASE;
     static {
         try {
-            DATABASE = new AutoCatchingPostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "bans", sqlException -> Peelocity.LOG.warn("Error while interacting with the ban database: " + sqlException.getMessage()));
+            DATABASE = new AutoCatchingPostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "bans", e -> Peelocity.LOG.warn("Error while interacting with the ban database: " + e.getMessage()));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -82,7 +83,7 @@ public class Bans {
                                                                 .append(Translation.component(tl, "moderation.reason", "").color(NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE))));
 
                                                         if (!DATABASE.contains(target.getUniqueId())) {
-                                                            DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())).toString(), String.valueOf(time.get()), reason);
+                                                            DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())), time.get(), reason);
                                                             source.sendMessage(Translation.component(tl, "moderation.ban.confirm", target.getUsername(), permanent ? Translation.string(tl, "moderation.time.permanent") : time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " banned " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
                                                         } else {
@@ -123,7 +124,7 @@ public class Bans {
                 .requires(source -> source.hasPermission("pee.ban"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            UserCache.CACHED_USERS.entrySet().stream()
+                            PlayerCache.CACHED_USERS.entrySet().stream()
                                     .filter(entry -> DATABASE.contains(entry.getKey()))
                                     .map(Map.Entry::getValue)
                                     .forEach(builder::suggest);
@@ -132,8 +133,8 @@ public class Bans {
                         .executes(context -> {
                             Player source = (Player) context.getSource();
                             String target = context.getArgument("player", String.class);
-                            if (DATABASE.contains(UserCache.getUuid(target))) {
-                                DATABASE.remove(UserCache.getUuid(target));
+                            if (DATABASE.contains(PlayerCache.getUuid(target))) {
+                                DATABASE.remove(PlayerCache.getUuid(target));
                                 source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.pardon.confirm", target).color(NamedTextColor.YELLOW));
                                 Peelocity.LOG.info(source.getUsername() + " pardoned/unbanned " + target);
                             } else {
@@ -165,8 +166,8 @@ public class Bans {
         if (DATABASE.contains(player.getUniqueId())) {
             Object[] row = DATABASE.getRowArray(player.getUniqueId());
 
-            Time duration = new Time(Long.parseLong((String) row[2]));
-            Instant expiration = ((PGTimestamp) row[1]).toInstant().plusSeconds(duration.get());
+            Time duration = new Time((Long) row[2]);
+            Instant expiration = ((Timestamp) row[1]).toInstant().plusSeconds(duration.get());
 
             if (expiration.isBefore(Instant.now())) {
                 DATABASE.remove(player.getUniqueId());

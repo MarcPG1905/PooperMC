@@ -3,7 +3,7 @@ package com.marcpg.peelocity.moderation;
 import com.marcpg.data.time.Time;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
-import com.marcpg.peelocity.UserCache;
+import com.marcpg.peelocity.PlayerCache;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.postgresql.util.PGTimestamp;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +32,7 @@ public class Mutes {
     public static final AutoCatchingPostgreConnection DATABASE;
     static {
         try {
-            DATABASE = new AutoCatchingPostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "mutes", sqlException -> Peelocity.LOG.warn("Error while interacting with the mute database: " + sqlException.getMessage()));
+            DATABASE = new AutoCatchingPostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "mutes", e -> Peelocity.LOG.warn("Error while interacting with the mute database: " + e.getMessage()));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +80,7 @@ public class Mutes {
                                                                 .append(Translation.component(tl, "moderation.reason", "").color(NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE)))));
 
                                                         if (!DATABASE.contains(target.getUniqueId())) {
-                                                            DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())).toString(), String.valueOf(time.get()), reason);
+                                                            DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())), time.get(), reason);
                                                             source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.confirm", target.getUsername(), time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " muted " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
                                                         } else {
@@ -116,7 +117,7 @@ public class Mutes {
     }
 
     public static @NotNull BrigadierCommand createUnmuteBrigadier() {
-        LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("mute")
+        LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("unmute")
                 .requires(source -> source.hasPermission("pee.mute"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
@@ -129,8 +130,8 @@ public class Mutes {
                         .executes(context -> {
                             Player source = (Player) context.getSource();
                             String target = context.getArgument("player", String.class);
-                            if (DATABASE.contains(UserCache.getUuid(target))) {
-                                DATABASE.remove(UserCache.getUuid(target));
+                            if (DATABASE.contains(PlayerCache.getUuid(target))) {
+                                DATABASE.remove(PlayerCache.getUuid(target));
                                 source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.unmute.confirm", target).color(NamedTextColor.YELLOW));
                                 Peelocity.LOG.info(source.getUsername() + " unmuted " + target);
                             } else {
@@ -163,7 +164,7 @@ public class Mutes {
         if (DATABASE.contains(player.getUniqueId())) {
             Object[] row = DATABASE.getRowArray(player.getUniqueId());
 
-            Instant expiration = ((PGTimestamp) row[1]).toInstant().plusSeconds(Long.parseLong((String) row[2]));
+            Instant expiration = ((Timestamp) row[1]).toInstant().plusSeconds((Long) row[2]);
             if (expiration.isBefore(Instant.now())) {
                 DATABASE.remove(player.getUniqueId());
                 player.sendMessage(Translation.component(l, "moderation.mute.expired.msg").color(NamedTextColor.RED));

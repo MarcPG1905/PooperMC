@@ -1,10 +1,12 @@
 package com.marcpg.peelocity;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.*;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -22,17 +24,18 @@ public class Config {
     public static List<String> WHITELISTED_NAMES;
     public static URL REPORT_WEBHOOK;
     public static Map<String, Integer> GAMEMODES;
-    public static String SERVERLIST_VERSION;
 
-    public static void saveDefaultConfig() {
-        Path config = Peelocity.DATA_DIRECTORY.resolve("pee.properties");
-        if (!Files.exists(config)) {
-            try (InputStream in = Peelocity.class.getResourceAsStream("pee.properties")) {
-                if (in == null) throw new IOException("Plugin .jar file is corrupted!");
-                Files.copy(in, config, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                Peelocity.LOG.error("Error while saving the default configuration: " + e.getMessage());
-            }
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void saveDefaultConfig() throws IOException {
+        Peelocity.DATA_DIRECTORY.toFile().mkdir();
+        Peelocity.DATA_DIRECTORY.resolve("lang/").toFile().mkdir();
+        Peelocity.DATA_DIRECTORY.resolve("playercache").toFile().createNewFile();
+
+        File config = Peelocity.DATA_DIRECTORY.resolve("pee.properties").toFile();
+        if (!config.exists()) {
+            Peelocity.LOG.info("Downloading Peelocity configuration from https://marcpg.com/peelocity/pee.properties...");
+            download(new URL("https://marcpg.com/peelocity/pee.properties"), config);
+            Peelocity.LOG.info("Successfully downloaded the Peelocity configuration.");
         }
     }
 
@@ -52,6 +55,13 @@ public class Config {
                         keyValue -> keyValue[0],
                         keyValue -> Integer.parseInt(keyValue[1])
                 ));
-        SERVERLIST_VERSION = config.getProperty("serverlist-version");
+    }
+
+    public static void download(@NotNull URL url, File destination) throws IOException {
+        ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
+        try (FileOutputStream fileOutputStream = new FileOutputStream(destination)) {
+            FileChannel fileChannel = fileOutputStream.getChannel();
+            fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        }
     }
 }

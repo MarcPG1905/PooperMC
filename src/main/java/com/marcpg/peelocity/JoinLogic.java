@@ -15,13 +15,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class JoinLogic {
-    public static BrigadierCommand createJoinBrigadier() {
+    public static @NotNull BrigadierCommand createJoinBrigadier() {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("join")
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("gamemode", StringArgumentType.word())
                         .suggests((context, builder) -> {
@@ -78,6 +79,16 @@ public class JoinLogic {
         return new BrigadierCommand(node);
     }
 
+    public static @NotNull BrigadierCommand createHubBrigadier() {
+        LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("hub")
+                .executes(context -> {
+                    join(findServer("lobby", 500, 1), (Player) context.getSource());
+                    return 1;
+                })
+                .build();
+        return new BrigadierCommand(node);
+    }
+
     public static @Nullable RegisteredServer findServer(String serverNamespace, int playerLimit, int players) {
         for (RegisteredServer server : Peelocity.SERVER.getAllServers()) {
             if (server.getServerInfo().getName().startsWith(serverNamespace) && server.getPlayersConnected().size() < (playerLimit - players)) {
@@ -89,9 +100,8 @@ public class JoinLogic {
 
     public static void join(RegisteredServer server, Player @NotNull ... players) {
         for (Player target : players) {
-            target.sendMessage(Translation.component(target.getEffectiveLocale(), "cmd.play.success.connect").color(NamedTextColor.YELLOW));
             target.createConnectionRequest(server).fireAndForget();
-            target.sendMessage(Translation.component(target.getEffectiveLocale(), "cmd.play.success.finish").color(NamedTextColor.GREEN));
+            Peelocity.SERVER.getScheduler().buildTask(Peelocity.PLUGIN, () -> target.sendMessage(Translation.component(target.getEffectiveLocale(), "cmd.play.success.finish").color(NamedTextColor.GREEN))).delay(Duration.ofSeconds(2)).schedule();
         }
     }
 }

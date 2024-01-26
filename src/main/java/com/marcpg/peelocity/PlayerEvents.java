@@ -10,7 +10,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
 public class PlayerEvents {
-    @Subscribe(order = PostOrder.NORMAL)
+    @Subscribe(order = PostOrder.EARLY)
     public void onLogin(@NotNull LoginEvent event) {
         Player player = event.getPlayer();
 
@@ -20,6 +20,6 @@ public class PlayerEvents {
             return;
         }
 
-        UserCache.CACHED_USERS.put(player.getUniqueId(), player.getUsername());
+        PlayerCache.CACHED_USERS.put(player.getUniqueId(), player.getUsername());
     }
 }

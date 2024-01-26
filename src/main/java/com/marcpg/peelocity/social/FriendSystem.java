@@ -2,6 +2,7 @@ package com.marcpg.peelocity.social;
 
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PlayerCache;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -17,9 +18,9 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +56,7 @@ public class FriendSystem {
                                     Optional<Player> optionalTarget = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
                                     if (optionalTarget.isPresent()) {
                                         Player target = optionalTarget.get();
-                                        if (getFriendship(player, target).getKey()) {
+                                        if (getFriendship(player, target) != null) {
                                             player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.already_friends", target.getUsername()).color(YELLOW));
                                         } else {
                                             if ((FRIEND_REQUESTS.containsKey(player.getUniqueId()) && FRIEND_REQUESTS.containsValue(target.getUniqueId())) ||
@@ -91,8 +92,7 @@ public class FriendSystem {
                                     Player player = (Player) context.getSource();
                                     Optional<Player> target = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
                                     if (target.isPresent()) {
-                                        Map.Entry<Boolean, ResultSet> result = getFriendship(player, target.get());
-                                        if (result.getKey()) {
+                                        if (getFriendship(player, target.get()) != null) {
                                             player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.already_friends", target.get().getUsername()).color(YELLOW));
                                         } else {
                                             if (FRIEND_REQUESTS.containsKey(target.get().getUniqueId())) {
@@ -126,10 +126,10 @@ public class FriendSystem {
                                     Player player = (Player) context.getSource();
                                     Optional<Player> target = Peelocity.SERVER.getPlayer(context.getArgument("player", String.class));
                                     if (target.isPresent()) {
-                                        Map.Entry<Boolean, ResultSet> result = getFriendship(player, target.get());
-                                        if (result.getKey()) {
+                                        UUID uuid = getFriendship(player, target.get());
+                                        if (uuid != null) {
                                             try {
-                                                DATABASE.remove(result.getValue().getObject("uuid", UUID.class));
+                                                DATABASE.remove(uuid);
                                                 player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.remove.confirm", target.get().getUsername()).color(YELLOW));
                                                 target.get().sendMessage(Translation.component(target.get().getEffectiveLocale(), "friend.remove.confirm", player.getUsername()).color(YELLOW));
                                             } catch (SQLException e) {
@@ -149,16 +149,24 @@ public class FriendSystem {
                         .executes(context -> {
                             if (context.getSource() instanceof Player player) {
                                 try {
-                                    String sql1 = "SELECT * FROM friendships WHERE player1_uuid = '" + player.getUniqueId() + "';";
-                                    ResultSet resultSet1 = DATABASE.statement().executeQuery(sql1);
-                                    while (resultSet1.next()) {
-                                        player.sendMessage(Component.text("- " + Peelocity.DATABASE.get(resultSet1.getObject("player2_uuid", UUID.class), "player_name"), AQUA));
+                                    String sql1 = "SELECT * FROM friendships WHERE player1_uuid = ?;";
+                                    try (PreparedStatement preparedStatement = DATABASE.connection().prepareStatement(sql1)) {
+                                        preparedStatement.setObject(1, player.getUniqueId());
+                                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                            while (resultSet.next()) {
+                                                player.sendMessage(Component.text("- " + PlayerCache.CACHED_USERS.get(resultSet.getObject("player2_uuid", UUID.class)), AQUA));
+                                            }
+                                        }
                                     }
 
-                                    String sql2 = "SELECT * FROM friendships WHERE player2_uuid = '" + player.getUniqueId() + "';";
-                                    ResultSet resultSet2 = DATABASE.statement().executeQuery(sql2);
-                                    while (resultSet2.next()) {
-                                        player.sendMessage(Component.text("- " + Peelocity.DATABASE.get(resultSet1.getObject("player2_uuid", UUID.class), "player_name"), AQUA));
+                                    String sql2 = "SELECT * FROM friendships WHERE player2_uuid = ?;";
+                                    try (PreparedStatement preparedStatement = DATABASE.connection().prepareStatement(sql2)) {
+                                        preparedStatement.setObject(1, player.getUniqueId());
+                                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                            while (resultSet.next()) {
+                                                player.sendMessage(Component.text("- " + PlayerCache.CACHED_USERS.get(resultSet.getObject("player1_uuid", UUID.class)), AQUA));
+                                            }
+                                        }
                                     }
                                 } catch (SQLException e) {
                                     throw new RuntimeException(e);
@@ -187,11 +195,10 @@ public class FriendSystem {
         return new BrigadierCommand(node);
     }
 
-    private static @NotNull Map.Entry<Boolean, ResultSet> getFriendship(@NotNull Player player1, @NotNull Player player2) {
+    private static UUID getFriendship(@NotNull Player player1, @NotNull Player player2) {
         try {
-            String sql = MessageFormat.format("SELECT 1 FROM friendships WHERE (player1_uuid = ''{0}'' AND player2_uuid = ''{1}'') OR (player1_uuid = ''{0}'' AND player2_uuid = ''{1}'')", player1.getUniqueId(), player2.getUniqueId());
-            ResultSet resultSet = DATABASE.statement().executeQuery(sql);
-            return new HashMap<>(Map.of(resultSet.next(), resultSet)).entrySet().stream().findFirst().orElseThrow();
+            String sql = "SELECT 1 FROM friendships WHERE (player1_uuid = ? AND player2_uuid = ?) OR (player1_uuid = ? AND player2_uuid = ?)";
+            return DATABASE.executeQuery(sql, player1.getUniqueId(), player2.getUniqueId(), player2.getUniqueId(), player1.getUniqueId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
