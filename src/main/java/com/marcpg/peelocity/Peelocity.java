@@ -105,7 +105,7 @@ public class Peelocity {
         manager.register("mute", Mutes.createMuteBrigadier(), "timeout");
         manager.register("pardon", Bans.createPardonBrigadier(), "unban");
         manager.register("party", PartySystem.createPartyBrigadier(SERVER));
-        manager.register("report", Reporting.createComplexReportBrigadier(), "snitch");
+        manager.register("report", Reporting.createReportBrigadier(), "snitch");
         manager.register("staff", StaffChat.createStaffBrigadier(), "sc", "staff-chat");
         manager.register("unmute", Mutes.createUnmuteBrigadier(), "remove-timeout");
         manager.register("w", PrivateMessaging.createWBrigadier());

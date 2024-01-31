@@ -1,15 +1,16 @@
 package com.marcpg.peelocity;
 
+import com.marcpg.discord.Webhook;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class Config {
     public static String DATABASE_PASSWD;
     public static boolean WHITELIST;
     public static List<String> WHITELISTED_NAMES;
-    public static URL REPORT_WEBHOOK;
+    public static Webhook MOD_ONLY_WEBHOOK;
     public static Map<String, Integer> GAMEMODES;
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -48,7 +49,7 @@ public class Config {
         DATABASE_PASSWD = config.getProperty("db-passwd");
         WHITELIST = Boolean.parseBoolean(config.getProperty("whitelist"));
         WHITELISTED_NAMES = List.of(config.getProperty("whitelisted-names").split(",|, "));
-        REPORT_WEBHOOK = new URL(config.getProperty("report-webhook"));
+        MOD_ONLY_WEBHOOK = new Webhook(new URL(config.getProperty("mod-only-webhook")));
         GAMEMODES = Arrays.stream(config.getProperty("gamemodes").split(",|, "))
                 .map(entry -> entry.split("-"))
                 .collect(Collectors.toMap(

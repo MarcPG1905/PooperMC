@@ -1,6 +1,7 @@
 package com.marcpg.peelocity.moderation;
 
 import com.marcpg.data.time.Time;
+import com.marcpg.discord.Embed;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
@@ -21,6 +22,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.postgresql.util.PGTimestamp;
 
+import java.awt.*;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -83,6 +86,16 @@ public class Mutes {
                                                             DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())), time.get(), reason);
                                                             source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.confirm", target.getUsername(), time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " muted " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
+                                                            try {
+                                                                Config.MOD_ONLY_WEBHOOK.post(new Embed("Minecraft Mute", target.getUsername() + " got muted by " + source.getUsername(), Color.YELLOW, List.of(
+                                                                        new Embed.Field("Muted", target.getUsername(), true),
+                                                                        new Embed.Field("Moderator", source.getUsername(), true),
+                                                                        new Embed.Field("Time", time.getPreciselyFormatted(), true),
+                                                                        new Embed.Field("Reason", reason.trim(), false)
+                                                                )));
+                                                            } catch (IOException e) {
+                                                                throw new RuntimeException(e);
+                                                            }
                                                         } else {
                                                             source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.already_muted", target.getUsername()).color(NamedTextColor.RED));
                                                         }

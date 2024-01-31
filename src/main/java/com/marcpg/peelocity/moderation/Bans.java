@@ -1,6 +1,7 @@
 package com.marcpg.peelocity.moderation;
 
 import com.marcpg.data.time.Time;
+import com.marcpg.discord.Embed;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
@@ -22,6 +23,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.postgresql.util.PGTimestamp;
 
+import java.awt.*;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -86,6 +89,16 @@ public class Bans {
                                                             DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())), time.get(), reason);
                                                             source.sendMessage(Translation.component(tl, "moderation.ban.confirm", target.getUsername(), permanent ? Translation.string(tl, "moderation.time.permanent") : time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " banned " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
+                                                            try {
+                                                                Config.MOD_ONLY_WEBHOOK.post(new Embed("Minecraft Ban", target.getUsername() + " got banned by " + source.getUsername(), Color.ORANGE, List.of(
+                                                                        new Embed.Field("Banned", target.getUsername(), true),
+                                                                        new Embed.Field("Moderator", source.getUsername(), true),
+                                                                        new Embed.Field("Time", time.getPreciselyFormatted(), true),
+                                                                        new Embed.Field("Reason", reason.trim(), false)
+                                                                )));
+                                                            } catch (IOException e) {
+                                                                throw new RuntimeException(e);
+                                                            }
                                                         } else {
                                                             source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.ban.already_banned", context.getArgument("player", String.class)).color(NamedTextColor.RED));
                                                         }

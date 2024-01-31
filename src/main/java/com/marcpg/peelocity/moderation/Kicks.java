@@ -1,5 +1,7 @@
 package com.marcpg.peelocity.moderation;
 
+import com.marcpg.discord.Embed;
+import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -13,6 +15,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.*;
+import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 
 public class Kicks {
@@ -41,6 +46,15 @@ public class Kicks {
 
                                                 source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.kick.confirm", target.getUsername(), reason).color(NamedTextColor.YELLOW));
                                                 Peelocity.LOG.info(source.getUsername() + " kicked " + target.getUsername() + " with the reason: \"" + reason + "\"");
+                                                try {
+                                                    Config.MOD_ONLY_WEBHOOK.post(new Embed("Minecraft Kick", target.getUsername() + " got kicked by " + source.getUsername(), Color.GREEN, List.of(
+                                                            new Embed.Field("Kicked", target.getUsername(), true),
+                                                            new Embed.Field("Moderator", source.getUsername(), true),
+                                                            new Embed.Field("Reason", reason.trim(), false)
+                                                    )));
+                                                } catch (IOException e) {
+                                                    throw new RuntimeException(e);
+                                                }
                                             },
                                             () -> source.sendMessage(Translation.component(source.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                                     );
