@@ -1,16 +1,15 @@
 package com.marcpg.peelocity;
 
 import com.marcpg.discord.Webhook;
-import org.jetbrains.annotations.NotNull;
+import com.marcpg.util.Downloads;
+import net.hectus.lang.Translation;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +34,12 @@ public class Config {
         File config = Peelocity.DATA_DIRECTORY.resolve("pee.properties").toFile();
         if (!config.exists()) {
             Peelocity.LOG.info("Downloading Peelocity configuration from https://marcpg.com/peelocity/pee.properties...");
-            download(new URL("https://marcpg.com/peelocity/pee.properties"), config);
+            Downloads.simpleDownload(new URL("https://marcpg.com/peelocity/pee.properties"), config);
             Peelocity.LOG.info("Successfully downloaded the Peelocity configuration.");
         }
     }
 
+    /** Also loads the translations! */
     public static void load() throws IOException {
         Properties config = new Properties();
         config.load(new FileInputStream(new File(Peelocity.DATA_DIRECTORY.toFile(), "pee.properties")));
@@ -56,13 +56,19 @@ public class Config {
                         keyValue -> keyValue[0],
                         keyValue -> Integer.parseInt(keyValue[1])
                 ));
+
+        if (Boolean.parseBoolean(config.getProperty("download-translations"))) {
+            getTranslations();
+            Peelocity.LOG.info("Downloaded and loaded all recent translations!");
+        }
     }
 
-    public static void download(@NotNull URL url, File destination) throws IOException {
-        ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
-        try (FileOutputStream fileOutputStream = new FileOutputStream(destination)) {
-            FileChannel fileChannel = fileOutputStream.getChannel();
-            fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+    public static void getTranslations() throws IOException {
+        Path langFolder = Peelocity.DATA_DIRECTORY.resolve("lang");
+        Downloads.simpleDownload(new URL("https://marcpg.com/peelocity/translations/available_locales"), langFolder.resolve("available_locales.temp").toFile());
+        for (String locale : Files.readAllLines(langFolder.resolve("available_locales.temp"))) {
+            Downloads.simpleDownload(new URL("https://marcpg.com/peelocity/translations/" + locale), langFolder.resolve(locale).toFile());
         }
+        Translation.load(langFolder.toFile());
     }
 }

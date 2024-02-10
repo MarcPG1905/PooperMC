@@ -29,7 +29,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -43,12 +42,11 @@ import java.sql.SQLException;
         authors = { "MarcPG" }
 )
 public class Peelocity {
-    @SuppressWarnings("unused")
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
-    public static final String PEELOCITY_VERSION = "0.1.3";
-    public static final String PEELOCITY_BUILD_NUMBER = "4";
+    public static final String PEELOCITY_VERSION = "0.1.4";
+    public static final String PEELOCITY_BUILD_NUMBER = "3";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
@@ -70,8 +68,8 @@ public class Peelocity {
 
         Config.saveDefaultConfig();
         Config.load();
+
         PlayerCache.loadCachedUsers();
-        Translation.load(new File(DATA_DIRECTORY.toFile(), "/lang/"));
 
         if (Config.DATABASE_URL != null) {
             Class.forName("org.postgresql.Driver");
