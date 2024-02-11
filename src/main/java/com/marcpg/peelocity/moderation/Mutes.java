@@ -2,6 +2,7 @@ package com.marcpg.peelocity.moderation;
 
 import com.marcpg.data.time.Time;
 import com.marcpg.discord.Embed;
+import com.marcpg.discord.Webhook;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
@@ -54,7 +55,8 @@ public class Mutes {
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("time", StringArgumentType.word())
                                 .suggests((context, builder) -> {
-                                    TIME_TYPES.forEach(string -> builder.suggest(builder.getInput().replaceAll("[^-\\d.]+", "") + string));
+                                    String input = context.getArguments().size() == 2 ? List.of(builder.getInput().split(" ")).getLast() : "";
+                                    TIME_TYPES.forEach(string -> builder.suggest(input.replaceAll("[^-\\d.]+", "") + string));
                                     return builder.buildFuture();
                                 })
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.greedyString())
@@ -91,7 +93,7 @@ public class Mutes {
                                                                         new Embed.Field("Muted", target.getUsername(), true),
                                                                         new Embed.Field("Moderator", source.getUsername(), true),
                                                                         new Embed.Field("Time", time.getPreciselyFormatted(), true),
-                                                                        new Embed.Field("Reason", reason.trim(), false)
+                                                                        new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
                                                                 )));
                                                             } catch (IOException e) {
                                                                 throw new RuntimeException(e);
@@ -177,14 +179,15 @@ public class Mutes {
         if (DATABASE.contains(player.getUniqueId())) {
             Object[] row = DATABASE.getRowArray(player.getUniqueId());
 
-            Instant expiration = ((Timestamp) row[1]).toInstant().plusSeconds((Long) row[2]);
+            Instant expiration = ((Timestamp) row[1]).toInstant();
+
             if (expiration.isBefore(Instant.now())) {
                 DATABASE.remove(player.getUniqueId());
                 player.sendMessage(Translation.component(l, "moderation.mute.expired.msg").color(NamedTextColor.RED));
             } else {
                 event.setResult(PlayerChatEvent.ChatResult.denied());
                 player.sendMessage(Translation.component(l, "moderation.mute.warning").color(NamedTextColor.RED));
-                player.sendMessage(Translation.component(l, "moderation.expiration", new Time(Instant.now().getEpochSecond() - expiration.getEpochSecond()).getPreciselyFormatted()).color(NamedTextColor.GOLD));
+                player.sendMessage(Translation.component(l, "moderation.expiration", new Time(expiration.getEpochSecond() - Instant.now().getEpochSecond()).getPreciselyFormatted()).color(NamedTextColor.GOLD));
                 player.sendMessage(Translation.component(l, "moderation.reason", row[3]).color(NamedTextColor.GOLD));
             }
         }

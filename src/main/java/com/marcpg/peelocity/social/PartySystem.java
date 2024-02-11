@@ -38,9 +38,11 @@ public class PartySystem {
                             Locale l = player.getEffectiveLocale();
                             if (PLAYER_PARTIES.containsKey(player.getUniqueId())) {
                                 player.sendMessage(Translation.component(l, "party.leave-msg.1").color(RED)
+                                        .appendSpace()
                                         .append(Translation.component(l, "party.leave-msg.2", GOLD)
                                                 .clickEvent(ClickEvent.runCommand("/party leave"))
                                                 .hoverEvent(HoverEvent.showText(Component.text("/party leave"))))
+                                        .appendSpace()
                                         .append(Translation.component(l, "party.leave-msg.3", RED)));
                             } else {
                                 UUID uuid = UUID.randomUUID();
@@ -48,6 +50,7 @@ public class PartySystem {
                                 PLAYER_PARTIES.put(player.getUniqueId(), uuid);
 
                                 player.sendMessage(Translation.component(l, "party.create.confirm.1").color(GREEN)
+                                        .appendSpace()
                                         .append(Translation.component(l, "party.create.confirm.2").color(YELLOW)
                                                 .clickEvent(ClickEvent.suggestCommand("/party invite "))
                                                 .hoverEvent(HoverEvent.showText(Component.text("/party invite <player>")))));
@@ -104,9 +107,11 @@ public class PartySystem {
                                         if (optionalTarget.isPresent()) {
                                             Player target = optionalTarget.get();
                                             target.sendMessage(Translation.component(l, "party.invite.msg.1", player.getUsername()).color(YELLOW)
+                                                    .appendSpace()
                                                     .append(Translation.component(l, "party.invite.msg.2").color(GOLD)
                                                             .clickEvent(ClickEvent.runCommand("/party accept " + player.getUsername()))
                                                             .hoverEvent(HoverEvent.showText(Translation.component(l, "party.invite.msg.2.tooltip").color(GOLD))))
+                                                    .appendSpace()
                                                     .append(Translation.component(l, "party.invite.msg.3").color(YELLOW)));
 
                                             player.sendMessage(Translation.component(l, "party.invite.confirm", target.getUsername()).color(GREEN));

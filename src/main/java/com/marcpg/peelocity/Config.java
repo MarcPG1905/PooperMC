@@ -25,11 +25,10 @@ public class Config {
     public static Webhook MOD_ONLY_WEBHOOK;
     public static Map<String, Integer> GAMEMODES;
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void saveDefaultConfig() throws IOException {
-        Peelocity.DATA_DIRECTORY.toFile().mkdir();
-        Peelocity.DATA_DIRECTORY.resolve("lang/").toFile().mkdir();
-        Peelocity.DATA_DIRECTORY.resolve("playercache").toFile().createNewFile();
+        if (Peelocity.DATA_DIRECTORY.resolve("lang/").toFile().mkdirs()) Peelocity.LOG.info("Created plugins/peelocity/lang/, as it didn't exist before!");
+        if (Peelocity.DATA_DIRECTORY.resolve("playercache/").toFile().mkdirs()) Peelocity.LOG.info("Created plugins/peelocity/playercache/, as it didn't exist before!");
+        if (Peelocity.DATA_DIRECTORY.resolve("message-history/").toFile().mkdirs()) Peelocity.LOG.info("Created plugins/peelocity/message-history/, as it didn't exist before!");
 
         File config = Peelocity.DATA_DIRECTORY.resolve("pee.properties").toFile();
         if (!config.exists()) {
@@ -39,36 +38,41 @@ public class Config {
         }
     }
 
-    /** Also loads the translations! */
-    public static void load() throws IOException {
+    public static boolean load() throws IOException {
         Properties config = new Properties();
         config.load(new FileInputStream(new File(Peelocity.DATA_DIRECTORY.toFile(), "pee.properties")));
 
-        DATABASE_URL = config.getProperty("db-url");
-        DATABASE_USER = config.getProperty("db-user");
-        DATABASE_PASSWD = config.getProperty("db-passwd");
-        WHITELIST = Boolean.parseBoolean(config.getProperty("whitelist"));
-        WHITELISTED_NAMES = List.of(config.getProperty("whitelisted-names").split(",|, "));
-        MOD_ONLY_WEBHOOK = new Webhook(new URL(config.getProperty("mod-only-webhook")));
-        GAMEMODES = Arrays.stream(config.getProperty("gamemodes").split(",|, "))
-                .map(entry -> entry.split("-"))
-                .collect(Collectors.toMap(
-                        keyValue -> keyValue[0],
-                        keyValue -> Integer.parseInt(keyValue[1])
-                ));
+        try {
+            DATABASE_URL = config.getProperty("db-url");
+            DATABASE_USER = config.getProperty("db-user");
+            DATABASE_PASSWD = config.getProperty("db-passwd");
+            WHITELIST = Boolean.parseBoolean(config.getProperty("whitelist"));
+            WHITELISTED_NAMES = List.of(config.getProperty("whitelisted-names").split(",|, "));
+            MOD_ONLY_WEBHOOK = new Webhook(new URL(config.getProperty("mod-only-webhook")));
+            GAMEMODES = Arrays.stream(config.getProperty("gamemodes").split(",|, "))
+                    .map(entry -> entry.split("-"))
+                    .collect(Collectors.toMap(
+                            keyValue -> keyValue[0],
+                            keyValue -> Integer.parseInt(keyValue[1])
+                    ));
+        } catch (IOException e) {
+            return false;
+        }
 
         if (Boolean.parseBoolean(config.getProperty("download-translations"))) {
-            getTranslations();
+            downloadTranslations();
             Peelocity.LOG.info("Downloaded and loaded all recent translations!");
         }
+        return true;
     }
 
-    public static void getTranslations() throws IOException {
+    public static void downloadTranslations() throws IOException {
         Path langFolder = Peelocity.DATA_DIRECTORY.resolve("lang");
         Downloads.simpleDownload(new URL("https://marcpg.com/peelocity/translations/available_locales"), langFolder.resolve("available_locales.temp").toFile());
         for (String locale : Files.readAllLines(langFolder.resolve("available_locales.temp"))) {
             Downloads.simpleDownload(new URL("https://marcpg.com/peelocity/translations/" + locale), langFolder.resolve(locale).toFile());
         }
+        Files.deleteIfExists(langFolder.resolve("available_locales.temp"));
         Translation.load(langFolder.toFile());
     }
 }

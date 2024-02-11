@@ -43,9 +43,9 @@ public class UserUtil {
                                 if (MessageLogging.hasHistory(uuid)) {
                                     source.sendMessage(Translation.component(l, "moderation.chat_history.title", name).color(NamedTextColor.DARK_GREEN));
                                     MessageLogging.getHistory(uuid).forEach(messageData -> {
-                                        String time = "[" + FORMATTER.format(LocalDateTime.ofInstant(messageData.time().toInstant(), ZoneId.systemDefault())) + " UTC] ";
-                                        String additional = messageData.type() == Type.NORMAL ? "" : (messageData.type() == Type.PRIVATE ? Translation.string(l, "moderation.chat_history.private") : (messageData.type() == Type.PARTY ? Translation.string(l, "moderation.chat_history.party") : Translation.string(l, "moderation.chat_history.staff")));
-                                        source.sendMessage(Component.text("| " + time + additional, NamedTextColor.GRAY).append(Component.text(messageData.content().strip())));
+                                        String time = "[" + FORMATTER.format(LocalDateTime.ofInstant(messageData.time().toInstant(), ZoneId.systemDefault())) + " UTC]";
+                                        String additional = messageData.type() == Type.NORMAL ? "" : (messageData.type() == Type.PRIVATE ? Translation.string(l, "moderation.chat_history.private", messageData.receiver()) : (messageData.type() == Type.PARTY ? Translation.string(l, "moderation.chat_history.party") : Translation.string(l, "moderation.chat_history.staff")));
+                                        source.sendMessage(Component.text("| " + time + (additional.isEmpty() ? "" : " " + additional) + " ", NamedTextColor.GRAY).append(Component.text(messageData.content().strip(), NamedTextColor.WHITE)));
                                     });
                                     source.sendMessage(Component.text("=========================").color(NamedTextColor.DARK_GREEN));
                                     Peelocity.LOG.info(source.getUsername() + " retrieved " + name + "'s message history");

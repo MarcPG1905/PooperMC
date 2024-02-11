@@ -45,8 +45,8 @@ public class Peelocity {
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
-    public static final String PEELOCITY_VERSION = "0.1.4";
-    public static final String PEELOCITY_BUILD_NUMBER = "3";
+    public static final String PEELOCITY_VERSION = "0.1.5";
+    public static final String PEELOCITY_BUILD_NUMBER = "4";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
@@ -67,16 +67,15 @@ public class Peelocity {
         long start = System.currentTimeMillis();
 
         Config.saveDefaultConfig();
-        Config.load();
+        if (!Config.load()) {
+            LOG.warn("Please configure Peelocity first, before running it!");
+            throw new RuntimeException("Please configure Peelocity first, before running it!");
+        }
 
         PlayerCache.loadCachedUsers();
 
-        if (Config.DATABASE_URL != null) {
-            Class.forName("org.postgresql.Driver");
-            DATABASE = new PostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "playerdata");
-        } else {
-            LOG.error("Please configure the database first, before running Peelocity!");
-        }
+        Class.forName("org.postgresql.Driver");
+        DATABASE = new PostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "playerdata");
 
         registerEvents(SERVER.getEventManager());
         registerCommands(SERVER.getCommandManager());

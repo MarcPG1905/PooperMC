@@ -2,6 +2,7 @@ package com.marcpg.peelocity.moderation;
 
 import com.marcpg.data.time.Time;
 import com.marcpg.discord.Embed;
+import com.marcpg.discord.Webhook;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
@@ -33,7 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Bans {
-    public static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo", "yr", "permanent");
+    public static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo", "yr");
     public static final AutoCatchingPostgreConnection DATABASE;
     static {
         try {
@@ -56,7 +57,9 @@ public class Bans {
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("time", StringArgumentType.word())
                                 .suggests((context, builder) -> {
-                                    TIME_TYPES.forEach(string -> builder.suggest(builder.getInput().replaceAll("[^-\\d.]+", "") + string));
+                                    String input = context.getArguments().size() == 2 ? List.of(builder.getInput().split(" ")).getLast() : "";
+                                    TIME_TYPES.forEach(string -> builder.suggest(input.replaceAll("[^-\\d.]+", "") + string));
+                                    builder.suggest("permanent");
                                     return builder.buildFuture();
                                 })
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.greedyString())
@@ -86,15 +89,15 @@ public class Bans {
                                                                 .append(Translation.component(tl, "moderation.reason", "").color(NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE))));
 
                                                         if (!DATABASE.contains(target.getUniqueId())) {
-                                                            DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())), time.get(), reason);
+                                                            DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.now().plusSeconds(permanent ? 10000000000L : time.get())), time.get(), reason); // 10000000000 = ~317 years
                                                             source.sendMessage(Translation.component(tl, "moderation.ban.confirm", target.getUsername(), permanent ? Translation.string(tl, "moderation.time.permanent") : time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " banned " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
                                                             try {
                                                                 Config.MOD_ONLY_WEBHOOK.post(new Embed("Minecraft Ban", target.getUsername() + " got banned by " + source.getUsername(), Color.ORANGE, List.of(
                                                                         new Embed.Field("Banned", target.getUsername(), true),
                                                                         new Embed.Field("Moderator", source.getUsername(), true),
-                                                                        new Embed.Field("Time", time.getPreciselyFormatted(), true),
-                                                                        new Embed.Field("Reason", reason.trim(), false)
+                                                                        new Embed.Field("Time", permanent ? "Permanent" : time.getPreciselyFormatted(), true),
+                                                                        new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
                                                                 )));
                                                             } catch (IOException e) {
                                                                 throw new RuntimeException(e);
@@ -180,7 +183,7 @@ public class Bans {
             Object[] row = DATABASE.getRowArray(player.getUniqueId());
 
             Time duration = new Time((Long) row[2]);
-            Instant expiration = ((Timestamp) row[1]).toInstant().plusSeconds(duration.get());
+            Instant expiration = ((Timestamp) row[1]).toInstant();
 
             if (expiration.isBefore(Instant.now())) {
                 DATABASE.remove(player.getUniqueId());

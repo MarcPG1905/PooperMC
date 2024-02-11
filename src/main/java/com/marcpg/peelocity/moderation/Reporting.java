@@ -1,6 +1,7 @@
 package com.marcpg.peelocity.moderation;
 
 import com.marcpg.discord.Embed;
+import com.marcpg.discord.Webhook;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.text.Formatter;
@@ -44,11 +45,13 @@ public class Reporting {
                                                                     new Embed.Field("Reported User", player.getUsername(), true),
                                                                     new Embed.Field("Who Reported?", ((Player) context.getSource()).getUsername(), true),
                                                                     new Embed.Field("Reason", Formatter.toPascalCase(context.getArgument("reason", String.class)), true),
-                                                                    new Embed.Field("Additional Info", context.getArgument("info", String.class).trim(), false)
+                                                                    new Embed.Field("Additional Info", Webhook.escapeJson(context.getArgument("info", String.class)).trim(), false)
                                                             )));
                                                         } catch (IOException e) {
+                                                            player.sendMessage(Component.text("There was an issue, your report is very likely invalid!", NamedTextColor.RED));
                                                             throw new RuntimeException(e);
                                                         }
+                                                        player.sendMessage(Component.text("Successfully submitted the report!", NamedTextColor.GREEN));
                                                     },
                                                     () -> context.getSource().sendMessage(Translation.component(((Player) context.getSource()).getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                                             );

@@ -97,7 +97,7 @@ public class FriendSystem {
                                         } else {
                                             if (FRIEND_REQUESTS.containsKey(target.get().getUniqueId())) {
                                                 try {
-                                                    DATABASE.add(UUID.randomUUID(), target.get().getUniqueId().toString(), player.getUniqueId().toString());
+                                                    DATABASE.add(UUID.randomUUID(), target.get().getUniqueId(), player.getUniqueId());
                                                     FRIEND_REQUESTS.remove(target.get().getUniqueId());
                                                 } catch (SQLException e) {
                                                     throw new RuntimeException(e);

@@ -44,10 +44,10 @@ public class MessageLogging {
     }
 
     public static void saveMessage(@NotNull Player player, @NotNull MessageData data) {
-        final Path filePath = Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + player.getUniqueId().toString());
+        final Path filePath = Path.of(Peelocity.DATA_DIRECTORY.toString() + "/message-history/" + player.getUniqueId().toString());
 
         try {
-            if (!filePath.toFile().exists() || !Files.exists(filePath)) Files.createFile(filePath);
+            if (!Files.exists(filePath)) Files.createFile(filePath);
 
             List<String> lines = Files.readAllLines(filePath);
             lines.add(DATE_FORMAT.format(data.time) + " ||  " + data.content + " || " + data.type + (data.receiver == null ? "" : " || " + data.receiver));
@@ -62,7 +62,7 @@ public class MessageLogging {
 
     public static List<MessageData> getHistory(@NotNull UUID uuid) {
         try {
-            return Files.readAllLines(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + uuid)).stream().map(MessageData::parse).toList();
+            return Files.readAllLines(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/message-history/" + uuid)).stream().map(MessageData::parse).toList();
         } catch (IOException e) {
             Peelocity.LOG.error("Error while getting/loading history of user " + uuid + ": " + e.getMessage());
         }
@@ -70,6 +70,6 @@ public class MessageLogging {
     }
 
     public static boolean hasHistory(UUID uuid) {
-        return Files.exists(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/msg-hist/" + uuid));
+        return Files.exists(Path.of(Peelocity.DATA_DIRECTORY.toString() + "/message-history/" + uuid));
     }
 }
