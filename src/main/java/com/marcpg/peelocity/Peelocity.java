@@ -2,6 +2,8 @@ package com.marcpg.peelocity;
 
 import com.google.inject.Inject;
 import com.marcpg.color.Ansi;
+import com.marcpg.data.database.sql.SQLConnection;
+import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.admin.Announcements;
 import com.marcpg.peelocity.chat.MessageLogging;
 import com.marcpg.peelocity.chat.PrivateMessaging;
@@ -20,8 +22,6 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ConsoleCommandSource;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.hectus.lang.Translation;
-import net.hectus.sql.PostgreConnection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 
@@ -45,14 +46,14 @@ public class Peelocity {
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
-    public static final String PEELOCITY_VERSION = "0.1.5";
-    public static final String PEELOCITY_BUILD_NUMBER = "4";
+    public static final String PEELOCITY_VERSION = "0.1.6";
+    public static final String PEELOCITY_BUILD_NUMBER = "3";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
     public static Logger LOG;
     public static Path DATA_DIRECTORY;
-    public static PostgreConnection DATABASE;
+    public static SQLConnection DATABASE;
 
     @Inject
     public Peelocity(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -63,10 +64,11 @@ public class Peelocity {
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent event) throws IOException, SQLException, ClassNotFoundException {
+    public void onProxyInitialization(ProxyInitializeEvent event) throws IOException, URISyntaxException, SQLException, ClassNotFoundException {
         long start = System.currentTimeMillis();
 
         Config.saveDefaultConfig();
+        Config.checkVersionAndMigrate();
         if (!Config.load()) {
             LOG.warn("Please configure Peelocity first, before running it!");
             throw new RuntimeException("Please configure Peelocity first, before running it!");
@@ -74,8 +76,7 @@ public class Peelocity {
 
         PlayerCache.loadCachedUsers();
 
-        Class.forName("org.postgresql.Driver");
-        DATABASE = new PostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "playerdata");
+        DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_ADDRESS, Config.DATABASE_PORT, Config.DATABASE_NAME, Config.DATABASE_USER, Config.DATABASE_PASSWD, "playerdata");
 
         registerEvents(SERVER.getEventManager());
         registerCommands(SERVER.getCommandManager());

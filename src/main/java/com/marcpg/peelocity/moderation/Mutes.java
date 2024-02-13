@@ -1,11 +1,13 @@
 package com.marcpg.peelocity.moderation;
 
+import com.marcpg.data.database.sql.AutoCatchingSQLConnection;
 import com.marcpg.data.time.Time;
-import com.marcpg.discord.Embed;
-import com.marcpg.discord.Webhook;
+import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.web.discord.Embed;
+import com.marcpg.web.discord.Webhook;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -16,8 +18,6 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.proxy.Player;
-import net.hectus.lang.Translation;
-import net.hectus.sql.AutoCatchingPostgreConnection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
@@ -33,11 +33,11 @@ import java.util.Locale;
 
 public class Mutes {
     public static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo");
-    public static final AutoCatchingPostgreConnection DATABASE;
+    public static final AutoCatchingSQLConnection DATABASE;
     static {
         try {
-            DATABASE = new AutoCatchingPostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "mutes", e -> Peelocity.LOG.warn("Error while interacting with the mute database: " + e.getMessage()));
-        } catch (SQLException e) {
+            DATABASE = new AutoCatchingSQLConnection(Config.DATABASE_TYPE, Config.DATABASE_ADDRESS, Config.DATABASE_PORT, Config.DATABASE_NAME, Config.DATABASE_USER, Config.DATABASE_PASSWD, "mutes", e -> Peelocity.LOG.warn("Error while interacting with the mute database: " + e.getMessage()));
+        } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -89,7 +89,7 @@ public class Mutes {
                                                             source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.confirm", target.getUsername(), time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " muted " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
                                                             try {
-                                                                Config.MOD_ONLY_WEBHOOK.post(new Embed("Minecraft Mute", target.getUsername() + " got muted by " + source.getUsername(), Color.YELLOW, List.of(
+                                                                Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Mute", target.getUsername() + " got muted by " + source.getUsername(), Color.YELLOW, List.of(
                                                                         new Embed.Field("Muted", target.getUsername(), true),
                                                                         new Embed.Field("Moderator", source.getUsername(), true),
                                                                         new Embed.Field("Time", time.getPreciselyFormatted(), true),

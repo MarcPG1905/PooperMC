@@ -1,0 +1,64 @@
+### Peelocity Configuration ###
+
+
+## Moderators-Only Discord Webhook ##
+# A Discord webhook URL, that's only accessible by moderators.
+# All moderation-related messages, like bans, kicks, etc. are sent to this webhook.
+moderator-webhook: https://discord.com/api/webhooks/...
+
+
+## Should Translations Be Enabled? ##
+# Defines if translations are enable and should be downloaded.
+# The default en_US locale is excluded from this setting.
+enable-translations: true
+
+
+## GameMode-Related Configuration ##
+# Gamemodes should follow the simple scheme:
+#   prefix: max-players
+# Prefix: The prefix of all servers hosting this game mode.
+# Max-Players: The maximum amount of players allowed on each server hosting this game mode.
+gamemodes:
+  game1: 20
+  game2: 2
+
+
+## Database-Related Configuration ##
+database:
+
+  # The type of database.
+  #   Available Types:
+  #     |-> postgresql (recommended)
+  #     |-> oracle
+  #     |-> mysql
+  #     |-> ms_sql_server
+  #     |-> mariadb
+  type: postgresql
+
+  # The address/ip of the database. Can be localhost.
+  address: localhost
+
+  # The port of the database. If set to 0, will use the database's default port.
+  port: 0
+
+  # The name of the database.
+  database: database_name
+
+  # The database login credentials.
+  user: username
+  passwd: password
+
+
+## Whitelist-Related Configuration ##
+whitelist:
+  # If the whitelist feature is enabled or not.
+  enabled: false
+
+  # All whitelisted player names that are allowed to join the server.
+  names:
+    - OneUnnecessarilyLongUsernameBecauseWhyNot
+    - AnotherExampleUserNameWowSuperCool
+
+
+## DO NOT CHANGE THIS! ##
+version: 1

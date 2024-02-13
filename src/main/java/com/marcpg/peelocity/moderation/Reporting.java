@@ -1,10 +1,11 @@
 package com.marcpg.peelocity.moderation;
 
-import com.marcpg.discord.Embed;
-import com.marcpg.discord.Webhook;
+import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.text.Formatter;
+import com.marcpg.web.discord.Embed;
+import com.marcpg.web.discord.Webhook;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -12,7 +13,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import net.hectus.lang.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +41,7 @@ public class Reporting {
                                             Peelocity.SERVER.getPlayer(context.getArgument("player", String.class)).ifPresentOrElse(
                                                     player -> {
                                                         try {
-                                                            Config.MOD_ONLY_WEBHOOK.post(new Embed("New Report!", null, Color.decode("#FF5555"), List.of(
+                                                            Config.MODERATOR_WEBHOOK.post(new Embed("New Report!", null, Color.decode("#FF5555"), List.of(
                                                                     new Embed.Field("Reported User", player.getUsername(), true),
                                                                     new Embed.Field("Who Reported?", ((Player) context.getSource()).getUsername(), true),
                                                                     new Embed.Field("Reason", Formatter.toPascalCase(context.getArgument("reason", String.class)), true),

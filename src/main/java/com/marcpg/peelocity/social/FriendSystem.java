@@ -1,5 +1,7 @@
 package com.marcpg.peelocity.social;
 
+import com.marcpg.data.database.sql.SQLConnection;
+import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
@@ -10,8 +12,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import net.hectus.lang.Translation;
-import net.hectus.sql.PostgreConnection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -30,11 +30,11 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class FriendSystem {
     public static final Map<UUID, UUID> FRIEND_REQUESTS = new HashMap<>();
-    public static final PostgreConnection DATABASE;
+    public static final SQLConnection DATABASE;
     static {
         try {
-            DATABASE = new PostgreConnection(Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "friendships");
-        } catch (SQLException e) {
+            DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_ADDRESS, Config.DATABASE_PORT, Config.DATABASE_NAME, Config.DATABASE_USER, Config.DATABASE_PASSWD, "friendships");
+        } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

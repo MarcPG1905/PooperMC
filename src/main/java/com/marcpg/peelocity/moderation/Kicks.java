@@ -1,9 +1,10 @@
 package com.marcpg.peelocity.moderation;
 
-import com.marcpg.discord.Embed;
-import com.marcpg.discord.Webhook;
+import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
+import com.marcpg.web.discord.Embed;
+import com.marcpg.web.discord.Webhook;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -11,7 +12,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import net.hectus.lang.Translation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +48,7 @@ public class Kicks {
                                                 source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.kick.confirm", target.getUsername(), reason).color(NamedTextColor.YELLOW));
                                                 Peelocity.LOG.info(source.getUsername() + " kicked " + target.getUsername() + " with the reason: \"" + reason + "\"");
                                                 try {
-                                                    Config.MOD_ONLY_WEBHOOK.post(new Embed("Minecraft Kick", target.getUsername() + " got kicked by " + source.getUsername(), Color.GREEN, List.of(
+                                                    Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Kick", target.getUsername() + " got kicked by " + source.getUsername(), Color.GREEN, List.of(
                                                             new Embed.Field("Kicked", target.getUsername(), true),
                                                             new Embed.Field("Moderator", source.getUsername(), true),
                                                             new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
