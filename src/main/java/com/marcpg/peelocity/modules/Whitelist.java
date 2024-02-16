@@ -1,6 +1,9 @@
-package com.marcpg.peelocity;
+package com.marcpg.peelocity.modules;
 
 import com.marcpg.lang.Translation;
+import com.marcpg.peelocity.Config;
+import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PlayerCache;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.ResultedEvent;
 import com.velocitypowered.api.event.Subscribe;
@@ -9,7 +12,7 @@ import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerEvents {
+public class Whitelist {
     @Subscribe(order = PostOrder.EARLY)
     public void onLogin(@NotNull LoginEvent event) {
         Player player = event.getPlayer();

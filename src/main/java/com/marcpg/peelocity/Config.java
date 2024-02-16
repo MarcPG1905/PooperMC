@@ -5,141 +5,122 @@ import com.marcpg.data.database.sql.SQLConnection.DatabaseType;
 import com.marcpg.lang.Translation;
 import com.marcpg.web.Downloads;
 import com.marcpg.web.discord.Webhook;
+import com.velocitypowered.api.util.Favicon;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
+import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
+import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
+import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
+import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.extensions.compactnotation.CompactConstructor;
 
-import java.io.*;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Config {
     public static final List<DatabaseType> ALLOWED_DATABASES = List.of(DatabaseType.POSTGRESQL, DatabaseType.ORACLE, DatabaseType.MYSQL, DatabaseType.MS_SQL_SERVER, DatabaseType.MARIADB);
 
+    public static YamlDocument CONFIG;
+
     public static Webhook MODERATOR_WEBHOOK;
-    public static boolean ENABLE_TRANSLATIONS;
     public static Map<String, Integer> GAMEMODES;
-    public static int CONFIG_VERSION;
 
     public static SQLConnection.DatabaseType DATABASE_TYPE;
-    public static String DATABASE_ADDRESS;
-    public static int DATABASE_PORT;
-    public static String DATABASE_NAME;
     public static String DATABASE_USER;
     public static String DATABASE_PASSWD;
+    public static String DATABASE_URL;
 
     public static boolean WHITELIST;
     public static List<String> WHITELISTED_NAMES;
 
-    /** Creates the default plugins/peelocity/* structure with all required files and folders and downloads the newest configuration, if it doesn't exist yet. */
-    public static void saveDefaultConfig() throws IOException, URISyntaxException {
+    public static boolean SL_ENABLED;
+    public static boolean SL_MOTD_ENABLED;
+    public static Component[] SL_MOTDS;
+    public static boolean SL_FAVICON_ENABLED;
+    public static Favicon[] SL_FAVICONS;
+    public static int SL_SHOW_MAX_PLAYERS;
+    public static int SL_SHOW_CURRENT_PLAYERS;
+
+    public static void createDataDirectory() throws IOException {
         if (Peelocity.DATA_DIRECTORY.resolve("lang/").toFile().mkdirs()) Peelocity.LOG.info("Created plugins/peelocity/lang/, as it didn't exist before!");
         if (Peelocity.DATA_DIRECTORY.resolve("message-history/").toFile().mkdirs()) Peelocity.LOG.info("Created plugins/peelocity/message-history/, as it didn't exist before!");
         if (Peelocity.DATA_DIRECTORY.resolve("playercache").toFile().createNewFile()) Peelocity.LOG.info("Created plugins/peelocity/playercache/, as it didn't exist before!");
-
-        File config = Peelocity.DATA_DIRECTORY.resolve("pee.yml").toFile();
-        if (!config.exists()) {
-            Peelocity.LOG.info("Downloading Peelocity configuration from https://marcpg.com/peelocity/pee.yml...");
-            Downloads.simpleDownload(new URI("https://marcpg.com/peelocity/pee.yml").toURL(), config);
-            Peelocity.LOG.info("Successfully downloaded the Peelocity configuration.");
-        }
     }
 
-    @SuppressWarnings("unchecked")
-    public static boolean load() throws IOException, URISyntaxException {
-        try (Reader reader = new FileReader(Peelocity.DATA_DIRECTORY.resolve("pee.yml").toFile())) {
-            Yaml yaml = new Yaml();
-            Map<String, Object> config = yaml.load(reader);
+    public static void load(InputStream peeYml) {
+        try {
+            CONFIG = YamlDocument.create(
+                    new File(Peelocity.DATA_DIRECTORY.toFile(), "pee.yml"),
+                    peeYml,
+                    GeneralSettings.DEFAULT,
+                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    DumperSettings.DEFAULT,
+                    UpdaterSettings.builder().setVersioning(new BasicVersioning("version")).setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
+            );
 
-            MODERATOR_WEBHOOK = new Webhook(new URI((String) config.get("moderator-webhook")).toURL());
-            ENABLE_TRANSLATIONS = (Boolean) config.get("enable-translations");
-            GAMEMODES = (Map<String, Integer>) config.get("gamemodes");
+            MODERATOR_WEBHOOK = new Webhook(new URI(CONFIG.getString("moderator-webhook")).toURL());
+            GAMEMODES = CONFIG.getSection("gamemodes").getStringRouteMappedValues(false).entrySet().stream()
+                    .filter(entry -> entry.getValue() instanceof Integer)
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> (Integer) entry.getValue()));
 
-            Map<String, Object> database = (Map<String, Object>) config.get("database");
-            DATABASE_TYPE = DatabaseType.valueOf(((String) database.get("type")).toUpperCase());
-            DATABASE_ADDRESS = (String) database.get("address");
-            DATABASE_PORT = (Integer) database.get("port");
-            DATABASE_NAME = (String) database.get("database");
-            DATABASE_USER = (String) database.get("user");
-            DATABASE_PASSWD = (String) database.get("passwd");
+            DATABASE_TYPE = DatabaseType.valueOf(CONFIG.getString("database.type").toUpperCase());
+            DATABASE_USER = CONFIG.getString("database.user");
+            DATABASE_PASSWD = CONFIG.getString("database.passwd");
 
-            Map<String, Object> whitelist = (Map<String, Object>) config.get("whitelist");
-            WHITELIST = (Boolean) whitelist.get("enabled");
-            WHITELISTED_NAMES = (List<String>) whitelist.get("names");
+            WHITELIST = CONFIG.getBoolean("whitelist.enabled");
+            WHITELISTED_NAMES = CONFIG.getStringList("whitelist.names");
 
-            if (!ALLOWED_DATABASES.contains(DATABASE_TYPE))
-                throw new IncorrectConfigurationException("database.type", "Invalid database type " + DATABASE_TYPE.name + "!");
-
-            if (DATABASE_PORT == 0)
-                DATABASE_PORT = DATABASE_TYPE.defaultPort;
-        } catch (NullPointerException | ClassCastException e) {
-            throw new IncorrectConfigurationException("???", "Invalid setting type! Please check for typos.");
-        } catch (IllegalArgumentException e) {
-            throw new IncorrectConfigurationException("database.type", "Invalid database type " + DATABASE_TYPE.name + "!");
-        }
-
-        if (ENABLE_TRANSLATIONS) new Thread(new TranslationDownloadTask()).start();
-
-        return true;
-    }
-
-    /** Checks if there is a newer config version than the current and if there is, downloads it and migrates to it. */
-    public static void checkVersionAndMigrate() throws IOException, URISyntaxException {
-        Yaml yaml = new Yaml(new CompactConstructor());
-
-        Map<String, Object> config = yaml.load(new FileReader(Peelocity.DATA_DIRECTORY.resolve("pee.yml").toFile()));
-        if (getNewestVersion() == (Integer) config.get("version")) return;
-
-        Peelocity.LOG.info("Found newer configuration version. Downloading and migrating now!");
-
-        File currentConfig = Peelocity.DATA_DIRECTORY.resolve("pee.yml").toFile();
-        File newConfig = Files.createTempFile("new_pee", ".yml").toFile();
-        Downloads.simpleDownload(new URI("https://marcpg.com/peelocity/pee.yml").toURL(), newConfig);
-
-        Map<String, Object> currentValues = yaml.load(new FileReader(currentConfig));
-
-        String currentIndent = null;
-
-        List<String> lines = Files.readAllLines(newConfig.toPath());
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-
-            if (line.isBlank() || line.stripLeading().startsWith("#")) continue;
-
-            String[] entry = line.split(":");
-
-            if (line.stripTrailing().endsWith(":")) {
-                currentIndent = entry[0];
-                continue;
+            SL_ENABLED = CONFIG.getBoolean("server-list.enabled");
+            if (SL_ENABLED) {
+                SL_MOTD_ENABLED = CONFIG.getBoolean("server-list.custom-motd");
+                if (SL_MOTD_ENABLED) SL_MOTDS = CONFIG.getStringList("server-list.custom-motd-messages").stream().map(s -> MiniMessage.miniMessage().deserialize(s)).toArray(Component[]::new);
+                SL_FAVICON_ENABLED = CONFIG.getBoolean("server-list.custom-favicon");
+                if (SL_FAVICON_ENABLED) SL_FAVICONS = CONFIG.getStringList("server-list.custom-favicon-urls").stream()
+                        .map(s -> {
+                            try { return Favicon.create(ImageIO.read(new URI(s).toURL())); }
+                            catch (IOException | URISyntaxException e) { throw new RuntimeException(e); }
+                        })
+                        .toArray(Favicon[]::new);
+                SL_SHOW_MAX_PLAYERS = CONFIG.getInt("server-list.show-max-players");
+                SL_SHOW_CURRENT_PLAYERS = CONFIG.getInt("server-list.show-current-players");
             }
 
-            if (line.startsWith(" ") && currentIndent != null) {
-                if (currentValues.containsKey(currentIndent) && currentValues.get(currentIndent) instanceof Map<?,?> && ((Map<String, Object>) currentValues.get(currentIndent)).containsKey(entry[0])) {
-                    lines.set(0, "  " + entry[0] + ": " + currentValues.get(entry[0]));
-                }
-            } else currentIndent = null;
-
-            if (currentValues.containsKey(entry[0]))
-                lines.set(0, entry[0] + ": " + currentValues.get(entry[0]));
+            if (isDatabaseInvalid(Objects.requireNonNull(CONFIG.getDefaults()))) {
+                Peelocity.LOG.error("Please configure the database first, before running Peelocity!");
+            } else if (!ALLOWED_DATABASES.contains(DATABASE_TYPE)) {
+                Peelocity.LOG.error("The specified database type is invalid!");
+            } else {
+                DATABASE_URL = "jdbc:" + DATABASE_TYPE.urlPart + "://" + CONFIG.getString("database.address") + ":" + (CONFIG.getInt("database.port") == 0 ? DATABASE_TYPE.defaultPort : CONFIG.getInt("database.port")) + "/" + CONFIG.getString("database.database");
+                if (CONFIG.getBoolean("enable-translations")) new Thread(new TranslationDownloadTask()).start();
+                return;
+            }
+        } catch (IOException e) {
+            Peelocity.LOG.error("Couldn't load the pee.yml configuration file!");
+        } catch (URISyntaxException e) {
+            Peelocity.LOG.error("The `moderator-webhook` URL in the configuration is invalid!");
+        } catch (IllegalArgumentException e) {
+            Peelocity.LOG.error("The specified database type is invalid!");
+        } catch (NullPointerException e) {
+            Peelocity.LOG.error("Please fully configure Peelocity in the pee.yml file first, before running it!");
         }
-        Files.write(currentConfig.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
-        Files.deleteIfExists(newConfig.toPath());
-
-        Peelocity.LOG.info("Successfully downloaded and migrated to the newer configuration!");
+        Peelocity.SERVER.getPluginManager().getPlugin("peelocity").ifPresent(plugin -> plugin.getExecutorService().shutdown());
     }
 
-    private static int getNewestVersion() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new URI("https://marcpg.com/peelocity/config-latest").toURL().openStream()))) {
-            String line = reader.readLine();
-            return line == null ? 0 : Integer.parseInt(line);
-        } catch (IOException | URISyntaxException e) {
-            return 0;
-        }
+    public static boolean isDatabaseInvalid(@NotNull YamlDocument defaults) {
+        return DATABASE_USER.equals(defaults.getString("database.user")) ||
+                DATABASE_PASSWD.equals(defaults.getString("database.passwd"));
     }
 
     private static class TranslationDownloadTask implements Runnable {
@@ -163,7 +144,7 @@ public class Config {
                     } else {
                         Peelocity.LOG.warn("Translation download failed on attempt " + attempt + ", retrying in 3 seconds...");
                         try {
-                            Thread.sleep(3000); // Sleep for 3 seconds
+                            this.wait(3000); // Wait for 3s before retrying
                         } catch (InterruptedException ignored) {}
                     }
                     attempt++;
@@ -175,12 +156,6 @@ public class Config {
                 Peelocity.LOG.warn("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
             }
             Peelocity.LOG.info("Downloaded and loaded all recent translations!");
-        }
-    }
-
-    public static class IncorrectConfigurationException extends IOException {
-        public IncorrectConfigurationException(String path, @NotNull String message) {
-            super(path + " - " + message.stripTrailing() + (message.stripTrailing().matches("\\.$|\\?|!") ? "" : ".") + " Read the configuration for more info.");
         }
     }
 }

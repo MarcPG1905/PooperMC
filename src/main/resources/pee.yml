@@ -1,0 +1,197 @@
+#################################################################################
+##               ____              _               _  _                        ##
+##______________|  _ \  ___   ___ | |  ___    ___ (_)| |_  _   _ ______________##
+##______________| |_) |/ _ \ / _ \| | / _ \  / __|| || __|| | | |______________##
+##______________|  __/|  __/|  __/| || (_) || (__ | || |_ | |_| |______________##
+##______________|_|    \___| \___||_| \___/  \___||_| \__| \__, |______________##
+##                                Configuration            |___/               ##
+##                                                                             ##
+##        WEBSITE:       https://marcpg.com/peelocity                          ##
+##        SOURCE-CODE:   https://github.com/MarcPG1905/Peelocity               ##
+##        BUGS & ISSUES: https://github.com/MarcPG1905/Peelocity/issues        ##
+##                                                                             ##
+#################################################################################
+
+
+
+
+## Moderators-Only Discord Webhook ##
+# A Discord webhook URL, that's only accessible by moderators.
+# All moderation-related messages like bans, kicks etc. are sent to this webhook.
+moderator-webhook: https://discord.com/api/webhooks/...
+
+
+## Should Translations Be Enabled? ##
+# Defines if translations are enable and should be downloaded.
+# The default en_US locale is excluded from this setting.
+enable-translations: true
+
+
+## GameMode-Related Configuration ##
+# Gamemodes should follow the simple scheme:
+#   prefix: max-players
+# Prefix: The prefix of all servers hosting this game mode.
+# Max-Players: The maximum amount of players on each server.
+gamemodes:
+  game1: 20
+  game2: 2
+
+
+
+
+##  -------------------------------------------------------------------------  ##
+##                 ___         _          _                                    ##
+##                |   \  __ _ | |_  __ _ | |__  __ _  ___ ___                  ##
+##                | |) |/ _` ||  _|/ _` || '_ \/ _` |(_-</ -_)                 ##
+##                |___/ \__,_| \__|\__,_||_.__/\__,_|/__/\___|                 ##
+##                     Everything related to the Database!                     ##
+##  -------------------------------------------------------------------------  ##
+database:
+
+  # The type of database.
+  #   Available Types:
+  #     |-> postgresql (recommended)
+  #     |-> oracle
+  #     |-> mysql
+  #     |-> ms_sql_server
+  #     |-> mariadb
+  type: postgresql
+
+  # The address/ip of the database. Can be localhost.
+  address: localhost
+
+  # The port of the database. If set to 0, will use the database's default port.
+  port: 0
+
+  # The name of the database.
+  database: database_name
+
+  # The database login credentials.
+  user: username
+  passwd: password
+
+
+
+
+##  -------------------------------------------------------------------------  ##
+##          ___  _           _         _   _  _    _  _  _  _                  ##
+##         / __|| |_   __ _ | |_  ___ | | | || |_ (_)| |(_)| |_  _  _          ##
+##        | (__ | ' \ / _` ||  _||___|| |_| ||  _|| || || ||  _|| || |         ##
+##         \___||_||_|\__,_| \__|      \___/  \__||_||_||_| \__| \_, |         ##
+##                          All Chat-Related Features!           |__/          ##
+##                                                                             ##
+##     ! Please keep in mind that Chat-Utilities aren't implemented yet! !     ##
+##  -------------------------------------------------------------------------  ##
+chatutility:
+
+  # If the ChatUtility module is enabled or not.
+  enabled: true
+
+  # Chat color related configuration.
+  colors:
+
+    # Enables or disables colors in the chat.
+    enabled: true
+
+    # Sets if colors in chat will require the pee.chat.colors permission.
+    colors-permission: false
+
+  # Chat mentions/pings related configuration.
+  mentions:
+
+    # Enables or disables mentions/pings in the chat.
+    enabled: true
+
+    # If mentioning players in chat will require the pee.chat.colors permission.
+    permission: false
+
+  # Placeholder related configuration.
+  # You can disable a specific placeholder by setting it to false.
+  placeholders:
+
+    # Shows a specific item in the chat - [item=stick]
+    item: true
+
+    # Shows a timestamp, that automatically adjusts to player's time zones - [timestamp] / [timestamp=00:00]
+    timestamp: true
+
+    # Shows your current location in the chat - [position]
+    position: true
+
+    # Shows your current ping in the chat - [ping] - [ping=PlayerName]
+    ping: true
+
+    # Shows your current health in the chat - [health]
+    health: true
+
+
+
+
+##  -------------------------------------------------------------------------  ##
+##             ___                                _     _      _               ##
+##            / __| ___  _ _ __ __ ___  _ _  ___ | |   (_) ___| |_             ##
+##            \__ \/ -_)| '_|\ V // -_)| '_||___|| |__ | |(_-<|  _|            ##
+##            |___/\___||_|   \_/ \___||_|       |____||_|/__/ \__|            ##
+##                   All Features shown in your Server-List!                   ##
+##  -------------------------------------------------------------------------  ##
+server-list:
+
+  # If the ServerList module is enabled or not.
+  enabled: true
+
+  # Sets if a custom MotD (Message of the Day) is enabled.
+  custom-motd: true
+
+  # A list of all possible MotD that can be shown to the user, if custom-motd is enabled.
+  # You can use the MiniMessage syntax for custom styling: https://docs.advntr.dev/minimessage/format.html
+  custom-motd-messages:
+    - "A simple MotD without any formatting!"
+    - "<yellow>Another <red>example <black>MotD, <green>but <blue>without <white>colors."
+    - "A third example with <rainbow>a fancy rainbow</rainbow>. You can add as many as you want."
+
+  # Sets if custom favicons (server icons) are enabled.
+  # Custom favicons are currently unstable and experimental. Use at your own risk!
+  custom-favicon: false
+
+  # A list of all possible favicons (server icons) that can be shown to the user, if custom-favicon is enabled.
+  # Resolution has to be 128x128 pixels. Didn't find any good example image, so I just put some weird thing.
+  # Custom favicons are currently unstable and experimental. Use at your own risk!
+  custom-favicon-urls:
+    - https://link.to.your/server/icon
+    - https://another.server/icon/that/is/being/shown
+
+  # Sets the maximum player count that should be shown.
+  #   Set to -1 to pass through velocity's max players. (Default)
+  #   Set to -2 to always show the current player count + 1.
+  show-max-players: -1
+
+  # Sets a fake player count that should be shown. Shouldn't be used on honest servers.
+  # Can seriously harm your server community's trust!
+  #   Set to -1 to pass through velocity's real player count. (Default)
+  #   Set to -2 to hide the player count.
+  show-current-players: -1
+
+
+
+
+##  -------------------------------------------------------------------------  ##
+##                __      __ _     _  _         _  _      _                    ##
+##                \ \    / /| |_  (_)| |_  ___ | |(_) ___| |_                  ##
+##                 \ \/\/ / | ' \ | ||  _|/ -_)| || |(_-<|  _|                 ##
+##                  \_/\_/  |_||_||_| \__|\___||_||_|/__/ \__|                 ##
+##                   Configuration for the global Whitelist!                   ##
+##  -------------------------------------------------------------------------  ##
+whitelist:
+  # If the whitelist feature is enabled or not.
+  enabled: false
+
+  # All whitelisted player names that are allowed to join the server.
+  names:
+    - OneUnnecessarilyLongUsernameBecauseWhyNot
+    - AnotherExampleUserNameWowSuperCool
+
+
+
+
+## DO NOT CHANGE THIS! ##
+version: 1

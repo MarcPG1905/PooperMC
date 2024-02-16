@@ -33,7 +33,7 @@ public class FriendSystem {
     public static final SQLConnection DATABASE;
     static {
         try {
-            DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_ADDRESS, Config.DATABASE_PORT, Config.DATABASE_NAME, Config.DATABASE_USER, Config.DATABASE_PASSWD, "friendships");
+            DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "friendships");
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

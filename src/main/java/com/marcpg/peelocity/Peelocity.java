@@ -9,6 +9,8 @@ import com.marcpg.peelocity.chat.MessageLogging;
 import com.marcpg.peelocity.chat.PrivateMessaging;
 import com.marcpg.peelocity.chat.StaffChat;
 import com.marcpg.peelocity.moderation.*;
+import com.marcpg.peelocity.modules.ServerList;
+import com.marcpg.peelocity.modules.Whitelist;
 import com.marcpg.peelocity.social.FriendSystem;
 import com.marcpg.peelocity.social.PartySystem;
 import com.velocitypowered.api.command.CommandManager;
@@ -30,7 +32,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 
@@ -46,8 +47,8 @@ public class Peelocity {
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
-    public static final String PEELOCITY_VERSION = "0.1.6";
-    public static final String PEELOCITY_BUILD_NUMBER = "3";
+    public static final String PEELOCITY_VERSION = "0.1.7";
+    public static final String PEELOCITY_BUILD_NUMBER = "2";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
@@ -64,19 +65,15 @@ public class Peelocity {
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent event) throws IOException, URISyntaxException, SQLException, ClassNotFoundException {
+    public void onProxyInitialization(ProxyInitializeEvent event) throws IOException, SQLException, ClassNotFoundException {
         long start = System.currentTimeMillis();
 
-        Config.saveDefaultConfig();
-        Config.checkVersionAndMigrate();
-        if (!Config.load()) {
-            LOG.warn("Please configure Peelocity first, before running it!");
-            throw new RuntimeException("Please configure Peelocity first, before running it!");
-        }
+        Config.createDataDirectory();
+        Config.load(getClass().getResourceAsStream("/pee.yml"));
 
         PlayerCache.loadCachedUsers();
 
-        DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_ADDRESS, Config.DATABASE_PORT, Config.DATABASE_NAME, Config.DATABASE_USER, Config.DATABASE_PASSWD, "playerdata");
+        DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "playerdata");
 
         registerEvents(SERVER.getEventManager());
         registerCommands(SERVER.getCommandManager());
@@ -85,10 +82,11 @@ public class Peelocity {
     }
 
     public void registerEvents(@NotNull EventManager manager) {
-        manager.register(this, new PlayerEvents());
+        manager.register(this, new Whitelist());
         manager.register(this, new MessageLogging());
         manager.register(this, new Bans());
         manager.register(this, new Mutes());
+        if (Config.SL_ENABLED) manager.register(this, new ServerList());
     }
 
     public void registerCommands(@NotNull CommandManager manager) {

@@ -38,7 +38,7 @@ public class Bans {
     public static final AutoCatchingSQLConnection DATABASE;
     static {
         try {
-            DATABASE = new AutoCatchingSQLConnection(Config.DATABASE_TYPE, Config.DATABASE_ADDRESS, Config.DATABASE_PORT, Config.DATABASE_NAME, Config.DATABASE_USER, Config.DATABASE_PASSWD, "bans", e -> Peelocity.LOG.warn("Error while interacting with the ban database: " + e.getMessage()));
+            DATABASE = new AutoCatchingSQLConnection(Config.DATABASE_TYPE, Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "bans", e -> Peelocity.LOG.warn("Error while interacting with the ban database: " + e.getMessage()));
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
