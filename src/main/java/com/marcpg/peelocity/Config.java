@@ -107,7 +107,7 @@ public class Config {
             } else if (!ALLOWED_DATABASES.contains(DATABASE_TYPE)) {
                 Peelocity.LOG.error("The specified database type is invalid!");
             } else {
-                DATABASE_URL = "jdbc:" + DATABASE_TYPE.urlPart + "://" + CONFIG.getString("database.address") + ":" + (CONFIG.getInt("database.port") == 0 ? DATABASE_TYPE.defaultPort : CONFIG.getInt("database.port")) + "/" + CONFIG.getString("database.database");
+                DATABASE_URL = "jdbc:" + (DATABASE_TYPE == DatabaseType.MYSQL ? DatabaseType.MARIADB.urlPart : DATABASE_TYPE.urlPart) + "://" + CONFIG.getString("database.address") + ":" + (CONFIG.getInt("database.port") == 0 ? DATABASE_TYPE.defaultPort : CONFIG.getInt("database.port")) + "/" + CONFIG.getString("database.database");
                 if (CONFIG.getBoolean("enable-translations")) new Thread(new TranslationDownloadTask()).start();
                 return;
             }

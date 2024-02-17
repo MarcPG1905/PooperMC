@@ -51,10 +51,8 @@ database:
   # The type of database.
   #   Available Types:
   #     |-> postgresql (recommended)
-  #     |-> oracle
+  #     |-> mariadb (preferred over mysql)
   #     |-> mysql
-  #     |-> ms_sql_server
-  #     |-> mariadb
   type: postgresql
 
   # The address/ip of the database. Can be localhost.
