@@ -1,5 +1,6 @@
 package com.marcpg.peelocity.admin;
 
+import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Peelocity;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -41,8 +42,9 @@ public class Announcements {
                                                     })
                                                     .forEach(player -> {
                                                         if (important) player.sendMessage(Component.text("\n\n\n\n\n"));
-                                                        player.sendMessage(Component.text("[ANNOUNCEMENT] " + content, important ? NamedTextColor.RED : NamedTextColor.YELLOW, TextDecoration.BOLD));
-                                                        if (important) player.playSound(Sound.sound(Key.key("entity.player.levelup"), Sound.Source.PLAYER, 2.0f, 1.0f));
+                                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "announcement.message", content.strip())
+                                                                .color(important ? NamedTextColor.RED : NamedTextColor.YELLOW).decorate(TextDecoration.BOLD));
+                                                        if (important) player.playSound(Sound.sound(Key.key("minecraft:entity.player.levelup"), Sound.Source.PLAYER, 1.0f, 1.0f));
                                                     });
                                             return 1;
                                         })

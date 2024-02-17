@@ -84,6 +84,10 @@
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>icon.png</exclude>
+                    <exclude>lang/*</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>

@@ -9,6 +9,7 @@ import com.marcpg.peelocity.chat.MessageLogging;
 import com.marcpg.peelocity.chat.PrivateMessaging;
 import com.marcpg.peelocity.chat.StaffChat;
 import com.marcpg.peelocity.moderation.*;
+import com.marcpg.peelocity.modules.ChatUtilities;
 import com.marcpg.peelocity.modules.ServerList;
 import com.marcpg.peelocity.modules.Whitelist;
 import com.marcpg.peelocity.social.FriendSystem;
@@ -48,7 +49,7 @@ public class Peelocity {
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
     public static final String PEELOCITY_VERSION = "0.1.7";
-    public static final String PEELOCITY_BUILD_NUMBER = "2";
+    public static final String PEELOCITY_BUILD_NUMBER = "3";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
@@ -87,6 +88,7 @@ public class Peelocity {
         manager.register(this, new Bans());
         manager.register(this, new Mutes());
         if (Config.SL_ENABLED) manager.register(this, new ServerList());
+        if (Config.CHATUTILITY_BOOLEANS.getBoolean("enabled")) manager.register(this, new ChatUtilities());
     }
 
     public void registerCommands(@NotNull CommandManager manager) {

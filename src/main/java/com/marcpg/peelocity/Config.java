@@ -7,6 +7,7 @@ import com.marcpg.web.Downloads;
 import com.marcpg.web.discord.Webhook;
 import com.velocitypowered.api.util.Favicon;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
 import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
@@ -53,6 +54,8 @@ public class Config {
     public static int SL_SHOW_MAX_PLAYERS;
     public static int SL_SHOW_CURRENT_PLAYERS;
 
+    public static Section CHATUTILITY_BOOLEANS;
+
     public static void createDataDirectory() throws IOException {
         if (Peelocity.DATA_DIRECTORY.resolve("lang/").toFile().mkdirs()) Peelocity.LOG.info("Created plugins/peelocity/lang/, as it didn't exist before!");
         if (Peelocity.DATA_DIRECTORY.resolve("message-history/").toFile().mkdirs()) Peelocity.LOG.info("Created plugins/peelocity/message-history/, as it didn't exist before!");
@@ -96,6 +99,8 @@ public class Config {
                 SL_SHOW_MAX_PLAYERS = CONFIG.getInt("server-list.show-max-players");
                 SL_SHOW_CURRENT_PLAYERS = CONFIG.getInt("server-list.show-current-players");
             }
+
+            CHATUTILITY_BOOLEANS = CONFIG.getSection("chatutility");
 
             if (isDatabaseInvalid(Objects.requireNonNull(CONFIG.getDefaults()))) {
                 Peelocity.LOG.error("Please configure the database first, before running Peelocity!");

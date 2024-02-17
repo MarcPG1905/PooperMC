@@ -79,8 +79,6 @@ database:
 ##        | (__ | ' \ / _` ||  _||___|| |_| ||  _|| || || ||  _|| || |         ##
 ##         \___||_||_|\__,_| \__|      \___/  \__||_||_||_| \__| \_, |         ##
 ##                          All Chat-Related Features!           |__/          ##
-##                                                                             ##
-##     ! Please keep in mind that Chat-Utilities aren't implemented yet! !     ##
 ##  -------------------------------------------------------------------------  ##
 chatutility:
 
@@ -93,8 +91,8 @@ chatutility:
     # Enables or disables colors in the chat.
     enabled: true
 
-    # Sets if colors in chat will require the pee.chat.colors permission.
-    colors-permission: false
+    # If colors in chat will require the pee.chat.colors permission.
+    permission: false
 
   # Chat mentions/pings related configuration.
   mentions:
@@ -102,17 +100,28 @@ chatutility:
     # Enables or disables mentions/pings in the chat.
     enabled: true
 
-    # If mentioning players in chat will require the pee.chat.colors permission.
+    # If mentioning players in chat will require the pee.chat.mention permission.
     permission: false
 
+    # Using @everyone in chat, which will mention/ping everyone currently online.
+    everyone:
+
+      # Enables or disables the use of @everyone.
+      enabled: true
+
+      # If using @everyone in chat will require the pee.chat.mention.everyone permission.
+      # Highly recommended, as it can be very annoying when not being limited.
+      permission: true
+
+  # Please keep in mind that placeholders AREN'T implemented yet, which means that they WILL NOT work.
   # Placeholder related configuration.
   # You can disable a specific placeholder by setting it to false.
   placeholders:
 
-    # Shows a specific item in the chat - [item=stick]
+    # Shows a specific item in the chat - [item=stick] - [item]
     item: true
 
-    # Shows a timestamp, that automatically adjusts to player's time zones - [timestamp] / [timestamp=00:00]
+    # Shows a timestamp, that automatically adjusts to player's time zones - [timestamp=00:00]
     timestamp: true
 
     # Shows your current location in the chat - [position]
@@ -194,4 +203,4 @@ whitelist:
 
 
 ## DO NOT CHANGE THIS! ##
-version: 1
+version: 2
