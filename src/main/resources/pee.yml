@@ -33,8 +33,8 @@ enable-translations: true
 # Prefix: The prefix of all servers hosting this game mode.
 # Max-Players: The maximum amount of players on each server.
 gamemodes:
-  game1: 20
-  game2: 2
+  game1: 2
+  game2: 10
 
 
 # The methods to store the data.
@@ -157,13 +157,13 @@ server-list:
   enabled: true
 
   # Sets if a custom MotD (Message of the Day) is enabled.
-  custom-motd: true
+  custom-motd: false
 
   # A list of all possible MotD that can be shown to the user, if custom-motd is enabled.
   # You can use the MiniMessage syntax for custom styling: https://docs.advntr.dev/minimessage/format.html
   custom-motd-messages:
     - "A simple MotD without any formatting!"
-    - "<yellow>Another <red>example <black>MotD, <green>but <blue>without <white>colors."
+    - "<yellow>Another <red>example <black>MotD, <green>but <blue>with <white>colors."
     - "A third example with <rainbow>a fancy rainbow</rainbow>. You can add as many as you want."
 
   # Sets if custom favicons (server icons) are enabled.
@@ -174,8 +174,7 @@ server-list:
   # Resolution has to be 128x128 pixels. Didn't find any good example image, so I just put some weird thing.
   # Custom favicons are currently unstable and experimental. Use at your own risk!
   custom-favicon-urls:
-    - https://link.to.your/server/icon
-    - https://another.server/icon/that/is/being/shown
+    - https://marcpg.com/peelocity/example_server-icon.png
 
   # Sets the maximum player count that should be shown.
   #   Set to -1 to pass through velocity's max players. (Default)
@@ -211,4 +210,4 @@ whitelist:
 
 
 ## DO NOT CHANGE THIS! ##
-version: 3
+version: 4

@@ -50,7 +50,7 @@ public class Peelocity {
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
     public static final String PEELOCITY_VERSION = "0.1.8";
-    public static final String PEELOCITY_BUILD_NUMBER = "1";
+    public static final String PEELOCITY_BUILD_NUMBER = "2";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
@@ -72,7 +72,7 @@ public class Peelocity {
         Config.createDataDirectory();
         Config.load(getClass().getResourceAsStream("/pee.yml"));
 
-        PlayerCache.loadCachedUsers();
+        PlayerCache.load();
 
         if (Config.STORAGE_TYPE == Storage.StorageType.DATABASE)
             DatabaseStorage.loadDependency();
@@ -84,10 +84,11 @@ public class Peelocity {
     }
 
     public void registerEvents(@NotNull EventManager manager) {
-        manager.register(this, new Whitelist());
-        manager.register(this, new MessageLogging());
         manager.register(this, new Bans());
+        manager.register(this, new JoinLogic());
+        manager.register(this, new MessageLogging());
         manager.register(this, new Mutes());
+        manager.register(this, new Whitelist());
         if (Config.SL_ENABLED) manager.register(this, new ServerList());
         if (Config.CHATUTILITY_BOOLEANS.getBoolean("enabled")) manager.register(this, new ChatUtilities());
     }
@@ -134,6 +135,6 @@ public class Peelocity {
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) throws IOException {
-        PlayerCache.saveCachedUsers();
+        PlayerCache.save();
     }
 }

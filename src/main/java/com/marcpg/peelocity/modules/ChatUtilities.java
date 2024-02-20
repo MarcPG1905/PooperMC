@@ -3,7 +3,6 @@ package com.marcpg.peelocity.modules;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
-import com.marcpg.peelocity.chat.MessageLogging;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
@@ -11,11 +10,9 @@ import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,13 +28,13 @@ public class ChatUtilities {
 
         // TODO: Replace all placeholders in the message.
 
-        if (canUse(player, "colors")) {
-            event.setResult(PlayerChatEvent.ChatResult.denied());
-            player.getCurrentServer().ifPresent(server -> {
-                server.getServer().sendMessage(MiniMessage.miniMessage().deserialize(message));
-                MessageLogging.saveMessage(player, new MessageLogging.MessageData(new Date(), message, MessageLogging.MessageData.Type.NORMAL, null));
-            });
-        }
+        // if (canUse(player, "colors")) {
+        //     event.setResult(PlayerChatEvent.ChatResult.denied());
+        //     player.getCurrentServer().ifPresent(server -> {
+        //         server.getServer().sendMessage(MiniMessage.miniMessage().deserialize(message));
+        //         MessageLogging.saveMessage(player, new MessageLogging.MessageData(new Date(), message, MessageLogging.MessageData.Type.NORMAL, null));
+        //     });
+        // }
 
         if (canUse(player, "mentions")) {
             Matcher matcher = MENTION_PATTERN.matcher(message);

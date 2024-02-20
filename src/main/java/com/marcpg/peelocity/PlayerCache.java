@@ -15,7 +15,7 @@ public class PlayerCache {
     public static final Path CACHE_PATH = Path.of(Peelocity.DATA_DIRECTORY.toString(), "playercache");
     public static final HashMap<UUID, String> CACHED_USERS = new HashMap<>();
 
-    public static void loadCachedUsers() throws IOException {
+    public static void load() throws IOException {
         CACHED_USERS.clear();
         Files.readAllLines(CACHE_PATH).parallelStream()
                 .map(line -> line.split(","))
@@ -23,7 +23,7 @@ public class PlayerCache {
         Peelocity.LOG.info("Loaded all entries from the 'usercache' file!");
     }
 
-    public static void saveCachedUsers() throws IOException {
+    public static void save() throws IOException {
         List<String> lines = CACHED_USERS.entrySet().parallelStream()
                 .map(entry -> entry.getKey().toString() + "," + entry.getValue())
                 .toList();

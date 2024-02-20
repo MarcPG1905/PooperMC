@@ -123,6 +123,7 @@ public class Config {
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("DatabaseType")) Peelocity.LOG.error("The specified database type is invalid!");
             else if (e.getMessage().contains("StorageType")) Peelocity.LOG.error("The specified storage type is invalid!");
+            else if (e.getMessage().contains("Image is not 64x64")) Peelocity.LOG.error("One or more of the provided favicons is not 64x64 pixels!");
             else
                 Peelocity.LOG.error("The pee.yml configuration is invalid!");
         } catch (NullPointerException e) {
