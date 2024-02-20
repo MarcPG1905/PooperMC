@@ -70,8 +70,8 @@ public class Kicks {
                                     The command /kick will kick a player off the server, as a very light punishment.
                                     
                                     §l§nArguments:§r
-                                    - §lplayer§r: The player to kick off the server.
-                                    - §lreason§r: A good reason for kicking the player.
+                                    -§l player§r: The player to kick off the server.
+                                    -§l reason§r: A good reason for kicking the player.
                                     """));
                             return 1;
                         })

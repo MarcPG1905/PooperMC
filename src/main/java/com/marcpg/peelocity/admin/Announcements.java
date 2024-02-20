@@ -63,8 +63,8 @@ public class Announcements {
                                       - staff: Every member with the pee.staff permission.
                                       - moderator: Every member with the pee.mod permission.
                                       - lobby: Every member who's currently in a lobby and not in some match/game.
-                                    - §limportant§r: If the announcement should be displayed more noticeably, to assure that really everyone reads it.
-                                    - §lcontent§r: The content of the message. Can contain minecraft formatting using the § symbol.
+                                    -§l important§r: If the announcement should be displayed more noticeably, to assure that really everyone reads it.
+                                    -§l content§r: The content of the message. Can contain minecraft formatting using the § symbol.
                                     
                                     §l§nAdditional Info:§r
                                     - Announcements will only be sent to players who are currently online and meet the specified requirements.

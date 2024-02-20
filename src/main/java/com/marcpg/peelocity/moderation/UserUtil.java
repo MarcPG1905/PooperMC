@@ -1,5 +1,6 @@
 package com.marcpg.peelocity.moderation;
 
+import com.marcpg.data.time.Time;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
@@ -14,12 +15,16 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 public class UserUtil {
@@ -61,5 +66,27 @@ public class UserUtil {
                 .build();
 
         return new BrigadierCommand(node);
+    }
+
+    public record Punishment(UUID player, boolean permanent, Instant expires, Time duration, String reason) {
+        public boolean isExpired() {
+            return !permanent && Instant.now().isAfter(expires);
+        }
+
+        @Contract(" -> new")
+        public @NotNull @Unmodifiable Map<String, Object> toMap() {
+            return Map.of(
+                    "player", player,
+                    "permanent", permanent,
+                    "expires", expires.getEpochSecond(),
+                    "duration", duration.get(),
+                    "reason", reason
+            );
+        }
+
+        @Contract("_ -> new")
+        public static @NotNull Punishment ofMap(@NotNull Map<String, Object> map) {
+            return new Punishment(UUID.fromString((String) map.get("player")), (boolean) map.get("permanent"), Instant.ofEpochSecond((Long) map.get("expires")), new Time((Long) map.get("duration")), (String) map.get("reason"));
+        }
     }
 }

@@ -262,13 +262,13 @@ public class PartySystem {
                                     The command /party provides all kinds of utilities for managing your party/group.
                                     
                                     §l§nArguments:§r
-                                    - §lcreate§r: Creates a brand new party with only you.
-                                    - §lleave§r: Leaves your current party, if in any.
-                                    - §linvite§r: Invites someone from your friend list into your party.
-                                    - §laccept§r: Accepts someone's party invite, if he sent any.
-                                    - §lpromote§r: Promotes someone else to be the party leader
-                                    - §lmessage§r: Sends a message to your party's private chat.
-                                    - §llist§r: Lists of players in your current party.
+                                    -§l create§r: Creates a brand new party with only you.
+                                    -§l leave§r: Leaves your current party, if in any.
+                                    -§l invite§r: Invites someone from your friend list into your party.
+                                    -§l accept§r: Accepts someone's party invite, if he sent any.
+                                    -§l promote§r: Promotes someone else to be the party leader
+                                    -§l message§r: Sends a message to your party's private chat.
+                                    -§l list§r: Lists of players in your current party.
                                     """));
                             return 1;
                         })

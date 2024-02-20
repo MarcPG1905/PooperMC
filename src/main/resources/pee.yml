@@ -37,6 +37,15 @@ gamemodes:
   game2: 2
 
 
+# The methods to store the data.
+#   Available Methods:
+#     | -> database  : recommended
+#     | -> yaml      : default
+#     | -> plaintext :
+#     | -> ram       : not recommended, restarting will erase data
+storage-method: yaml
+
+
 
 
 ##  -------------------------------------------------------------------------  ##
@@ -45,14 +54,15 @@ gamemodes:
 ##                | |) |/ _` ||  _|/ _` || '_ \/ _` |(_-</ -_)                 ##
 ##                |___/ \__,_| \__|\__,_||_.__/\__,_|/__/\___|                 ##
 ##                     Everything related to the Database!                     ##
+##            (only important if storage-method is set to database)            ##
 ##  -------------------------------------------------------------------------  ##
 database:
 
   # The type of database.
   #   Available Types:
-  #     |-> postgresql (recommended)
-  #     |-> mariadb (preferred over mysql)
-  #     |-> mysql
+  #     |-> postgresql : recommended
+  #     |-> mariadb    : preferred over mysql
+  #     |-> mysql      : might be unstable
   type: postgresql
 
   # The address/ip of the database. Can be localhost.
@@ -201,4 +211,4 @@ whitelist:
 
 
 ## DO NOT CHANGE THIS! ##
-version: 2
+version: 3

@@ -2,7 +2,6 @@ package com.marcpg.peelocity;
 
 import com.google.inject.Inject;
 import com.marcpg.color.Ansi;
-import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.admin.Announcements;
 import com.marcpg.peelocity.chat.MessageLogging;
@@ -14,6 +13,8 @@ import com.marcpg.peelocity.modules.ServerList;
 import com.marcpg.peelocity.modules.Whitelist;
 import com.marcpg.peelocity.social.FriendSystem;
 import com.marcpg.peelocity.social.PartySystem;
+import com.marcpg.peelocity.storage.DatabaseStorage;
+import com.marcpg.peelocity.storage.Storage;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.event.EventManager;
@@ -34,7 +35,6 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 
 @Plugin(
         id = "peelocity",
@@ -45,17 +45,17 @@ import java.sql.SQLException;
         authors = { "MarcPG" }
 )
 public class Peelocity {
+    @SuppressWarnings("unused")
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
-    public static final String PEELOCITY_VERSION = "0.1.7";
-    public static final String PEELOCITY_BUILD_NUMBER = "3";
+    public static final String PEELOCITY_VERSION = "0.1.8";
+    public static final String PEELOCITY_BUILD_NUMBER = "1";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
     public static Logger LOG;
     public static Path DATA_DIRECTORY;
-    public static SQLConnection DATABASE;
 
     @Inject
     public Peelocity(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -66,7 +66,7 @@ public class Peelocity {
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent event) throws IOException, SQLException, ClassNotFoundException {
+    public void onProxyInitialization(ProxyInitializeEvent event) throws IOException {
         long start = System.currentTimeMillis();
 
         Config.createDataDirectory();
@@ -74,7 +74,8 @@ public class Peelocity {
 
         PlayerCache.loadCachedUsers();
 
-        DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "playerdata");
+        if (Config.STORAGE_TYPE == Storage.StorageType.DATABASE)
+            DatabaseStorage.loadDependency();
 
         registerEvents(SERVER.getEventManager());
         registerCommands(SERVER.getCommandManager());

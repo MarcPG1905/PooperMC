@@ -1,11 +1,11 @@
 package com.marcpg.peelocity.moderation;
 
-import com.marcpg.data.database.sql.AutoCatchingSQLConnection;
 import com.marcpg.data.time.Time;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.peelocity.storage.Storage;
 import com.marcpg.web.discord.Embed;
 import com.marcpg.web.discord.Webhook;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -21,26 +21,17 @@ import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
-import org.postgresql.util.PGTimestamp;
 
 import java.awt.*;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 
 public class Mutes {
-    public static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo");
-    public static final AutoCatchingSQLConnection DATABASE;
-    static {
-        try {
-            DATABASE = new AutoCatchingSQLConnection(Config.DATABASE_TYPE, Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "mutes", e -> Peelocity.LOG.warn("Error while interacting with the mute database: " + e.getMessage()));
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo");
+    private static final Storage STORAGE = Config.STORAGE_TYPE.getStorage("mutes");
+    private static final Time MAX_TIME = new Time(1, Time.Unit.YEARS);
 
     public static @NotNull BrigadierCommand createMuteBrigadier() {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("mute")
@@ -62,16 +53,20 @@ public class Mutes {
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.greedyString())
                                         .executes(context -> {
                                             Player source = (Player) context.getSource();
+                                            Locale l = source.getEffectiveLocale();
                                             Peelocity.SERVER.getPlayer(context.getArgument("player", String.class)).ifPresentOrElse(
                                                     target -> {
                                                         if (target.hasPermission("pee.mute") && !source.hasPermission("pee.op")) {
-                                                            source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.cant").color(NamedTextColor.RED));
+                                                            source.sendMessage(Translation.component(l, "moderation.mute.cant").color(NamedTextColor.RED));
                                                             return;
                                                         }
 
                                                         Time time = Time.parse(context.getArgument("time", String.class));
                                                         if (time.get() <= 0) {
-                                                            source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.time.invalid", time.getPreciselyFormatted()));
+                                                            source.sendMessage(Translation.component(l, "moderation.time.invalid", time.getPreciselyFormatted()));
+                                                            return;
+                                                        } else if (time.get() > Time.Unit.DECADES.sec) {
+                                                            source.sendMessage(Translation.component(l, "moderation.time.limit", time.getPreciselyFormatted(), MAX_TIME.getOneUnitFormatted()));
                                                             return;
                                                         }
 
@@ -84,9 +79,9 @@ public class Mutes {
                                                                 .appendNewline()
                                                                 .append(Translation.component(tl, "moderation.reason", "").color(NamedTextColor.GRAY).append(Component.text(reason, NamedTextColor.BLUE)))));
 
-                                                        if (!DATABASE.contains(target.getUniqueId())) {
-                                                            DATABASE.add(target.getUniqueId(), PGTimestamp.from(Instant.ofEpochSecond(Instant.now().getEpochSecond() + time.get())), time.get(), reason);
-                                                            source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.confirm", target.getUsername(), time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
+                                                        if (!STORAGE.contains(target.getUniqueId())) {
+                                                            STORAGE.add(new UserUtil.Punishment(target.getUniqueId(), false, Instant.now().plusSeconds(time.get()), time, reason).toMap());
+                                                            source.sendMessage(Translation.component(l, "moderation.mute.confirm", target.getUsername(), time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " muted " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
                                                             try {
                                                                 Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Mute", target.getUsername() + " got muted by " + source.getUsername(), Color.YELLOW, List.of(
@@ -99,10 +94,10 @@ public class Mutes {
                                                                 throw new RuntimeException(e);
                                                             }
                                                         } else {
-                                                            source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.mute.already_muted", target.getUsername()).color(NamedTextColor.RED));
+                                                            source.sendMessage(Translation.component(l, "moderation.mute.already_muted", target.getUsername()).color(NamedTextColor.RED));
                                                         }
                                                     },
-                                                    () -> source.sendMessage(Translation.component(source.getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
+                                                    () -> source.sendMessage(Translation.component(l, "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                                             );
                                             return 1;
                                         })
@@ -116,9 +111,9 @@ public class Mutes {
                                     The command /mute acts as a utility to prevent players from using the chat for a specified while.
                                     
                                     §l§nArguments:§r
-                                    - §lplayer§r: The player to mute on the server.
-                                    - §ltime§r: How long the player should remain muted. One time unit only.
-                                    - §lreason§r: A good reason for muting the player.
+                                    -§l player§r: The player to mute on the server.
+                                    -§l time§r: How long the player should remain muted. One time unit only.
+                                    -§l reason§r: A good reason for muting the player.
                                     
                                     §l§nAdditional Info:§r
                                     - You can currently only mute players who are online.
@@ -145,8 +140,8 @@ public class Mutes {
                         .executes(context -> {
                             Player source = (Player) context.getSource();
                             String target = context.getArgument("player", String.class);
-                            if (DATABASE.contains(PlayerCache.getUuid(target))) {
-                                DATABASE.remove(PlayerCache.getUuid(target));
+                            if (STORAGE.contains(PlayerCache.getUuid(target))) {
+                                STORAGE.remove(PlayerCache.getUuid(target));
                                 source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.unmute.confirm", target).color(NamedTextColor.YELLOW));
                                 Peelocity.LOG.info(source.getUsername() + " unmuted " + target);
                             } else {
@@ -162,33 +157,29 @@ public class Mutes {
                                     The command /unmute acts as a utility to remove a player's mute.
                                     
                                     §l§nArguments:§r
-                                    - §lplayer§r: The player to unmute on the server.
+                                    -§l player§r: The player to unmute on the server.
                                     """));
                             return 1;
                         })
                 )
                 .build();
-
         return new BrigadierCommand(node);
     }
 
     @Subscribe(order = PostOrder.FIRST)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         Player player = event.getPlayer();
-        Locale l = player.getEffectiveLocale();
-        if (DATABASE.contains(player.getUniqueId())) {
-            Object[] row = DATABASE.getRowArray(player.getUniqueId());
-
-            Instant expiration = ((Timestamp) row[1]).toInstant();
-
-            if (expiration.isBefore(Instant.now())) {
-                DATABASE.remove(player.getUniqueId());
+        if (STORAGE.contains(player.getUniqueId())) {
+            Locale l = player.getEffectiveLocale();
+            UserUtil.Punishment punishment = UserUtil.Punishment.ofMap(STORAGE.get(player.getUniqueId()));
+            if (punishment.isExpired()) {
+                STORAGE.remove(player.getUniqueId());
                 player.sendMessage(Translation.component(l, "moderation.mute.expired.msg").color(NamedTextColor.RED));
             } else {
                 event.setResult(PlayerChatEvent.ChatResult.denied());
                 player.sendMessage(Translation.component(l, "moderation.mute.warning").color(NamedTextColor.RED));
-                player.sendMessage(Translation.component(l, "moderation.expiration", new Time(expiration.getEpochSecond() - Instant.now().getEpochSecond()).getPreciselyFormatted()).color(NamedTextColor.GOLD));
-                player.sendMessage(Translation.component(l, "moderation.reason", row[3]).color(NamedTextColor.GOLD));
+                player.sendMessage(Translation.component(l, "moderation.expiration", Time.preciselyFormat(punishment.expires().getEpochSecond() - Instant.now().getEpochSecond())).color(NamedTextColor.GOLD));
+                player.sendMessage(Translation.component(l, "moderation.reason", punishment.reason()).color(NamedTextColor.GOLD));
             }
         }
     }

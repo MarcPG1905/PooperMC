@@ -55,8 +55,8 @@ public class PrivateMessaging {
                                     The command /msg will "whisper" a message to another player.
                                     
                                     §l§nArguments:§r
-                                    - §lplayer§r: The player to send the message to.
-                                    - §lmessage§r: The content of the message to send.
+                                    -§l player§r: The player to send the message to.
+                                    -§l message§r: The content of the message to send.
                                     """));
                             return 1;
                         })
@@ -94,7 +94,7 @@ public class PrivateMessaging {
                                     The command /w will send a message to the last player you private messaged. Acts as a /msg without the player argument.
                                     
                                     §l§nArguments:§r
-                                    - §lmessage§r: The content of the message to send.
+                                    -§l message§r: The content of the message to send.
                                     """));
                             return 1;
                         })

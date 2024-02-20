@@ -3,6 +3,7 @@ package com.marcpg.peelocity;
 import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.data.database.sql.SQLConnection.DatabaseType;
 import com.marcpg.lang.Translation;
+import com.marcpg.peelocity.storage.Storage;
 import com.marcpg.web.Downloads;
 import com.marcpg.web.discord.Webhook;
 import com.velocitypowered.api.util.Favicon;
@@ -37,6 +38,8 @@ public class Config {
 
     public static Webhook MODERATOR_WEBHOOK;
     public static Map<String, Integer> GAMEMODES;
+
+    public static Storage.StorageType STORAGE_TYPE;
 
     public static SQLConnection.DatabaseType DATABASE_TYPE;
     public static String DATABASE_USER;
@@ -78,6 +81,8 @@ public class Config {
                     .filter(entry -> entry.getValue() instanceof Integer)
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> (Integer) entry.getValue()));
 
+            STORAGE_TYPE = Storage.StorageType.valueOf(CONFIG.getString("storage-method").toUpperCase());
+
             DATABASE_TYPE = DatabaseType.valueOf(CONFIG.getString("database.type").toUpperCase());
             DATABASE_USER = CONFIG.getString("database.user");
             DATABASE_PASSWD = CONFIG.getString("database.passwd");
@@ -116,7 +121,10 @@ public class Config {
         } catch (URISyntaxException e) {
             Peelocity.LOG.error("The `moderator-webhook` URL in the configuration is invalid!");
         } catch (IllegalArgumentException e) {
-            Peelocity.LOG.error("The specified database type is invalid!");
+            if (e.getMessage().contains("DatabaseType")) Peelocity.LOG.error("The specified database type is invalid!");
+            else if (e.getMessage().contains("StorageType")) Peelocity.LOG.error("The specified storage type is invalid!");
+            else
+                Peelocity.LOG.error("The pee.yml configuration is invalid!");
         } catch (NullPointerException e) {
             Peelocity.LOG.error("Please fully configure Peelocity in the pee.yml file first, before running it!");
         }

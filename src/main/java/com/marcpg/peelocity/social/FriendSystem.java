@@ -1,10 +1,10 @@
 package com.marcpg.peelocity.social;
 
-import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.peelocity.storage.Storage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -18,9 +18,6 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -30,14 +27,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class FriendSystem {
     public static final Map<UUID, UUID> FRIEND_REQUESTS = new HashMap<>();
-    public static final SQLConnection DATABASE;
-    static {
-        try {
-            DATABASE = new SQLConnection(Config.DATABASE_TYPE, Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, "friendships");
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static final Storage STORAGE = Config.STORAGE_TYPE.getStorage("friendships");
 
     public static @NotNull BrigadierCommand createFriendBrigadier() {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("friend")
@@ -96,12 +86,8 @@ public class FriendSystem {
                                             player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.already_friends", target.get().getUsername()).color(YELLOW));
                                         } else {
                                             if (FRIEND_REQUESTS.containsKey(target.get().getUniqueId())) {
-                                                try {
-                                                    DATABASE.add(UUID.randomUUID(), target.get().getUniqueId(), player.getUniqueId());
-                                                    FRIEND_REQUESTS.remove(target.get().getUniqueId());
-                                                } catch (SQLException e) {
-                                                    throw new RuntimeException(e);
-                                                }
+                                                STORAGE.add(Map.of("uuid", UUID.randomUUID(), "player1_uuid", target.get().getUniqueId(), "player2_uuid", player.getUniqueId()));
+                                                FRIEND_REQUESTS.remove(target.get().getUniqueId());
                                             } else {
                                                 player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.accept.not_requested", target.get().getUsername()).color(RED));
                                             }
@@ -128,13 +114,9 @@ public class FriendSystem {
                                     if (target.isPresent()) {
                                         UUID uuid = getFriendship(player, target.get());
                                         if (uuid != null) {
-                                            try {
-                                                DATABASE.remove(uuid);
-                                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.remove.confirm", target.get().getUsername()).color(YELLOW));
-                                                target.get().sendMessage(Translation.component(target.get().getEffectiveLocale(), "friend.remove.confirm", player.getUsername()).color(YELLOW));
-                                            } catch (SQLException e) {
-                                                throw new RuntimeException(e);
-                                            }
+                                            STORAGE.remove(uuid);
+                                            player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.remove.confirm", target.get().getUsername()).color(YELLOW));
+                                            target.get().sendMessage(Translation.component(target.get().getEffectiveLocale(), "friend.remove.confirm", player.getUsername()).color(YELLOW));
                                         } else {
                                             player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.not_friends", target.get().getUsername()).color(RED));
                                         }
@@ -148,29 +130,8 @@ public class FriendSystem {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("list")
                         .executes(context -> {
                             if (context.getSource() instanceof Player player) {
-                                try {
-                                    String sql1 = "SELECT * FROM friendships WHERE player1_uuid = ?;";
-                                    try (PreparedStatement preparedStatement = DATABASE.connection().prepareStatement(sql1)) {
-                                        preparedStatement.setObject(1, player.getUniqueId());
-                                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                                            while (resultSet.next()) {
-                                                player.sendMessage(Component.text("- " + PlayerCache.CACHED_USERS.get(resultSet.getObject("player2_uuid", UUID.class)), AQUA));
-                                            }
-                                        }
-                                    }
-
-                                    String sql2 = "SELECT * FROM friendships WHERE player2_uuid = ?;";
-                                    try (PreparedStatement preparedStatement = DATABASE.connection().prepareStatement(sql2)) {
-                                        preparedStatement.setObject(1, player.getUniqueId());
-                                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                                            while (resultSet.next()) {
-                                                player.sendMessage(Component.text("- " + PlayerCache.CACHED_USERS.get(resultSet.getObject("player1_uuid", UUID.class)), AQUA));
-                                            }
-                                        }
-                                    }
-                                } catch (SQLException e) {
-                                    throw new RuntimeException(e);
-                                }
+                                STORAGE.get(m -> m.get("player1_uuid") == player.getUniqueId() || m.get("player2_uuid") == player.getUniqueId())
+                                        .forEach((uuid, m) -> player.sendMessage(Component.text("- " + PlayerCache.CACHED_USERS.get(uuid), AQUA)));
                             }
                             return 1;
                         })
@@ -182,10 +143,10 @@ public class FriendSystem {
                                     The command /friend provides all kinds of utilities for managing your friendships.
                                     
                                     §l§nArguments:§r
-                                    - §ladd§r: To which audience the announcement should be sent.
-                                    - §laccept§r: Accept someone's friend request, if you got one.
-                                    - §lremove§r: Removes a specific player from your friend list, if you're friends.
-                                    - §llist§r: Lists of all your current friends.
+                                    -§l add§r: To which audience the announcement should be sent.
+                                    -§l accept§r: Accept someone's friend request, if you got one.
+                                    -§l remove§r: Removes a specific player from your friend list, if you're friends.
+                                    -§l list§r: Lists of all your current friends.
                                     """));
                             return 1;
                         })
@@ -196,11 +157,7 @@ public class FriendSystem {
     }
 
     private static UUID getFriendship(@NotNull Player player1, @NotNull Player player2) {
-        try {
-            String sql = "SELECT 1 FROM friendships WHERE (player1_uuid = ? AND player2_uuid = ?) OR (player1_uuid = ? AND player2_uuid = ?)";
-            return DATABASE.executeQuery(sql, player1.getUniqueId(), player2.getUniqueId(), player2.getUniqueId(), player1.getUniqueId());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return STORAGE.get(m -> (m.get("player1_uuid") == player1.getUniqueId() && m.get("player2_uuid") == player2.getUniqueId()) || (m.get("player1_uuid") == player2.getUniqueId() && m.get("player2_uuid") == player1.getUniqueId()))
+                .keySet().stream().findFirst().orElse(null);
     }
 }

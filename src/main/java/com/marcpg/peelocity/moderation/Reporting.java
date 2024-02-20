@@ -67,14 +67,14 @@ public class Reporting {
                                     The command /report can be used to report a player, if you notice suspicious activity without any moderators present.
                                     
                                     §l§nArguments:§r
-                                    - §lplayer§r: To which audience the announcement should be sent.
-                                    - §lreason§r: If the announcement should be displayed more noticeably, to assure that really everyone reads it.
+                                    -§l player§r: To which audience the announcement should be sent.
+                                    -§l reason§r: If the announcement should be displayed more noticeably, to assure that really everyone reads it.
                                       - cheats: Using cheats ("hacks") in order to gain an unfair advantage.
                                       - spam: Spamming in the chat or disturbing conversations.
                                       - swearing: Not being family-friendly in the chat.
                                       - exploiting: Using bugs or glitches in order to gain an unfair advantage.
                                       - other: If none of the above listed reasons apply.
-                                    - §linfo§r: Additional info and proof for the report. Not providing info might make your report less effective.
+                                    -§l info§r: Additional info and proof for the report. Not providing info might make your report less effective.
                                     """));
                             return 1;
                         })
