@@ -50,7 +50,7 @@ public class Peelocity {
 
     public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
     public static final String PEELOCITY_VERSION = "0.1.8";
-    public static final String PEELOCITY_BUILD_NUMBER = "2";
+    public static final String PEELOCITY_BUILD_NUMBER = "3";
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;

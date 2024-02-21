@@ -83,9 +83,11 @@ public class Config {
 
             STORAGE_TYPE = Storage.StorageType.valueOf(CONFIG.getString("storage-method").toUpperCase());
 
-            DATABASE_TYPE = DatabaseType.valueOf(CONFIG.getString("database.type").toUpperCase());
-            DATABASE_USER = CONFIG.getString("database.user");
-            DATABASE_PASSWD = CONFIG.getString("database.passwd");
+            if (STORAGE_TYPE == Storage.StorageType.DATABASE) {
+                DATABASE_TYPE = DatabaseType.valueOf(CONFIG.getString("database.type").toUpperCase());
+                DATABASE_USER = CONFIG.getString("database.user");
+                DATABASE_PASSWD = CONFIG.getString("database.passwd");
+            }
 
             WHITELIST = CONFIG.getBoolean("whitelist.enabled");
             WHITELISTED_NAMES = CONFIG.getStringList("whitelist.names");
@@ -109,11 +111,13 @@ public class Config {
 
             if (isDatabaseInvalid(Objects.requireNonNull(CONFIG.getDefaults()))) {
                 Peelocity.LOG.error("Please configure the database first, before running Peelocity!");
-            } else if (!ALLOWED_DATABASES.contains(DATABASE_TYPE)) {
+            } else if (STORAGE_TYPE == Storage.StorageType.DATABASE && !ALLOWED_DATABASES.contains(DATABASE_TYPE)) {
                 Peelocity.LOG.error("The specified database type is invalid!");
             } else {
-                DATABASE_URL = "jdbc:" + (DATABASE_TYPE == DatabaseType.MYSQL ? DatabaseType.MARIADB.urlPart : DATABASE_TYPE.urlPart) + "://" + CONFIG.getString("database.address") + ":" + (CONFIG.getInt("database.port") == 0 ? DATABASE_TYPE.defaultPort : CONFIG.getInt("database.port")) + "/" + CONFIG.getString("database.database");
-                if (CONFIG.getBoolean("enable-translations")) new Thread(new TranslationDownloadTask()).start();
+                if (STORAGE_TYPE == Storage.StorageType.DATABASE)
+                    DATABASE_URL = "jdbc:" + (DATABASE_TYPE == DatabaseType.MYSQL ? DatabaseType.MARIADB.urlPart : DATABASE_TYPE.urlPart) + "://" + CONFIG.getString("database.address") + ":" + (CONFIG.getInt("database.port") == 0 ? DATABASE_TYPE.defaultPort : CONFIG.getInt("database.port")) + "/" + CONFIG.getString("database.database");
+                if (CONFIG.getBoolean("enable-translations"))
+                    new Thread(new TranslationDownloadTask()).start();
                 return;
             }
         } catch (IOException e) {
@@ -127,14 +131,15 @@ public class Config {
             else
                 Peelocity.LOG.error("The pee.yml configuration is invalid!");
         } catch (NullPointerException e) {
-            Peelocity.LOG.error("Please fully configure Peelocity in the pee.yml file first, before running it!");
+            Peelocity.LOG.error("Please fully configure Peelocity in the pee.yml file first, before running it! : " + e.getMessage());
         }
         Peelocity.SERVER.getPluginManager().getPlugin("peelocity").ifPresent(plugin -> plugin.getExecutorService().shutdown());
     }
 
     public static boolean isDatabaseInvalid(@NotNull YamlDocument defaults) {
-        return DATABASE_USER.equals(defaults.getString("database.user")) ||
-                DATABASE_PASSWD.equals(defaults.getString("database.passwd"));
+        return STORAGE_TYPE == Storage.StorageType.DATABASE &&
+                (DATABASE_USER.equals(defaults.getString("database.user")) ||
+                DATABASE_PASSWD.equals(defaults.getString("database.passwd")));
     }
 
     private static class TranslationDownloadTask implements Runnable {
