@@ -36,6 +36,7 @@ public class Config {
 
     public static YamlDocument CONFIG;
 
+    public static boolean MODERATOR_WEBHOOK_ENABLED = false;
     public static Webhook MODERATOR_WEBHOOK;
     public static Map<String, Integer> GAMEMODES;
 
@@ -76,15 +77,31 @@ public class Config {
                     UpdaterSettings.builder().setVersioning(new BasicVersioning("version")).setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
             );
 
-            MODERATOR_WEBHOOK = new Webhook(new URI(CONFIG.getString("moderator-webhook")).toURL());
+            try {
+                MODERATOR_WEBHOOK = new Webhook(new URI(CONFIG.getString("moderator-webhook")).toURL());
+                MODERATOR_WEBHOOK_ENABLED = true;
+            } catch (URISyntaxException e) {
+                Peelocity.LOG.warn("The `moderator-webhook` URL in the configuration is either invalid or not set! The moderator webhook will be disabled.");
+                Peelocity.LOG.warn("In case you want the moderator webhook to be disabled, you can safely ignore this warning.");
+            }
+
             GAMEMODES = CONFIG.getSection("gamemodes").getStringRouteMappedValues(false).entrySet().stream()
                     .filter(entry -> entry.getValue() instanceof Integer)
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> (Integer) entry.getValue()));
 
-            STORAGE_TYPE = Storage.StorageType.valueOf(CONFIG.getString("storage-method").toUpperCase());
+            try {
+                STORAGE_TYPE = Storage.StorageType.valueOf(CONFIG.getString("storage-method").toUpperCase());
+            } catch (IllegalArgumentException e) {
+                Peelocity.importantError("The specified database type is invalid! Using the default (yaml) now.");
+            }
 
             if (STORAGE_TYPE == Storage.StorageType.DATABASE) {
-                DATABASE_TYPE = DatabaseType.valueOf(CONFIG.getString("database.type").toUpperCase());
+                try {
+                    DATABASE_TYPE = DatabaseType.valueOf(CONFIG.getString("database.type").toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    Peelocity.importantError("The specified storage type is invalid! Using the default (postgresql) now.");
+                    DATABASE_TYPE = DatabaseType.POSTGRESQL;
+                }
                 DATABASE_USER = CONFIG.getString("database.user");
                 DATABASE_PASSWD = CONFIG.getString("database.passwd");
             }
@@ -99,8 +116,14 @@ public class Config {
                 SL_FAVICON_ENABLED = CONFIG.getBoolean("server-list.custom-favicon");
                 if (SL_FAVICON_ENABLED) SL_FAVICONS = CONFIG.getStringList("server-list.custom-favicon-urls").stream()
                         .map(s -> {
-                            try { return Favicon.create(ImageIO.read(new URI(s).toURL())); }
-                            catch (IOException | URISyntaxException e) { throw new RuntimeException(e); }
+                            try {
+                                return Favicon.create(ImageIO.read(new URI(s).toURL()));
+                            } catch (IOException | URISyntaxException e) {
+                                throw new RuntimeException(e);
+                            } catch (IllegalArgumentException e) {
+                                Peelocity.importantError("One or more of the provided favicons is not 64x64 pixels!");
+                                return null;
+                            }
                         })
                         .toArray(Favicon[]::new);
                 SL_SHOW_MAX_PLAYERS = CONFIG.getInt("server-list.show-max-players");
@@ -110,30 +133,20 @@ public class Config {
             CHATUTILITY_BOOLEANS = CONFIG.getSection("chatutility");
 
             if (isDatabaseInvalid(Objects.requireNonNull(CONFIG.getDefaults()))) {
-                Peelocity.LOG.error("Please configure the database first, before running Peelocity!");
+                Peelocity.importantError("Please configure the database first, before running Peelocity!");
             } else if (STORAGE_TYPE == Storage.StorageType.DATABASE && !ALLOWED_DATABASES.contains(DATABASE_TYPE)) {
-                Peelocity.LOG.error("The specified database type is invalid!");
+                Peelocity.importantError("The specified database type is invalid!");
             } else {
                 if (STORAGE_TYPE == Storage.StorageType.DATABASE)
                     DATABASE_URL = "jdbc:" + (DATABASE_TYPE == DatabaseType.MYSQL ? DatabaseType.MARIADB.urlPart : DATABASE_TYPE.urlPart) + "://" + CONFIG.getString("database.address") + ":" + (CONFIG.getInt("database.port") == 0 ? DATABASE_TYPE.defaultPort : CONFIG.getInt("database.port")) + "/" + CONFIG.getString("database.database");
                 if (CONFIG.getBoolean("enable-translations"))
                     new Thread(new TranslationDownloadTask()).start();
-                return;
             }
         } catch (IOException e) {
-            Peelocity.LOG.error("Couldn't load the pee.yml configuration file!");
-        } catch (URISyntaxException e) {
-            Peelocity.LOG.error("The `moderator-webhook` URL in the configuration is invalid!");
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("DatabaseType")) Peelocity.LOG.error("The specified database type is invalid!");
-            else if (e.getMessage().contains("StorageType")) Peelocity.LOG.error("The specified storage type is invalid!");
-            else if (e.getMessage().contains("Image is not 64x64")) Peelocity.LOG.error("One or more of the provided favicons is not 64x64 pixels!");
-            else
-                Peelocity.LOG.error("The pee.yml configuration is invalid!");
+            Peelocity.importantError("Couldn't load the pee.yml configuration file!");
         } catch (NullPointerException e) {
-            Peelocity.LOG.error("Please fully configure Peelocity in the pee.yml file first, before running it! : " + e.getMessage());
+            Peelocity.importantError("Please fully configure Peelocity in the pee.yml file first, before running it! : " + e.getMessage());
         }
-        Peelocity.SERVER.getPluginManager().getPlugin("peelocity").ifPresent(plugin -> plugin.getExecutorService().shutdown());
     }
 
     public static boolean isDatabaseInvalid(@NotNull YamlDocument defaults) {

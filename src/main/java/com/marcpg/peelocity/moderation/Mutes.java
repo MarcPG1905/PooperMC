@@ -46,7 +46,7 @@ public class Mutes {
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("time", StringArgumentType.word())
                                 .suggests((context, builder) -> {
-                                    String input = context.getArguments().size() == 2 ? List.of(builder.getInput().split(" ")).getLast() : "";
+                                    String input = context.getArguments().size() == 2 ? builder.getInput().split(" ")[0] : "";
                                     TIME_TYPES.forEach(string -> builder.suggest(input.replaceAll("[^-\\d.]+", "") + string));
                                     return builder.buildFuture();
                                 })
@@ -84,12 +84,13 @@ public class Mutes {
                                                             source.sendMessage(Translation.component(l, "moderation.mute.confirm", target.getUsername(), time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " muted " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
                                                             try {
-                                                                Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Mute", target.getUsername() + " got muted by " + source.getUsername(), Color.YELLOW, List.of(
-                                                                        new Embed.Field("Muted", target.getUsername(), true),
-                                                                        new Embed.Field("Moderator", source.getUsername(), true),
-                                                                        new Embed.Field("Time", time.getPreciselyFormatted(), true),
-                                                                        new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
-                                                                )));
+                                                                if (Config.MODERATOR_WEBHOOK_ENABLED)
+                                                                    Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Mute", target.getUsername() + " got muted by " + source.getUsername(), Color.YELLOW, List.of(
+                                                                            new Embed.Field("Muted", target.getUsername(), true),
+                                                                            new Embed.Field("Moderator", source.getUsername(), true),
+                                                                            new Embed.Field("Time", time.getPreciselyFormatted(), true),
+                                                                            new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
+                                                                    )));
                                                             } catch (IOException e) {
                                                                 throw new RuntimeException(e);
                                                             }

@@ -40,18 +40,23 @@ public class Reporting {
                                         .executes(context -> {
                                             Peelocity.SERVER.getPlayer(context.getArgument("player", String.class)).ifPresentOrElse(
                                                     player -> {
-                                                        try {
-                                                            Config.MODERATOR_WEBHOOK.post(new Embed("New Report!", null, Color.decode("#FF5555"), List.of(
-                                                                    new Embed.Field("Reported User", player.getUsername(), true),
-                                                                    new Embed.Field("Who Reported?", ((Player) context.getSource()).getUsername(), true),
-                                                                    new Embed.Field("Reason", Formatter.toPascalCase(context.getArgument("reason", String.class)), true),
-                                                                    new Embed.Field("Additional Info", Webhook.escapeJson(context.getArgument("info", String.class)).trim(), false)
-                                                            )));
-                                                        } catch (IOException e) {
-                                                            player.sendMessage(Component.text("There was an issue, your report is very likely invalid!", NamedTextColor.RED));
-                                                            throw new RuntimeException(e);
+                                                        if (Config.MODERATOR_WEBHOOK_ENABLED) {
+                                                            try {
+                                                                Config.MODERATOR_WEBHOOK.post(new Embed("New Report!", null, Color.decode("#FF5555"), List.of(
+                                                                        new Embed.Field("Reported User", player.getUsername(), true),
+                                                                        new Embed.Field("Who Reported?", ((Player) context.getSource()).getUsername(), true),
+                                                                        new Embed.Field("Reason", Formatter.toPascalCase(context.getArgument("reason", String.class)), true),
+                                                                        new Embed.Field("Additional Info", Webhook.escapeJson(context.getArgument("info", String.class)).trim(), false)
+                                                                )));
+                                                                player.sendMessage(Component.text("Successfully submitted the report!", NamedTextColor.GREEN));
+                                                            } catch (IOException e) {
+                                                                player.sendMessage(Component.text("There was an issue, your report is very likely invalid!", NamedTextColor.RED));
+                                                                throw new RuntimeException(e);
+                                                            }
+                                                        } else {
+                                                            player.sendMessage(Component.text("Reports are not available right now!", NamedTextColor.RED));
+                                                            Peelocity.LOG.warn("A player tried using `/report`, which isn't available as there's no webhook in the config.");
                                                         }
-                                                        player.sendMessage(Component.text("Successfully submitted the report!", NamedTextColor.GREEN));
                                                     },
                                                     () -> context.getSource().sendMessage(Translation.component(((Player) context.getSource()).getEffectiveLocale(), "cmd.player_not_found", context.getArgument("player", String.class)).color(NamedTextColor.RED))
                                             );

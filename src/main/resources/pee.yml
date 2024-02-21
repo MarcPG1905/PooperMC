@@ -18,6 +18,7 @@
 ## Moderators-Only Discord Webhook ##
 # A Discord webhook URL, that's only accessible by moderators.
 # All moderation-related messages like bans, kicks etc. are sent to this webhook.
+# If the link is invalid or just no link at all, will disable this module!
 moderator-webhook: https://discord.com/api/webhooks/...
 
 
@@ -40,8 +41,8 @@ gamemodes:
 # The methods to store the data.
 #   Available Methods:
 #     | -> database  : recommended
-#     | -> yaml      : default
-#     | -> plaintext :
+#     | -> yaml      : default (.yml)
+#     | -> plaintext : (.txt)
 #     | -> ram       : not recommended, restarting will erase data
 storage-method: yaml
 

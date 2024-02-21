@@ -48,11 +48,12 @@ public class Kicks {
                                                 source.sendMessage(Translation.component(source.getEffectiveLocale(), "moderation.kick.confirm", target.getUsername(), reason).color(NamedTextColor.YELLOW));
                                                 Peelocity.LOG.info(source.getUsername() + " kicked " + target.getUsername() + " with the reason: \"" + reason + "\"");
                                                 try {
-                                                    Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Kick", target.getUsername() + " got kicked by " + source.getUsername(), Color.GREEN, List.of(
-                                                            new Embed.Field("Kicked", target.getUsername(), true),
-                                                            new Embed.Field("Moderator", source.getUsername(), true),
-                                                            new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
-                                                    )));
+                                                    if (Config.MODERATOR_WEBHOOK_ENABLED)
+                                                        Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Kick", target.getUsername() + " got kicked by " + source.getUsername(), Color.GREEN, List.of(
+                                                                new Embed.Field("Kicked", target.getUsername(), true),
+                                                                new Embed.Field("Moderator", source.getUsername(), true),
+                                                                new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
+                                                        )));
                                                 } catch (IOException e) {
                                                     throw new RuntimeException(e);
                                                 }

@@ -48,7 +48,7 @@ public class Bans {
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("time", StringArgumentType.word())
                                 .suggests((context, builder) -> {
-                                    String input = context.getArguments().size() == 2 ? List.of(builder.getInput().split(" ")).getLast() : "";
+                                    String input = context.getArguments().size() == 2 ? builder.getInput().split(" ")[0] : "";
                                     TIME_TYPES.forEach(string -> builder.suggest(input.replaceAll("[^-\\d.]+", "") + string));
                                     builder.suggest("permanent");
                                     return builder.buildFuture();
@@ -87,13 +87,15 @@ public class Bans {
                                                             STORAGE.add(new UserUtil.Punishment(target.getUniqueId(), permanent, Instant.now().plusSeconds(time.get()), time, reason).toMap());
                                                             source.sendMessage(Translation.component(tl, "moderation.ban.confirm", target.getUsername(), permanent ? Translation.string(tl, "moderation.time.permanent") : time.getPreciselyFormatted(), reason).color(NamedTextColor.YELLOW));
                                                             Peelocity.LOG.info(source.getUsername() + " banned " + target.getUsername() + " for " + time.getPreciselyFormatted() + " with the reason: \"" + reason + "\"");
+
                                                             try {
-                                                                Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Ban", target.getUsername() + " got banned by " + source.getUsername(), Color.ORANGE, List.of(
-                                                                        new Embed.Field("Banned", target.getUsername(), true),
-                                                                        new Embed.Field("Moderator", source.getUsername(), true),
-                                                                        new Embed.Field("Time", permanent ? "Permanent" : time.getPreciselyFormatted(), true),
-                                                                        new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
-                                                                )));
+                                                                if (Config.MODERATOR_WEBHOOK_ENABLED)
+                                                                    Config.MODERATOR_WEBHOOK.post(new Embed("Minecraft Ban", target.getUsername() + " got banned by " + source.getUsername(), Color.ORANGE, List.of(
+                                                                            new Embed.Field("Banned", target.getUsername(), true),
+                                                                            new Embed.Field("Moderator", source.getUsername(), true),
+                                                                            new Embed.Field("Time", permanent ? "Permanent" : time.getPreciselyFormatted(), true),
+                                                                            new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
+                                                                    )));
                                                             } catch (IOException e) {
                                                                 throw new RuntimeException(e);
                                                             }
