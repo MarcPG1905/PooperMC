@@ -3,9 +3,16 @@ package com.marcpg.peelocity;
 import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.data.database.sql.SQLConnection.DatabaseType;
 import com.marcpg.lang.Translation;
+import com.marcpg.peelocity.modules.Whitelist;
 import com.marcpg.peelocity.storage.Storage;
 import com.marcpg.web.Downloads;
 import com.marcpg.web.discord.Webhook;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.velocitypowered.api.command.BrigadierCommand;
+import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.util.Favicon;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
@@ -15,6 +22,7 @@ import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,12 +51,8 @@ public class Config {
     public static Storage.StorageType STORAGE_TYPE;
 
     public static SQLConnection.DatabaseType DATABASE_TYPE;
-    public static String DATABASE_USER;
-    public static String DATABASE_PASSWD;
-    public static String DATABASE_URL;
 
     public static boolean WHITELIST;
-    public static List<String> WHITELISTED_NAMES;
 
     public static boolean SL_ENABLED;
     public static boolean SL_MOTD_ENABLED;
@@ -102,12 +106,11 @@ public class Config {
                     Peelocity.importantError("The specified storage type is invalid! Using the default (postgresql) now.");
                     DATABASE_TYPE = DatabaseType.POSTGRESQL;
                 }
-                DATABASE_USER = CONFIG.getString("database.user");
-                DATABASE_PASSWD = CONFIG.getString("database.passwd");
             }
 
             WHITELIST = CONFIG.getBoolean("whitelist.enabled");
-            WHITELISTED_NAMES = CONFIG.getStringList("whitelist.names");
+            Whitelist.WHITELISTED_NAMES.clear();
+            Whitelist.WHITELISTED_NAMES.addAll(CONFIG.getStringList("whitelist.names"));
 
             SL_ENABLED = CONFIG.getBoolean("server-list.enabled");
             if (SL_ENABLED) {
@@ -136,11 +139,8 @@ public class Config {
                 Peelocity.importantError("Please configure the database first, before running Peelocity!");
             } else if (STORAGE_TYPE == Storage.StorageType.DATABASE && !ALLOWED_DATABASES.contains(DATABASE_TYPE)) {
                 Peelocity.importantError("The specified database type is invalid!");
-            } else {
-                if (STORAGE_TYPE == Storage.StorageType.DATABASE)
-                    DATABASE_URL = "jdbc:" + (DATABASE_TYPE == DatabaseType.MYSQL ? DatabaseType.MARIADB.urlPart : DATABASE_TYPE.urlPart) + "://" + CONFIG.getString("database.address") + ":" + (CONFIG.getInt("database.port") == 0 ? DATABASE_TYPE.defaultPort : CONFIG.getInt("database.port")) + "/" + CONFIG.getString("database.database");
-                if (CONFIG.getBoolean("enable-translations"))
-                    new Thread(new TranslationDownloadTask()).start();
+            } else if (CONFIG.getBoolean("enable-translations")) {
+                new Thread(new TranslationDownloadTask()).start();
             }
         } catch (IOException e) {
             Peelocity.importantError("Couldn't load the pee.yml configuration file!");
@@ -151,8 +151,74 @@ public class Config {
 
     public static boolean isDatabaseInvalid(@NotNull YamlDocument defaults) {
         return STORAGE_TYPE == Storage.StorageType.DATABASE &&
-                (DATABASE_USER.equals(defaults.getString("database.user")) ||
-                DATABASE_PASSWD.equals(defaults.getString("database.passwd")));
+                CONFIG.getString("database.user").equals(defaults.getString("database.user")) ||
+                CONFIG.getString("database.passwd").equals(defaults.getString("database.passwd"));
+    }
+
+    public static @NotNull BrigadierCommand createConfigBrigadier() {
+        LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("config")
+                .requires(source -> source.hasPermission("pee.admin"))
+                .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
+                        .suggests((context, builder) -> {
+                            CONFIG.getRoutesAsStrings(true).forEach(builder::suggest);
+                            return builder.buildFuture();
+                        })
+                        .executes(context -> {
+                            CommandSource source = context.getSource();
+                            String route = context.getArgument("entry", String.class);
+                            if (CONFIG.isSection(route)) {
+                                source.sendMessage(Component.text("Values for '" + route + "' are: ", NamedTextColor.YELLOW));
+                                CONFIG.getList(route).forEach(o -> source.sendMessage(Component.text("- " + o.toString())));
+                            } else if (CONFIG.contains(route)) {
+                                source.sendMessage(Component.text("Value for '" + route + "' is \"" + CONFIG.getString(route) + "\"", NamedTextColor.YELLOW));
+                            } else {
+                                source.sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
+                            }
+                            return 1;
+                        })
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("set")
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
+                                        .executes(context -> {
+                                            String route = context.getArgument("entry", String.class);
+                                            if (CONFIG.contains(route)) {
+                                                String stringValue = context.getArgument("value", String.class);
+
+                                                if (CONFIG.isSection(route) || CONFIG.isList(route)) {
+                                                    context.getSource().sendMessage(Component.text("You cannot set sections!", NamedTextColor.RED));
+                                                    return 1;
+                                                } else if (CONFIG.isBoolean(route))
+                                                    CONFIG.set(route, Boolean.parseBoolean(stringValue));
+                                                else if (CONFIG.isInt(route))
+                                                    CONFIG.set(route, Integer.parseInt(stringValue));
+                                                else
+                                                    CONFIG.set(route, stringValue);
+
+                                                context.getSource().sendMessage(Component.text("Set '" + route + "' to \"" + stringValue + "\"", NamedTextColor.YELLOW));
+                                                context.getSource().sendMessage(Component.text("To apply the changes, you need to run /peeload!", NamedTextColor.GRAY));
+                                            } else {
+                                                context.getSource().sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
+                                            }
+                                            return 1;
+                                        })
+                                )
+                        )
+                )
+                .build();
+        return new BrigadierCommand(node);
+    }
+
+    public static @NotNull BrigadierCommand createPeeloadBrigadier(Peelocity peelocity) {
+        LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("peeload")
+                .requires(source -> source.hasPermission("pee.admin"))
+                .executes(context -> {
+                    load(peelocity.getClass().getResourceAsStream("/pee.yml"));
+                    peelocity.registerEvents(Peelocity.SERVER.getEventManager());
+                    peelocity.registerCommands(Peelocity.SERVER.getCommandManager());
+                    context.getSource().sendMessage(Component.text("Successfully reloaded the Peelocity plugin!", NamedTextColor.YELLOW));
+                    return 1;
+                })
+                .build();
+        return new BrigadierCommand(node);
     }
 
     private static class TranslationDownloadTask implements Runnable {

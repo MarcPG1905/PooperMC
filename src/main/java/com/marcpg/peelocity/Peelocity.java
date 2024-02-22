@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 @Plugin(
         id = "peelocity",
@@ -47,13 +48,17 @@ import java.nio.file.Path;
 public class Peelocity {
     @SuppressWarnings("unused")
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }  public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
-    public static final String PEELOCITY_VERSION = "0.1.8";
-    public static final String PEELOCITY_BUILD_NUMBER = "4";
+    public static final String PEELOCITY_VERSION = "0.1.9";
+    public static final String PEELOCITY_BUILD_NUMBER = "1";
+
+    public static final List<String> COMMANDS = List.of("announce", "ban", "config", "friend", "hub", "join",
+            "kick", "message-history", "msg", "mute", "pardon", "party", "peeload", "report", "staff", "unmute", "w");
 
     public static Peelocity PLUGIN;
     public static ProxyServer SERVER;
     public static Logger LOG;
     public static Path DATA_DIRECTORY;
+
 
     @Inject
     public Peelocity(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -82,31 +87,46 @@ public class Peelocity {
     }
 
     public void registerEvents(@NotNull EventManager manager) {
+        manager.unregisterListeners(this);
+        if (Config.CHATUTILITY_BOOLEANS.getBoolean("enabled")) manager.register(this, new ChatUtilities());
+        if (Config.SL_ENABLED) manager.register(this, new ServerList());
+        if (Config.WHITELIST) manager.register(this, new Whitelist());
         manager.register(this, new Bans());
         manager.register(this, new JoinLogic());
         manager.register(this, new MessageLogging());
         manager.register(this, new Mutes());
-        manager.register(this, new Whitelist());
-        if (Config.SL_ENABLED) manager.register(this, new ServerList());
-        if (Config.CHATUTILITY_BOOLEANS.getBoolean("enabled")) manager.register(this, new ChatUtilities());
     }
 
     public void registerCommands(@NotNull CommandManager manager) {
+        if (manager.hasCommand("announce")) COMMANDS.forEach(manager::unregister);
+
         manager.register("announce", Announcements.createAnnounceBrigadier());
         manager.register("ban", Bans.createBanBrigadier());
+        manager.register("config", Config.createConfigBrigadier());
         manager.register("friend", FriendSystem.createFriendBrigadier());
         manager.register("hub", JoinLogic.createHubBrigadier(), "lobby", "leave");
-        manager.register("join", JoinLogic.createJoinBrigadier(), "play");
         manager.register("kick", Kicks.createKickBrigadier());
         manager.register("message-history", UserUtil.createMessageHistoryBrigadier(), "msg-hist", "history");
         manager.register("msg", PrivateMessaging.createMsgBrigadier(), "pm");
         manager.register("mute", Mutes.createMuteBrigadier(), "timeout");
         manager.register("pardon", Bans.createPardonBrigadier(), "unban");
         manager.register("party", PartySystem.createPartyBrigadier(SERVER));
-        manager.register("report", Reporting.createReportBrigadier(), "snitch");
+        manager.register("peeload", Config.createPeeloadBrigadier(this), "reload-peelocity");
         manager.register("staff", StaffChat.createStaffBrigadier(), "sc", "staff-chat");
         manager.register("unmute", Mutes.createUnmuteBrigadier(), "remove-timeout");
         manager.register("w", PrivateMessaging.createWBrigadier());
+
+        if (!Config.GAMEMODES.isEmpty())
+            manager.register("join", JoinLogic.createJoinBrigadier(), "play");
+        else LOG.warn("Skipping /join registration, as there are no game modes configured.");
+
+        if (Config.MODERATOR_WEBHOOK_ENABLED)
+            manager.register("report", Reporting.createReportBrigadier(), "snitch");
+        else LOG.info("Skipping /report registration, as the moderator-webhook is not configured.");
+
+        if (Config.WHITELIST)
+            manager.register("whitelist", Whitelist.createWhitelistBrigadier());
+        else LOG.info("Skipping /whitelist registration, as the whitelist is disabled.");
 
         manager.register("ping", (SimpleCommand) invocation -> {
             Player source = (Player) invocation.source();

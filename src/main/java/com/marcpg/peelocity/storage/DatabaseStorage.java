@@ -19,7 +19,14 @@ public class DatabaseStorage extends Storage {
 
     public DatabaseStorage(String name) throws SQLException, ClassNotFoundException {
         super(name);
-        connection = new AutoCatchingSQLConnection(Config.DATABASE_TYPE, Config.DATABASE_URL, Config.DATABASE_USER, Config.DATABASE_PASSWD, name, e -> Peelocity.LOG.warn("Error while interacting with the ban database: " + e.getMessage()));
+        connection = new AutoCatchingSQLConnection(
+                Config.DATABASE_TYPE,
+                Config.CONFIG.getString("database.address"),
+                Config.CONFIG.getInt("database.port"),
+                Config.CONFIG.getString("database.database"),
+                Config.CONFIG.getString("database.user"),
+                Config.CONFIG.getString("database.passwd"),
+                name, e -> Peelocity.LOG.warn("Error while interacting with the ban database: " + e.getMessage()));
     }
 
     @Override
