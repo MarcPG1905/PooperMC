@@ -81,10 +81,7 @@ public class Config {
                     DumperSettings.DEFAULT,
                     UpdaterSettings.builder().setVersioning(new BasicVersioning("version")).setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
             );
-
-            VALID_ROUTES = CONFIG.getRoutesAsStrings(true).stream()
-                    .filter(r -> !CONFIG.isSection(r) && !CONFIG.isList(r))
-                    .toList();
+            VALID_ROUTES = CONFIG.getRoutesAsStrings(true).stream().filter(r -> !CONFIG.isSection(r)).toList();
 
             try {
                 MODERATOR_WEBHOOK = new Webhook(new URI(CONFIG.getString("moderator-webhook")).toURL());
