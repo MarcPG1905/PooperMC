@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class Peelocity {
     @SuppressWarnings("unused")
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }  public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
     public static final String PEELOCITY_VERSION = "0.1.9";
-    public static final String PEELOCITY_BUILD_NUMBER = "2";
+    public static final String PEELOCITY_BUILD_NUMBER = "3";
 
     public static final List<String> COMMANDS = List.of("announce", "ban", "config", "friend", "hub", "join",
             "kick", "message-history", "msg", "mute", "pardon", "party", "peeload", "report", "staff", "unmute", "w");
@@ -74,20 +75,45 @@ public class Peelocity {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) throws IOException {
+        loadLogic(getClass().getResourceAsStream("/pee.yml"));
+        sendWelcome(SERVER.getConsoleCommandSource()); // Sends the cool little info message
+    }
+
+    /**
+     * Sends this welcome message with the PEE text using {@code |} and {@code _} into the specified console:
+     * <pre>      __   __  __
+     *    |__) |__ |__ Peelocity
+     *    |    |__ |__ <a href="https://marcpg.com/peelocity">https://marcpg.com/peelocity</a>
+     *    Build: VERSION-BUILD_NR (RELEASE_TYPE)</pre>
+     * @param console The console (-command source) to send the message to.
+     */
+    static void sendWelcome(@NotNull ConsoleCommandSource console) {
+        console.sendMessage(Component.text("    __   __  __", NamedTextColor.YELLOW));
+        console.sendMessage(Component.text("   |__) |__ |__ Peelocity " + PEELOCITY_VERSION, NamedTextColor.YELLOW));
+        console.sendMessage(Component.text("   |    |__ |__ https://marcpg.com/peelocity", NamedTextColor.YELLOW));
+        console.sendMessage(Component.text("   Build: " + PEELOCITY_VERSION + "-" + PEELOCITY_BUILD_NUMBER + " (" + PEELOCITY_RELEASE_TYPE + ")", NamedTextColor.DARK_GRAY));
+    }
+
+    public static void loadLogic(InputStream peeYml) throws IOException {
         long start = System.currentTimeMillis();
 
         Config.createDataDirectory();
-        Config.load(getClass().getResourceAsStream("/pee.yml"));
+        Config.load(peeYml);
 
         PlayerCache.load(); // Loads all players into cache
 
         if (Config.STORAGE_TYPE == Storage.StorageType.DATABASE)
             DatabaseStorage.loadDependency(); // Downloads and loads the database's JDBC driver
 
+        LOG.info("Sending Peelocity Metrics...");
         bStatsMetrics(21102); // Sends the metrics on bStats
+
+        LOG.info("Registering Events...");
         registerEvents(SERVER.getEventManager()); // Registers the events, if enabled
+
+        LOG.info("Registering Commands...");
         registerCommands(SERVER.getCommandManager()); // Registers the commands, if enabled
-        sendWelcome(SERVER.getConsoleCommandSource()); // Sends the cool little info message
+
         LOG.info(Ansi.formattedString("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!", Ansi.GREEN));
     }
 
@@ -95,8 +121,8 @@ public class Peelocity {
      * Sends all metrics about the current instance to the bStats plugin.
      * @param pluginId The plugin's ID on bStats.
      */
-    public void bStatsMetrics(int pluginId) {
-        Metrics metrics = METRICS_FACTORY.make(this, pluginId);
+    public static void bStatsMetrics(int pluginId) {
+        Metrics metrics = METRICS_FACTORY.make(Peelocity.PLUGIN, pluginId);
         metrics.addCustomChart(new SimplePie("storage_method", () -> Config.STORAGE_TYPE.toString().toLowerCase()));
         metrics.addCustomChart(new SimplePie("server_list", () -> String.valueOf(Config.SL_ENABLED)));
         metrics.addCustomChart(new SimplePie("chat_utils", () -> String.valueOf(Config.CHATUTILITY_BOOLEANS.getBoolean("enabled"))));
@@ -108,23 +134,23 @@ public class Peelocity {
      * Goes through all events and registers them, if they need to be registered.
      * @param manager The instance's event manager, that events are registered on.
      */
-    public void registerEvents(@NotNull EventManager manager) {
-        manager.unregisterListeners(this);
+    public static void registerEvents(@NotNull EventManager manager) {
+        manager.unregisterListeners(Peelocity.PLUGIN);
 
-        if (Config.CHATUTILITY_BOOLEANS.getBoolean("enabled")) manager.register(this, new ChatUtilities());
-        if (Config.SL_ENABLED) manager.register(this, new ServerList());
-        if (Config.WHITELIST) manager.register(this, new Whitelist());
-        manager.register(this, new Bans());
-        manager.register(this, new JoinLogic());
-        manager.register(this, new MessageLogging());
-        manager.register(this, new Mutes());
+        if (Config.CHATUTILITY_BOOLEANS.getBoolean("enabled")) manager.register(Peelocity.PLUGIN, new ChatUtilities());
+        if (Config.SL_ENABLED) manager.register(Peelocity.PLUGIN, new ServerList());
+        if (Config.WHITELIST) manager.register(Peelocity.PLUGIN, new Whitelist());
+        manager.register(Peelocity.PLUGIN, new Bans());
+        manager.register(Peelocity.PLUGIN, new JoinLogic());
+        manager.register(Peelocity.PLUGIN, new MessageLogging());
+        manager.register(Peelocity.PLUGIN, new Mutes());
     }
 
     /**
      * Goes through all commands and registers them, if they need to be registered.
      * @param manager The instance's command manager, that commands are registered on.
      */
-    public void registerCommands(@NotNull CommandManager manager) {
+    public static void registerCommands(@NotNull CommandManager manager) {
         if (manager.hasCommand("announce")) COMMANDS.forEach(manager::unregister);
 
         manager.register("announce", Announcements.createAnnounceBrigadier());
@@ -138,7 +164,7 @@ public class Peelocity {
         manager.register("mute", Mutes.createMuteBrigadier(), "timeout");
         manager.register("pardon", Bans.createPardonBrigadier(), "unban");
         manager.register("party", PartySystem.createPartyBrigadier(SERVER));
-        manager.register("peeload", Config.createPeeloadBrigadier(this), "reload-peelocity");
+        manager.register("peeload", Config.createPeeloadBrigadier(Peelocity.PLUGIN), "reload-peelocity");
         manager.register("staff", StaffChat.createStaffBrigadier(), "sc", "staff-chat");
         manager.register("unmute", Mutes.createUnmuteBrigadier(), "remove-timeout");
         manager.register("w", PrivateMessaging.createWBrigadier());
@@ -169,21 +195,6 @@ public class Peelocity {
             source.sendMessage(Component.text("Peelocity").decorate(TextDecoration.BOLD).append(Component.text(" " + PEELOCITY_VERSION + "-" + PEELOCITY_RELEASE_TYPE + " (" + PEELOCITY_BUILD_NUMBER + ")").decoration(TextDecoration.BOLD, false)).color(TextColor.color(0, 170, 170)));
             source.sendMessage(Translation.component(source.getEffectiveLocale(), "cmd.peelocity.info"));
         }, "velocity-plugin");
-    }
-
-    /**
-     * Sends this welcome message with the PEE text using {@code |} and {@code _} into the specified console:
-     * <pre>      __   __  __
-     *    |__) |__ |__ Peelocity
-     *    |    |__ |__ <a href="https://marcpg.com/peelocity">https://marcpg.com/peelocity</a>
-     *    Build: VERSION-BUILD_NR (RELEASE_TYPE)</pre>
-     * @param console The console (-command source) to send the message to.
-     */
-    static void sendWelcome(@NotNull ConsoleCommandSource console) {
-        console.sendMessage(Component.text("    __   __  __", NamedTextColor.YELLOW));
-        console.sendMessage(Component.text("   |__) |__ |__ Peelocity " + PEELOCITY_VERSION, NamedTextColor.YELLOW));
-        console.sendMessage(Component.text("   |    |__ |__ https://marcpg.com/peelocity", NamedTextColor.YELLOW));
-        console.sendMessage(Component.text("   Build: " + PEELOCITY_VERSION + "-" + PEELOCITY_BUILD_NUMBER + " (" + PEELOCITY_RELEASE_TYPE + ")", NamedTextColor.DARK_GRAY));
     }
 
     @Subscribe

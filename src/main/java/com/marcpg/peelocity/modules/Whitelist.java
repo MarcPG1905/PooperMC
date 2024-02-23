@@ -19,6 +19,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,7 +53,13 @@ public class Whitelist {
                                 .executes(context -> {
                                     if (WHITELISTED_NAMES.add(context.getArgument("player", String.class))) {
                                         Config.CONFIG.set("whitelist.names", WHITELISTED_NAMES);
-                                        context.getSource().sendMessage(Component.text("Successfully added " + context.getArgument("player", String.class) + " to the whitelist.", NamedTextColor.GREEN));
+                                        try {
+                                            Config.CONFIG.save();
+                                        } catch (IOException e) {
+                                            context.getSource().sendMessage(Component.text("Couldn't save the whitelist to config!", NamedTextColor.RED));
+                                        } finally {
+                                            context.getSource().sendMessage(Component.text("Successfully added " + context.getArgument("player", String.class) + " to the whitelist.", NamedTextColor.GREEN));
+                                        }
                                     } else {
                                         context.getSource().sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " is already whitelisted!", NamedTextColor.YELLOW));
                                     }
@@ -69,7 +76,13 @@ public class Whitelist {
                                 .executes(context -> {
                                     if (WHITELISTED_NAMES.remove(context.getArgument("player", String.class))) {
                                         Config.CONFIG.set("whitelist.names", WHITELISTED_NAMES);
-                                        context.getSource().sendMessage(Component.text("Successfully removed " + context.getArgument("player", String.class) + " from the whitelist.", NamedTextColor.YELLOW));
+                                        try {
+                                            Config.CONFIG.save();
+                                        } catch (IOException e) {
+                                            context.getSource().sendMessage(Component.text("Couldn't save the whitelist to config!", NamedTextColor.RED));
+                                        } finally {
+                                            context.getSource().sendMessage(Component.text("Successfully removed " + context.getArgument("player", String.class) + " from the whitelist.", NamedTextColor.YELLOW));
+                                        }
                                     } else {
                                         context.getSource().sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " isn't whitelisted, so you can't remove him.", NamedTextColor.GOLD));
                                     }

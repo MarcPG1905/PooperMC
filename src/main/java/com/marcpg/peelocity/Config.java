@@ -43,6 +43,7 @@ public class Config {
     public static final List<DatabaseType> ALLOWED_DATABASES = List.of(DatabaseType.POSTGRESQL, DatabaseType.ORACLE, DatabaseType.MYSQL, DatabaseType.MS_SQL_SERVER, DatabaseType.MARIADB);
 
     public static YamlDocument CONFIG;
+    public static List<String> VALID_ROUTES;
 
     public static boolean MODERATOR_WEBHOOK_ENABLED = false;
     public static Webhook MODERATOR_WEBHOOK;
@@ -80,6 +81,10 @@ public class Config {
                     DumperSettings.DEFAULT,
                     UpdaterSettings.builder().setVersioning(new BasicVersioning("version")).setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
             );
+
+            VALID_ROUTES = CONFIG.getRoutesAsStrings(true).stream()
+                    .filter(r -> !CONFIG.isSection(r) && !CONFIG.isList(r))
+                    .toList();
 
             try {
                 MODERATOR_WEBHOOK = new Webhook(new URI(CONFIG.getString("moderator-webhook")).toURL());
@@ -160,13 +165,15 @@ public class Config {
                 .requires(source -> source.hasPermission("pee.admin"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            CONFIG.getRoutesAsStrings(true).forEach(builder::suggest);
+                            VALID_ROUTES.forEach(builder::suggest);
                             return builder.buildFuture();
                         })
                         .executes(context -> {
                             CommandSource source = context.getSource();
                             String route = context.getArgument("entry", String.class);
                             if (CONFIG.isSection(route)) {
+                                source.sendMessage(Component.text(route + " is a section!", NamedTextColor.GOLD));
+                            } else if (CONFIG.isList(route)) {
                                 source.sendMessage(Component.text("Values for '" + route + "' are: ", NamedTextColor.YELLOW));
                                 CONFIG.getList(route).forEach(o -> source.sendMessage(Component.text("- " + o.toString())));
                             } else if (CONFIG.contains(route)) {
@@ -178,6 +185,13 @@ public class Config {
                         })
                         .then(LiteralArgumentBuilder.<CommandSource>literal("set")
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
+                                        .suggests((context, builder) -> {
+                                            if (CONFIG.isBoolean(context.getArgument("entry", String.class))) {
+                                                builder.suggest("true");
+                                                builder.suggest("false");
+                                            }
+                                            return builder.buildFuture();
+                                        })
                                         .executes(context -> {
                                             String route = context.getArgument("entry", String.class);
                                             if (CONFIG.contains(route)) {
@@ -192,6 +206,13 @@ public class Config {
                                                     CONFIG.set(route, Integer.parseInt(stringValue));
                                                 else
                                                     CONFIG.set(route, stringValue);
+
+                                                try {
+                                                    CONFIG.save();
+                                                } catch (IOException e) {
+                                                    context.getSource().sendMessage(Component.text("Couldn't save the new value to the configuration file!", NamedTextColor.RED));
+                                                    return 1;
+                                                }
 
                                                 context.getSource().sendMessage(Component.text("Set '" + route + "' to \"" + stringValue + "\"", NamedTextColor.YELLOW));
                                                 context.getSource().sendMessage(Component.text("To apply the changes, you need to run /peeload!", NamedTextColor.GRAY));
@@ -211,10 +232,13 @@ public class Config {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("peeload")
                 .requires(source -> source.hasPermission("pee.admin"))
                 .executes(context -> {
-                    load(peelocity.getClass().getResourceAsStream("/pee.yml"));
-                    peelocity.registerEvents(Peelocity.SERVER.getEventManager());
-                    peelocity.registerCommands(Peelocity.SERVER.getCommandManager());
-                    context.getSource().sendMessage(Component.text("Successfully reloaded the Peelocity plugin!", NamedTextColor.YELLOW));
+                    try {
+                        Peelocity.loadLogic(peelocity.getClass().getResourceAsStream("/pee.yml"));
+                    } catch (IOException e) {
+                        context.getSource().sendMessage(Component.text("There was an issue while reloading the Peelocity plugin : " + e.getMessage(), NamedTextColor.RED));
+                    } finally {
+                        context.getSource().sendMessage(Component.text("Successfully reloaded the Peelocity plugin!", NamedTextColor.YELLOW));
+                    }
                     return 1;
                 })
                 .build();
