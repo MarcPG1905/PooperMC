@@ -160,27 +160,35 @@ public class Config {
     public static @NotNull BrigadierCommand createConfigBrigadier() {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("config")
                 .requires(source -> source.hasPermission("pee.admin"))
-                .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
-                        .suggests((context, builder) -> {
-                            VALID_ROUTES.forEach(builder::suggest);
-                            return builder.buildFuture();
-                        })
-                        .executes(context -> {
-                            CommandSource source = context.getSource();
-                            String route = context.getArgument("entry", String.class);
-                            if (CONFIG.isSection(route)) {
-                                source.sendMessage(Component.text(route + " is a section!", NamedTextColor.GOLD));
-                            } else if (CONFIG.isList(route)) {
-                                source.sendMessage(Component.text("Values for '" + route + "' are: ", NamedTextColor.YELLOW));
-                                CONFIG.getList(route).forEach(o -> source.sendMessage(Component.text("- " + o.toString())));
-                            } else if (CONFIG.contains(route)) {
-                                source.sendMessage(Component.text("Value for '" + route + "' is \"" + CONFIG.getString(route) + "\"", NamedTextColor.YELLOW));
-                            } else {
-                                source.sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
-                            }
-                            return 1;
-                        })
-                        .then(LiteralArgumentBuilder.<CommandSource>literal("set")
+                .then(LiteralArgumentBuilder.<CommandSource>literal("get")
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
+                                .suggests((context, builder) -> {
+                                    VALID_ROUTES.forEach(builder::suggest);
+                                    return builder.buildFuture();
+                                })
+                                .executes(context -> {
+                                    CommandSource source = context.getSource();
+                                    String route = context.getArgument("entry", String.class);
+                                    if (CONFIG.isList(route)) {
+                                        source.sendMessage(Component.text("Values for '" + route + "' are: ", NamedTextColor.YELLOW));
+                                        CONFIG.getList(route).forEach(o -> source.sendMessage(Component.text("- " + o.toString())));
+                                    } else if (CONFIG.contains(route)) {
+                                        source.sendMessage(Component.text("Value for '" + route + "' is \"" + CONFIG.getString(route) + "\"", NamedTextColor.YELLOW));
+                                    } else {
+                                        source.sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
+                                    }
+                                    return 1;
+                                })
+                        )
+                )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("set")
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
+                                .suggests((context, builder) -> {
+                                    VALID_ROUTES.stream()
+                                            .filter(r -> !CONFIG.isList(r))
+                                            .forEach(builder::suggest);
+                                    return builder.buildFuture();
+                                })
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
                                         .suggests((context, builder) -> {
                                             if (CONFIG.isBoolean(context.getArgument("entry", String.class))) {
@@ -212,7 +220,42 @@ public class Config {
                                                 }
 
                                                 context.getSource().sendMessage(Component.text("Set '" + route + "' to \"" + stringValue + "\"", NamedTextColor.YELLOW));
-                                                context.getSource().sendMessage(Component.text("To apply the changes, you need to run /peeload!", NamedTextColor.GRAY));
+                                                context.getSource().sendMessage(Component.text("To properly apply the changes, you need to run /peeload!", NamedTextColor.GRAY));
+                                            } else {
+                                                context.getSource().sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
+                                            }
+                                            return 1;
+                                        })
+                                )
+                        )
+                )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("add")
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
+                                .suggests((context, builder) -> {
+                                    VALID_ROUTES.stream()
+                                            .filter(r -> CONFIG.isList(r))
+                                            .forEach(builder::suggest);
+                                    return builder.buildFuture();
+                                })
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
+                                        .executes(context -> {
+                                            String route = context.getArgument("entry", String.class);
+                                            if (CONFIG.contains(route)) {
+                                                String stringValue = context.getArgument("value", String.class);
+
+                                                List<String> list = CONFIG.getStringList(route);
+                                                list.add(stringValue);
+                                                CONFIG.set(route, list);
+
+                                                try {
+                                                    CONFIG.save();
+                                                } catch (IOException e) {
+                                                    context.getSource().sendMessage(Component.text("Couldn't save the new value to the configuration file!", NamedTextColor.RED));
+                                                    return 1;
+                                                }
+
+                                                context.getSource().sendMessage(Component.text("Added \"" + stringValue + "\" to '" + route + "'", NamedTextColor.YELLOW));
+                                                context.getSource().sendMessage(Component.text("To properly apply the changes, you need to run /peeload!", NamedTextColor.GRAY));
                                             } else {
                                                 context.getSource().sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
                                             }

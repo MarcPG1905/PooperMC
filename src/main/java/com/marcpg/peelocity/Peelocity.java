@@ -52,7 +52,7 @@ public class Peelocity {
     @SuppressWarnings("unused")
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }  public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
     public static final String PEELOCITY_VERSION = "0.1.9";
-    public static final String PEELOCITY_BUILD_NUMBER = "3";
+    public static final String PEELOCITY_BUILD_NUMBER = "4";
 
     public static final List<String> COMMANDS = List.of("announce", "ban", "config", "friend", "hub", "join",
             "kick", "message-history", "msg", "mute", "pardon", "party", "peeload", "report", "staff", "unmute", "w");
