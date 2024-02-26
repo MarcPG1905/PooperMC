@@ -1,6 +1,6 @@
-package com.marcpg.peelocity.storage;
+package com.marcpg.peelocity_old.storage;
 
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity_old.Peelocity;
 
 import java.util.Map;
 import java.util.function.Predicate;

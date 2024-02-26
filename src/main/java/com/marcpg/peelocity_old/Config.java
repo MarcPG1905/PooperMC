@@ -1,9 +1,9 @@
-package com.marcpg.peelocity;
+package com.marcpg.peelocity_old;
 
 import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.data.database.sql.SQLConnection.DatabaseType;
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.storage.Storage;
+import com.marcpg.peelocity_old.storage.Storage;
 import com.marcpg.web.Downloads;
 import com.marcpg.web.discord.Webhook;
 import com.mojang.brigadier.arguments.StringArgumentType;

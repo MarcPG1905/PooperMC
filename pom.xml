@@ -141,15 +141,15 @@
                     <relocations>
                         <relocation>
                             <pattern>dev.dejvokep.boostedyaml</pattern>
-                            <shadedPattern>com.marcpg.peelocity.lib</shadedPattern>
+                            <shadedPattern>com.marcpg.peelocity_old.lib</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>com.alessiodp.libby</pattern>
-                            <shadedPattern>com.marcpg.peelocity.lib</shadedPattern>
+                            <shadedPattern>com.marcpg.peelocity_old.lib</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>com.marcpg.peelocity.lib</shadedPattern>
+                            <shadedPattern>com.marcpg.peelocity_old.lib</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

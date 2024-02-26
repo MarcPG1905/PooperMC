@@ -1,6 +1,6 @@
-package com.marcpg.peelocity.chat;
+package com.marcpg.peelocity_old.chat;
 
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity_old.Peelocity;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;

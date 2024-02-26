@@ -1,7 +1,7 @@
-package com.marcpg.peelocity.social;
+package com.marcpg.peelocity_old.social;
 
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.chat.MessageLogging;
+import com.marcpg.peelocity_old.chat.MessageLogging;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;

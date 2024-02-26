@@ -1,6 +1,6 @@
-package com.marcpg.peelocity.modules;
+package com.marcpg.peelocity_old.modules;
 
-import com.marcpg.peelocity.Config;
+import com.marcpg.peelocity_old.Config;
 import com.marcpg.util.Randomizer;
 import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.Subscribe;

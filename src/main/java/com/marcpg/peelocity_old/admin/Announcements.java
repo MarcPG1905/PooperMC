@@ -1,7 +1,7 @@
-package com.marcpg.peelocity.admin;
+package com.marcpg.peelocity_old.admin;
 
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity_old.Peelocity;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;

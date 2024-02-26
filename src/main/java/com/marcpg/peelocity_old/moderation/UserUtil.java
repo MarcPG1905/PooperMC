@@ -1,11 +1,11 @@
-package com.marcpg.peelocity.moderation;
+package com.marcpg.peelocity_old.moderation;
 
 import com.marcpg.data.time.Time;
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.Peelocity;
-import com.marcpg.peelocity.PlayerCache;
-import com.marcpg.peelocity.chat.MessageLogging;
-import com.marcpg.peelocity.chat.MessageLogging.MessageData.Type;
+import com.marcpg.peelocity_old.Peelocity;
+import com.marcpg.peelocity_old.PlayerCache;
+import com.marcpg.peelocity_old.chat.MessageLogging;
+import com.marcpg.peelocity_old.chat.MessageLogging.MessageData.Type;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;

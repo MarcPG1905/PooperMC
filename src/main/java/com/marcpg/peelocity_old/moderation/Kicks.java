@@ -1,8 +1,8 @@
-package com.marcpg.peelocity.moderation;
+package com.marcpg.peelocity_old.moderation;
 
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.Config;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity_old.Config;
+import com.marcpg.peelocity_old.Peelocity;
 import com.marcpg.web.discord.Embed;
 import com.marcpg.web.discord.Webhook;
 import com.mojang.brigadier.arguments.StringArgumentType;

@@ -1,10 +1,10 @@
-package com.marcpg.peelocity.storage;
+package com.marcpg.peelocity_old.storage;
 
 import com.alessiodp.libby.Library;
 import com.alessiodp.libby.VelocityLibraryManager;
 import com.marcpg.data.database.sql.AutoCatchingSQLConnection;
-import com.marcpg.peelocity.Config;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity_old.Config;
+import com.marcpg.peelocity_old.Peelocity;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.PreparedStatement;

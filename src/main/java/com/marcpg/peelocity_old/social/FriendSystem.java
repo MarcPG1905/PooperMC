@@ -1,10 +1,10 @@
-package com.marcpg.peelocity.social;
+package com.marcpg.peelocity_old.social;
 
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.Config;
-import com.marcpg.peelocity.Peelocity;
-import com.marcpg.peelocity.PlayerCache;
-import com.marcpg.peelocity.storage.Storage;
+import com.marcpg.peelocity_old.Config;
+import com.marcpg.peelocity_old.Peelocity;
+import com.marcpg.peelocity_old.PlayerCache;
+import com.marcpg.peelocity_old.storage.Storage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;

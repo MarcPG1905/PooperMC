@@ -1,8 +1,8 @@
-package com.marcpg.peelocity;
+package com.marcpg.peelocity_old;
 
 import com.google.common.io.ByteStreams;
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.social.PartySystem;
+import com.marcpg.peelocity_old.social.PartySystem;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
