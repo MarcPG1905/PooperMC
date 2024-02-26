@@ -4,6 +4,7 @@ import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.peelocity.storage.Storage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -19,18 +20,18 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public class Whitelist {
-    public static final Set<String> WHITELISTED_NAMES = new HashSet<>();
+    public static final Storage<String> STORAGE = Config.STORAGE_TYPE.getStorage("whitelist", "name");
 
     @Subscribe(order = PostOrder.EARLY)
     public void onLogin(@NotNull LoginEvent event) {
         Player player = event.getPlayer();
 
-        if (Config.WHITELIST && !(WHITELISTED_NAMES.contains(player.getUsername()))) {
+        if (Config.WHITELIST_ENABLED && !(STORAGE.contains(player.getUsername()))) {
             event.setResult(ResultedEvent.ComponentResult.denied(Translation.component(player.getEffectiveLocale(), "server.whitelist").color(NamedTextColor.GOLD)));
             Peelocity.LOG.info("Whitelist: " + player.getUsername() + " kicked, because he isn't whitelisted!");
             return;
@@ -46,22 +47,19 @@ public class Whitelist {
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                                 .suggests((context, builder) -> {
                                     PlayerCache.CACHED_USERS.values().stream()
-                                            .filter(s -> !WHITELISTED_NAMES.contains(s))
+                                            .filter(s -> !STORAGE.contains(s))
                                             .forEach(builder::suggest);
                                     return builder.buildFuture();
                                 })
                                 .executes(context -> {
-                                    if (WHITELISTED_NAMES.add(context.getArgument("player", String.class))) {
-                                        Config.CONFIG.set("whitelist.names", WHITELISTED_NAMES);
-                                        try {
-                                            Config.CONFIG.save();
-                                        } catch (IOException e) {
-                                            context.getSource().sendMessage(Component.text("Couldn't save the whitelist to config!", NamedTextColor.RED));
-                                        } finally {
-                                            context.getSource().sendMessage(Component.text("Successfully added " + context.getArgument("player", String.class) + " to the whitelist.", NamedTextColor.GREEN));
-                                        }
+                                    CommandSource source = context.getSource();
+                                    Locale locale = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+
+                                    if (STORAGE.contains(context.getArgument("player", String.class))) {
+                                        source.sendMessage(Translation.component(locale, "server.whitelist.add.already_whitelisted", context.getArgument("player", String.class)).color(NamedTextColor.YELLOW));
                                     } else {
-                                        context.getSource().sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " is already whitelisted!", NamedTextColor.YELLOW));
+                                        STORAGE.add(Map.of("name", context.getArgument("player", String.class), "filler_value", false));
+                                        source.sendMessage(Translation.component(locale, "server.whitelist.add.confirm", context.getArgument("player", String.class)).color(NamedTextColor.GREEN));
                                     }
                                     return 1;
                                 })
@@ -70,21 +68,18 @@ public class Whitelist {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("remove")
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                                 .suggests((context, builder) -> {
-                                    WHITELISTED_NAMES.forEach(builder::suggest);
+                                    STORAGE.get(m -> true).keySet().forEach(builder::suggest);
                                     return builder.buildFuture();
                                 })
                                 .executes(context -> {
-                                    if (WHITELISTED_NAMES.remove(context.getArgument("player", String.class))) {
-                                        Config.CONFIG.set("whitelist.names", WHITELISTED_NAMES);
-                                        try {
-                                            Config.CONFIG.save();
-                                        } catch (IOException e) {
-                                            context.getSource().sendMessage(Component.text("Couldn't save the whitelist to config!", NamedTextColor.RED));
-                                        } finally {
-                                            context.getSource().sendMessage(Component.text("Successfully removed " + context.getArgument("player", String.class) + " from the whitelist.", NamedTextColor.YELLOW));
-                                        }
+                                    CommandSource source = context.getSource();
+                                    Locale locale = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+
+                                    if (STORAGE.contains(context.getArgument("player", String.class))) {
+                                        STORAGE.remove(context.getArgument("player", String.class));
+                                        source.sendMessage(Translation.component(locale, "server.whitelist.remove.confirm", context.getArgument("player", String.class)).color(NamedTextColor.GREEN));
                                     } else {
-                                        context.getSource().sendMessage(Component.text("The player " + context.getArgument("player", String.class) + " isn't whitelisted, so you can't remove him.", NamedTextColor.GOLD));
+                                        source.sendMessage(Translation.component(locale, "server.whitelist.remove.not_whitelisted", context.getArgument("player", String.class)).color(NamedTextColor.YELLOW));
                                     }
                                     return 1;
                                 })
@@ -93,11 +88,14 @@ public class Whitelist {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("list")
                         .executes(context -> {
                             CommandSource source = context.getSource();
-                            if (WHITELISTED_NAMES.isEmpty()) {
-                                source.sendMessage(Component.text("The whitelist is empty. Add players using '/whitelist add PlayerName'", NamedTextColor.YELLOW));
+                            Locale locale = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+
+                            Set<String> whitelistedNames = STORAGE.get(m -> true).keySet();
+                            if (whitelistedNames.isEmpty()) {
+                                source.sendMessage(Translation.component(locale, "server.whitelist.empty").color(NamedTextColor.YELLOW));
                             } else {
-                                source.sendMessage(Component.text("Showing all " + WHITELISTED_NAMES.size() + " whitelisted players. ", NamedTextColor.GREEN));
-                                WHITELISTED_NAMES.forEach(p -> source.sendMessage(Component.text("- " + p, NamedTextColor.GRAY)));
+                                source.sendMessage(Translation.component(locale, "server.whitelist.list", STORAGE.get(m -> true).size()).color(NamedTextColor.GREEN));
+                                whitelistedNames.forEach(p -> source.sendMessage(Component.text("- " + p, NamedTextColor.GRAY)));
                             }
                             return 1;
                         })

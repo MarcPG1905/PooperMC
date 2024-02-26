@@ -7,47 +7,47 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class YamlStorage extends Storage {
+@SuppressWarnings("unchecked")
+public class YamlStorage<T> extends Storage<T> {
     private final YamlDocument yamlDocument;
 
-    public YamlStorage(String name) throws IOException {
-        super(name);
+    public YamlStorage(String name, String keyName) throws IOException {
+        super(name, keyName);
         yamlDocument = YamlDocument.create(new File(Peelocity.DATA_DIRECTORY.toFile(), "/data/" + name + ".yml"));
     }
 
     @Override
-    public boolean contains(@NotNull UUID uuid) {
-        return yamlDocument.contains(uuid.toString());
+    public boolean contains(@NotNull T key) {
+        return yamlDocument.contains(key.toString());
     }
 
     @Override
     public void add(Map<String, Object> entry) {
-        UUID uuid = (UUID) entry.get("uuid");
-        entry.forEach((s, o) -> yamlDocument.set(uuid + "." + s, o));
+        T key = (T) entry.get(keyName);
+        entry.forEach((s, o) -> yamlDocument.set(key + "." + s, o));
         save();
     }
 
     @Override
-    public void remove(UUID uuid) {
-        yamlDocument.remove(uuid.toString());
+    public void remove(T key) {
+        yamlDocument.remove(key.toString());
         save();
     }
 
     @Override
-    public Map<String, Object> get(UUID uuid) {
-        return yamlDocument.getSection(uuid.toString()).getStringRouteMappedValues(false);
+    public Map<String, Object> get(T key) {
+        return yamlDocument.getSection(key.toString()).getStringRouteMappedValues(false);
     }
 
     @Override
-    public Map<UUID, Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
+    public Map<T, Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
         return yamlDocument.getRoutesAsStrings(false).parallelStream()
                 .map(s -> yamlDocument.getSection(s).getStringRouteMappedValues(false))
                 .filter(predicate)
-                .collect(Collectors.toMap(o -> (UUID) o.get("uuid"), o -> o));
+                .collect(Collectors.toMap(o -> (T) o.get(keyName), o -> o));
     }
 
     public void save() {

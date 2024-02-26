@@ -29,10 +29,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public class Bans {
     public static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo", "yr");
-    public static final Storage STORAGE = Config.STORAGE_TYPE.getStorage("bans");
+    public static final Storage<UUID> STORAGE = Config.STORAGE_TYPE.getStorage("bans", "uuid");
     private static final Time MAX_TIME = new Time(5, Time.Unit.YEARS);
 
     public static @NotNull BrigadierCommand createBanBrigadier() {

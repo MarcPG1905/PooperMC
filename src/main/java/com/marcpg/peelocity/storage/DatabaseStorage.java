@@ -5,59 +5,65 @@ import com.alessiodp.libby.VelocityLibraryManager;
 import com.marcpg.data.database.sql.AutoCatchingSQLConnection;
 import com.marcpg.peelocity.Config;
 import com.marcpg.peelocity.Peelocity;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Predicate;
 
-public class DatabaseStorage extends Storage {
-    private final AutoCatchingSQLConnection connection;
+@SuppressWarnings("unchecked")
+public class DatabaseStorage<T> extends Storage<T> {
+    private final AutoCatchingSQLConnection<T> connection;
 
-    public DatabaseStorage(String name) throws SQLException, ClassNotFoundException {
-        super(name);
-        connection = new AutoCatchingSQLConnection(
+    public DatabaseStorage(String name, String keyName) throws SQLException, ClassNotFoundException {
+        super(name, keyName);
+        connection = new AutoCatchingSQLConnection<>(
                 Config.DATABASE_TYPE,
                 Config.CONFIG.getString("database.address"),
                 Config.CONFIG.getInt("database.port"),
                 Config.CONFIG.getString("database.database"),
                 Config.CONFIG.getString("database.user"),
                 Config.CONFIG.getString("database.passwd"),
-                name, e -> Peelocity.LOG.warn("Error while interacting with the ban database: " + e.getMessage()));
+                name,
+                keyName,
+                e -> {
+                    e.printStackTrace();
+                    Peelocity.LOG.warn("Error while interacting with the " + name + " database: " + e.getMessage());
+                });
     }
 
     @Override
-    public boolean contains(UUID uuid) {
-        return connection.contains(uuid);
+    public boolean contains(T key) {
+        return connection.contains(key);
     }
 
     @Override
-    public void add(Map<String, Object> entry) {
-        connection.add((UUID) entry.get("uuid"), entry.values().toArray(Object[]::new));
+    public void add(@NotNull Map<String, Object> entry) {
+        connection.add((T) entry.get(keyName), entry.entrySet().stream().filter(e -> !e.getKey().equals(keyName)).map(Map.Entry::getValue).toArray(Object[]::new));
     }
 
     @Override
-    public void remove(UUID uuid) {
-        connection.remove(uuid);
+    public void remove(T key) {
+        connection.remove(key);
     }
 
     @Override
-    public Map<String, Object> get(UUID uuid) {
-        return connection.getRowMap(uuid);
+    public Map<String, Object> get(T key) {
+        return connection.getRowMap(key);
     }
 
     @Override
-    public Map<UUID, Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
-        try (PreparedStatement preparedStatement = connection.connection().prepareStatement("SELECT uuid FROM " + name)) {
+    public Map<T, Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
+        try (PreparedStatement preparedStatement = connection.connection().prepareStatement("SELECT " + keyName + " FROM " + name)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                Map<UUID, Map<String, Object>> map = new HashMap<>();
+                Map<T, Map<String, Object>> map = new HashMap<>();
                 while (resultSet.next()) {
-                    Map<String, Object> result = get((UUID) resultSet.getObject("uuid"));
+                    Map<String, Object> result = get((T) resultSet.getObject(keyName));
                     if (predicate.test(result))
-                        map.put((UUID) result.get("uuid"), result);
+                        map.put((T) result.get(keyName), result);
                 }
                 return map;
             }

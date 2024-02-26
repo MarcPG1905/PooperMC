@@ -2,41 +2,41 @@ package com.marcpg.peelocity.storage;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class RamStorage extends Storage {
-    protected final Map<UUID, Map<String, Object>> punishments = new HashMap<>();
+public class RamStorage<T> extends Storage<T> {
+    protected final Map<T, Map<String, Object>> entries = new HashMap<>();
 
-    public RamStorage(String name) {
-        super(name);
+    public RamStorage(String name, String keyName) {
+        super(name, keyName);
     }
 
     @Override
-    public boolean contains(UUID uuid) {
-        return punishments.containsKey(uuid);
+    public boolean contains(T key) {
+        return entries.containsKey(key);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void add(Map<String, Object> entry) {
-        punishments.put((UUID) entry.get("uuid"), entry);
+        entries.put((T) entry.get(keyName), entry);
     }
 
     @Override
-    public void remove(UUID uuid) {
-        punishments.remove(uuid);
+    public void remove(T key) {
+        entries.remove(key);
     }
 
     @Override
-    public Map<UUID, Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
-        return punishments.entrySet().parallelStream()
+    public Map<T, Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
+        return entries.entrySet().parallelStream()
                 .filter(e -> predicate.test(e.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
-    public Map<String, Object> get(UUID uuid) {
-        return punishments.get(uuid);
+    public Map<String, Object> get(T key) {
+        return entries.get(key);
     }
 }

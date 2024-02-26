@@ -27,7 +27,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class FriendSystem {
     public static final Map<UUID, UUID> FRIEND_REQUESTS = new HashMap<>();
-    public static final Storage STORAGE = Config.STORAGE_TYPE.getStorage("friendships");
+    public static final Storage<UUID> STORAGE = Config.STORAGE_TYPE.getStorage("friendships", "uuid");
 
     public static @NotNull BrigadierCommand createFriendBrigadier() {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("friend")
@@ -131,7 +131,7 @@ public class FriendSystem {
                         .executes(context -> {
                             if (context.getSource() instanceof Player player) {
                                 STORAGE.get(m -> m.get("player1_uuid") == player.getUniqueId() || m.get("player2_uuid") == player.getUniqueId())
-                                        .forEach((uuid, m) -> player.sendMessage(Component.text("- " + PlayerCache.CACHED_USERS.get(uuid), AQUA)));
+                                        .forEach((uuid, o) -> player.sendMessage(Component.text("- " + PlayerCache.CACHED_USERS.get(uuid), AQUA)));
                             }
                             return 1;
                         })

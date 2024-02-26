@@ -3,7 +3,6 @@ package com.marcpg.peelocity;
 import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.data.database.sql.SQLConnection.DatabaseType;
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity.modules.Whitelist;
 import com.marcpg.peelocity.storage.Storage;
 import com.marcpg.web.Downloads;
 import com.marcpg.web.discord.Webhook;
@@ -13,6 +12,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.util.Favicon;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
@@ -35,6 +35,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -42,18 +43,21 @@ import java.util.stream.Collectors;
 public class Config {
     public static final List<DatabaseType> ALLOWED_DATABASES = List.of(DatabaseType.POSTGRESQL, DatabaseType.ORACLE, DatabaseType.MYSQL, DatabaseType.MS_SQL_SERVER, DatabaseType.MARIADB);
 
+    public static boolean downloadedTranslations;
+
     public static YamlDocument CONFIG;
     public static List<String> VALID_ROUTES;
 
     public static boolean MODERATOR_WEBHOOK_ENABLED = false;
     public static Webhook MODERATOR_WEBHOOK;
     public static Map<String, Integer> GAMEMODES;
+    public static boolean GLOBAL_CHAT;
 
     public static Storage.StorageType STORAGE_TYPE;
 
     public static SQLConnection.DatabaseType DATABASE_TYPE;
 
-    public static boolean WHITELIST;
+    public static boolean WHITELIST_ENABLED;
 
     public static boolean SL_ENABLED;
     public static boolean SL_MOTD_ENABLED;
@@ -95,6 +99,8 @@ public class Config {
                     .filter(entry -> entry.getValue() instanceof Integer)
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> (Integer) entry.getValue()));
 
+            GLOBAL_CHAT = CONFIG.getBoolean("global-chat");
+
             try {
                 STORAGE_TYPE = Storage.StorageType.valueOf(CONFIG.getString("storage-method").toUpperCase());
             } catch (IllegalArgumentException e) {
@@ -110,9 +116,7 @@ public class Config {
                 }
             }
 
-            WHITELIST = CONFIG.getBoolean("whitelist.enabled");
-            Whitelist.WHITELISTED_NAMES.clear();
-            Whitelist.WHITELISTED_NAMES.addAll(CONFIG.getStringList("whitelist.names"));
+            WHITELIST_ENABLED = CONFIG.getBoolean("whitelist-enabled");
 
             SL_ENABLED = CONFIG.getBoolean("server-list.enabled");
             if (SL_ENABLED) {
@@ -168,14 +172,15 @@ public class Config {
                                 })
                                 .executes(context -> {
                                     CommandSource source = context.getSource();
+                                    Locale locale = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
                                     String route = context.getArgument("entry", String.class);
                                     if (CONFIG.isList(route)) {
-                                        source.sendMessage(Component.text("Values for '" + route + "' are: ", NamedTextColor.YELLOW));
+                                        source.sendMessage(Translation.component(locale, "cmd.config.get.list", route).color(NamedTextColor.YELLOW));
                                         CONFIG.getList(route).forEach(o -> source.sendMessage(Component.text("- " + o.toString())));
                                     } else if (CONFIG.contains(route)) {
-                                        source.sendMessage(Component.text("Value for '" + route + "' is \"" + CONFIG.getString(route) + "\"", NamedTextColor.YELLOW));
+                                        source.sendMessage(Translation.component(locale, "cmd.config.get.object", route, CONFIG.getString(route)).color(NamedTextColor.YELLOW));
                                     } else {
-                                        source.sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
+                                        source.sendMessage(Translation.component(locale, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
                                     }
                                     return 1;
                                 })
@@ -198,12 +203,14 @@ public class Config {
                                             return builder.buildFuture();
                                         })
                                         .executes(context -> {
+                                            CommandSource source = context.getSource();
+                                            Locale locale = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
                                             String route = context.getArgument("entry", String.class);
                                             if (CONFIG.contains(route)) {
                                                 String stringValue = context.getArgument("value", String.class);
 
                                                 if (CONFIG.isSection(route) || CONFIG.isList(route)) {
-                                                    context.getSource().sendMessage(Component.text("You cannot set sections!", NamedTextColor.RED));
+                                                    source.sendMessage(Translation.component(locale, "cmd.config.set.section_list").color(NamedTextColor.RED));
                                                     return 1;
                                                 } else if (CONFIG.isBoolean(route))
                                                     CONFIG.set(route, Boolean.parseBoolean(stringValue));
@@ -215,14 +222,14 @@ public class Config {
                                                 try {
                                                     CONFIG.save();
                                                 } catch (IOException e) {
-                                                    context.getSource().sendMessage(Component.text("Couldn't save the new value to the configuration file!", NamedTextColor.RED));
+                                                    source.sendMessage(Translation.component(locale, "cmd.config.error").color(NamedTextColor.RED));
                                                     return 1;
                                                 }
 
-                                                context.getSource().sendMessage(Component.text("Set '" + route + "' to \"" + stringValue + "\"", NamedTextColor.YELLOW));
-                                                context.getSource().sendMessage(Component.text("To properly apply the changes, you need to run /peeload!", NamedTextColor.GRAY));
+                                                source.sendMessage(Translation.component(locale, "cmd.config.set.confirm", route, stringValue).color(NamedTextColor.YELLOW));
+                                                source.sendMessage(Translation.component(locale, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
                                             } else {
-                                                context.getSource().sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
+                                                source.sendMessage(Translation.component(locale, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
                                             }
                                             return 1;
                                         })
@@ -239,6 +246,8 @@ public class Config {
                                 })
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
                                         .executes(context -> {
+                                            CommandSource source = context.getSource();
+                                            Locale locale = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
                                             String route = context.getArgument("entry", String.class);
                                             if (CONFIG.contains(route)) {
                                                 String stringValue = context.getArgument("value", String.class);
@@ -250,14 +259,14 @@ public class Config {
                                                 try {
                                                     CONFIG.save();
                                                 } catch (IOException e) {
-                                                    context.getSource().sendMessage(Component.text("Couldn't save the new value to the configuration file!", NamedTextColor.RED));
+                                                    source.sendMessage(Translation.component(locale, "cmd.config.error").color(NamedTextColor.RED));
                                                     return 1;
                                                 }
 
-                                                context.getSource().sendMessage(Component.text("Added \"" + stringValue + "\" to '" + route + "'", NamedTextColor.YELLOW));
-                                                context.getSource().sendMessage(Component.text("To properly apply the changes, you need to run /peeload!", NamedTextColor.GRAY));
+                                                source.sendMessage(Translation.component(locale, "cmd.config.add.confirm", route, stringValue).color(NamedTextColor.YELLOW));
+                                                source.sendMessage(Translation.component(locale, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
                                             } else {
-                                                context.getSource().sendMessage(Component.text("The given key \"" + route + "\" does not exist!", NamedTextColor.RED));
+                                                source.sendMessage(Translation.component(locale, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
                                             }
                                             return 1;
                                         })
@@ -272,12 +281,13 @@ public class Config {
         LiteralCommandNode<CommandSource> node = LiteralArgumentBuilder.<CommandSource>literal("peeload")
                 .requires(source -> source.hasPermission("pee.admin"))
                 .executes(context -> {
+                    Locale locale = context.getSource() instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
                     try {
                         Peelocity.loadLogic(peelocity.getClass().getResourceAsStream("/pee.yml"));
                     } catch (IOException e) {
-                        context.getSource().sendMessage(Component.text("There was an issue while reloading the Peelocity plugin : " + e.getMessage(), NamedTextColor.RED));
+                        context.getSource().sendMessage(Translation.component(locale, "cmd.reload.error").color(NamedTextColor.RED));
                     } finally {
-                        context.getSource().sendMessage(Component.text("Successfully reloaded the Peelocity plugin!", NamedTextColor.YELLOW));
+                        context.getSource().sendMessage(Translation.component(locale, "cmd.reload.confirm").color(NamedTextColor.YELLOW));
                     }
                     return 1;
                 })
@@ -312,12 +322,13 @@ public class Config {
                     attempt++;
                 }
             }
+            Peelocity.LOG.info("Downloaded and loaded all recent translations!");
+
             try {
                 Translation.loadProperties(langFolder.toFile());
             } catch (IOException e) {
                 Peelocity.LOG.warn("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
             }
-            Peelocity.LOG.info("Downloaded and loaded all recent translations!");
         }
     }
 }

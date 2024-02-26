@@ -12,6 +12,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.Component;
@@ -93,7 +94,7 @@ public class JoinLogic {
         return new BrigadierCommand(node);
     }
 
-    public static void doJoinLogic(Player player, String gamemode) {
+    public static void doJoinLogic(@NotNull Player player, String gamemode) {
         RegisteredServer server = null;
         List<Player> players = new ArrayList<>();
 
@@ -142,9 +143,9 @@ public class JoinLogic {
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPluginMessage(@NotNull PluginMessageEvent event) {
-        if (event.getSource() instanceof Player player && event.getIdentifier() == IDENTIFIER) {
+        if (event.getSource() instanceof ServerConnection connection && event.getIdentifier() == IDENTIFIER) {
             String gamemode = ByteStreams.newDataInput(event.getData()).readUTF();
-            doJoinLogic(player, gamemode);
+            doJoinLogic(connection.getPlayer(), gamemode);
         }
     }
 }

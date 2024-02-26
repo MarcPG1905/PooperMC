@@ -27,10 +27,11 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class Mutes {
     private static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo");
-    private static final Storage STORAGE = Config.STORAGE_TYPE.getStorage("mutes");
+    private static final Storage<UUID> STORAGE = Config.STORAGE_TYPE.getStorage("mutes", "uuid");
     private static final Time MAX_TIME = new Time(1, Time.Unit.YEARS);
 
     public static @NotNull BrigadierCommand createMuteBrigadier() {

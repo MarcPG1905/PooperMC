@@ -38,13 +38,22 @@ gamemodes:
   game2: 10
 
 
-# The methods to store the data.
+## The method to store the data. ##
 #   Available Methods:
 #     | -> database  : recommended
 #     | -> yaml      : default (.yml)
-#     | -> plaintext : (.txt)
 #     | -> ram       : not recommended, restarting will erase data
 storage-method: yaml
+
+
+## Should the Chat be global on the whole Proxy? ##
+# If set to true, all messages will be sent to everyone on the whole proxy,
+# instead of only everyone on the player's backend server.
+global-chat: false
+
+
+## If the Whitelist is Enabled ##
+whitelist-enabled: false
 
 
 
@@ -95,10 +104,14 @@ chatutility:
   enabled: true
 
   # Chat color related configuration.
+  # Only works if global-chat is enabled.
   colors:
 
     # Enables or disables colors in the chat.
     enabled: true
+
+    # If text styles like bold, italic, underlines, etc. should be enabled.
+    styles: false
 
     # If colors in chat will require the pee.chat.colors permission.
     permission: false
@@ -121,26 +134,6 @@ chatutility:
       # If using @everyone in chat will require the pee.chat.mention.everyone permission.
       # Highly recommended, as it can be very annoying when not being limited.
       permission: true
-
-  # Please keep in mind that placeholders AREN'T implemented yet, which means that they WILL NOT work.
-  # Placeholder related configuration.
-  # You can disable a specific placeholder by setting it to false.
-  placeholders:
-
-    # Shows a specific item in the chat - [item=stick] - [item]
-    item: true
-
-    # Shows a timestamp, that automatically adjusts to player's time zones - [timestamp=00:00]
-    timestamp: true
-
-    # Shows your current location in the chat - [position]
-    position: true
-
-    # Shows your current ping in the chat - [ping] - [ping=PlayerName]
-    ping: true
-
-    # Shows your current health in the chat - [health]
-    health: true
 
 
 
@@ -191,24 +184,5 @@ server-list:
 
 
 
-##  -------------------------------------------------------------------------  ##
-##                __      __ _     _  _         _  _      _                    ##
-##                \ \    / /| |_  (_)| |_  ___ | |(_) ___| |_                  ##
-##                 \ \/\/ / | ' \ | ||  _|/ -_)| || |(_-<|  _|                 ##
-##                  \_/\_/  |_||_||_| \__|\___||_||_|/__/ \__|                 ##
-##                   Configuration for the global Whitelist!                   ##
-##  -------------------------------------------------------------------------  ##
-whitelist:
-  # If the whitelist feature is enabled or not.
-  enabled: false
-
-  # All whitelisted player names that are allowed to join the server.
-  names:
-    - OneUnnecessarilyLongUsernameBecauseWhyNot
-    - AnotherExampleUserNameWowSuperCool
-
-
-
-
 ## DO NOT CHANGE THIS! ##
-version: 4
+version: 5

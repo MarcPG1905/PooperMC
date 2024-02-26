@@ -51,8 +51,8 @@ import java.util.List;
 public class Peelocity {
     @SuppressWarnings("unused")
     public enum ReleaseType { ALPHA, BETA, SNAPSHOT, PRE, RELEASE }  public static final ReleaseType PEELOCITY_RELEASE_TYPE = ReleaseType.BETA;
-    public static final String PEELOCITY_VERSION = "0.1.9";
-    public static final String PEELOCITY_BUILD_NUMBER = "4";
+    public static final String PEELOCITY_VERSION = "0.2.0";
+    public static final String PEELOCITY_BUILD_NUMBER = "2";
 
     public static final List<String> COMMANDS = List.of("announce", "ban", "config", "friend", "hub", "join",
             "kick", "message-history", "msg", "mute", "pardon", "party", "peeload", "report", "staff", "unmute", "w");
@@ -75,6 +75,7 @@ public class Peelocity {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) throws IOException {
+        SERVER.getChannelRegistrar().register(JoinLogic.IDENTIFIER);
         loadLogic(getClass().getResourceAsStream("/pee.yml"));
         sendWelcome(SERVER.getConsoleCommandSource()); // Sends the cool little info message
     }
@@ -115,6 +116,12 @@ public class Peelocity {
         registerCommands(SERVER.getCommandManager()); // Registers the commands, if enabled
 
         LOG.info(Ansi.formattedString("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!", Ansi.GREEN));
+
+        try {
+            Translation.loadProperties(Peelocity.DATA_DIRECTORY.resolve("lang").toFile());
+        } catch (IOException e) {
+            Peelocity.LOG.warn("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
+        }
     }
 
     /**
@@ -127,7 +134,7 @@ public class Peelocity {
         metrics.addCustomChart(new SimplePie("server_list", () -> String.valueOf(Config.SL_ENABLED)));
         metrics.addCustomChart(new SimplePie("chat_utils", () -> String.valueOf(Config.CHATUTILITY_BOOLEANS.getBoolean("enabled"))));
         metrics.addCustomChart(new SimplePie("translations", () -> String.valueOf(Config.CONFIG.getBoolean("enable-translations"))));
-        metrics.addCustomChart(new SimplePie("whitelist", () -> String.valueOf(Config.WHITELIST)));
+        metrics.addCustomChart(new SimplePie("whitelist", () -> String.valueOf(Config.WHITELIST_ENABLED)));
     }
 
     /**
@@ -139,7 +146,7 @@ public class Peelocity {
 
         if (Config.CHATUTILITY_BOOLEANS.getBoolean("enabled")) manager.register(Peelocity.PLUGIN, new ChatUtilities());
         if (Config.SL_ENABLED) manager.register(Peelocity.PLUGIN, new ServerList());
-        if (Config.WHITELIST) manager.register(Peelocity.PLUGIN, new Whitelist());
+        if (Config.WHITELIST_ENABLED) manager.register(Peelocity.PLUGIN, new Whitelist());
         manager.register(Peelocity.PLUGIN, new Bans());
         manager.register(Peelocity.PLUGIN, new JoinLogic());
         manager.register(Peelocity.PLUGIN, new MessageLogging());
@@ -177,7 +184,7 @@ public class Peelocity {
             manager.register("report", Reporting.createReportBrigadier(), "snitch");
         else LOG.info("Skipping /report registration, as the moderator-webhook is not configured.");
 
-        if (Config.WHITELIST)
+        if (Config.WHITELIST_ENABLED)
             manager.register("whitelist", Whitelist.createWhitelistBrigadier());
         else LOG.info("Skipping /whitelist registration, as the whitelist is disabled.");
 
