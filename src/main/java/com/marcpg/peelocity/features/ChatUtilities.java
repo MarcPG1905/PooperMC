@@ -1,8 +1,8 @@
-package com.marcpg.peelocity_old.modules;
+package com.marcpg.peelocity.features;
 
 import com.marcpg.lang.Translation;
-import com.marcpg.peelocity_old.Config;
-import com.marcpg.peelocity_old.Peelocity;
+import com.marcpg.peelocity.Configuration;
+import com.marcpg.peelocity.Peelocity;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
@@ -31,51 +31,54 @@ public class ChatUtilities {
         if (!event.getResult().isAllowed()) return;
 
         Player player = event.getPlayer();
-        String message = event.getMessage();
+        String content = event.getMessage();
 
         if (canUse(player, "mentions")) {
-            Matcher matcher = MENTION_PATTERN.matcher(message);
+            Matcher matcher = MENTION_PATTERN.matcher(content);
             while (matcher.find()) {
-                String target = matcher.group(1);
+                String mentioned = matcher.group(1);
+
                 Optional<ServerConnection> connection = player.getCurrentServer();
-                if (target.equals("everyone") && canUse(player, "mentions.everyone")) {
+                if (mentioned.equals("everyone") && canUse(player, "mentions.everyone")) {
                     Peelocity.SERVER.getAllPlayers().forEach(p -> {
-                        if (Config.GLOBAL_CHAT || connection.equals(p.getCurrentServer())) {
+                        if (Configuration.globalChat || connection.equals(p.getCurrentServer())) {
                             Locale l = p.getEffectiveLocale();
-                            p.showTitle(Title.title(Translation.component(l, "chat.mentions.title").color(NamedTextColor.BLUE), Translation.component(l, "chat.mentions.subtitle.everyone", player.getUsername()).color(NamedTextColor.GREEN)));
+                            p.showTitle(Title.title(Translation.component(l, "chat.mentions.title").color(NamedTextColor.BLUE), Translation.component(l, "chat.mentions.subtitle.everyone", player.getUsername()).color(NamedTextColor.DARK_GREEN)));
                             p.playSound(Sound.sound(Key.key("minecraft:entity.player.levelup"), Sound.Source.PLAYER, 1.0f, 1.0f));
                         }
                     });
                 } else {
-                    Peelocity.SERVER.getPlayer(target).ifPresentOrElse(p -> {
-                        if (Config.GLOBAL_CHAT || connection.equals(p.getCurrentServer())) {
+                    Peelocity.SERVER.getPlayer(mentioned).ifPresentOrElse(p -> {
+                        if (Configuration.globalChat || connection.equals(p.getCurrentServer())) {
                             Locale l = p.getEffectiveLocale();
-                            p.showTitle(Title.title(Translation.component(l, "chat.mentions.title").color(NamedTextColor.BLUE), Translation.component(l, "chat.mentions.subtitle", player.getUsername()).color(NamedTextColor.GREEN)));
+                            p.showTitle(Title.title(Translation.component(l, "chat.mentions.title").color(NamedTextColor.BLUE), Translation.component(l, "chat.mentions.subtitle", player.getUsername()).color(NamedTextColor.DARK_GREEN)));
                             p.playSound(Sound.sound(Key.key("minecraft:entity.player.levelup"), Sound.Source.PLAYER, 1.0f, 1.0f));
                         } else
-                            player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", target).color(NamedTextColor.GRAY));
-                    }, () -> player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", target).color(NamedTextColor.GRAY)));
+                            player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", mentioned).color(NamedTextColor.GRAY));
+                    }, () -> player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", mentioned).color(NamedTextColor.GRAY)));
                 }
             }
         }
 
         event.setResult(PlayerChatEvent.ChatResult.denied());
-        Component finalMessage = canUse(player, "colors") ? colorize(message) : Component.text(message);
-        if (Config.GLOBAL_CHAT) {
+
+        Component finalMessage = canUse(player, "colors") ? colorize(content) : Component.text(content);
+        if (Configuration.globalChat) {
             Peelocity.SERVER.sendMessage(Component.text("<" + player.getUsername() + "> ").append(finalMessage));
         } else {
-            player.getCurrentServer().ifPresent(connection -> connection.getServer().sendMessage(Component.text("<" + player.getUsername() + "> " + finalMessage)));
+            player.getCurrentServer().ifPresent(connection -> connection.getServer().sendMessage(Component.text("<" + player.getUsername() + "> ").append(finalMessage)));
         }
     }
 
+
     public static boolean canUse(Player player, String chatUtil) {
-        return Config.CHATUTILITY_BOOLEANS.getBoolean(chatUtil + ".enabled") && !Config.CHATUTILITY_BOOLEANS.getBoolean(chatUtil + ".permission") || player.hasPermission("pee.chat." + chatUtil);
+        return Configuration.chatUtilities.getBoolean(chatUtil + ".enabled") && !Configuration.chatUtilities.getBoolean(chatUtil + ".permission") || player.hasPermission("pee.chat." + chatUtil);
     }
 
     public static final TagResolver COLORS = TagResolver.resolver(StandardTags.reset(), StandardTags.color());
     public static final TagResolver STYLES = TagResolver.resolver(StandardTags.reset(), StandardTags.color(), StandardTags.decorations());
 
     public static @NotNull Component colorize(String original) {
-        return MiniMessage.miniMessage().deserialize(original, Config.CHATUTILITY_BOOLEANS.getBoolean("colors.styles") ? STYLES : COLORS);
+        return MiniMessage.miniMessage().deserialize(original, Configuration.chatUtilities.getBoolean("colors.styles") ? STYLES : COLORS);
     }
 }

@@ -38,14 +38,6 @@ gamemodes:
   game2: 10
 
 
-## The method to store the data. ##
-#   Available Methods:
-#     | -> database  : recommended
-#     | -> yaml      : default (.yml)
-#     | -> ram       : not recommended, restarting will erase data
-storage-method: yaml
-
-
 ## Should the Chat be global on the whole Proxy? ##
 # If set to true, all messages will be sent to everyone on the whole proxy,
 # instead of only everyone on the player's backend server.
@@ -54,6 +46,14 @@ global-chat: false
 
 ## If the Whitelist is Enabled ##
 whitelist-enabled: false
+
+
+## The method to store the data. ##
+#   Available Methods:
+#     | -> database  : recommended
+#     | -> yaml      : default (.yml)
+#     | -> ram       : not recommended, restarting will erase data
+storage-method: yaml
 
 
 
@@ -87,6 +87,27 @@ database:
   # The database login credentials.
   user: username
   passwd: password
+
+
+
+
+##  -------------------------------------------------------------------------  ##
+##       __  __                          _                   _                 ##
+##      |  \/  |___ ______ __ _ __ _ ___| |   ___  __ _ __ _(_)_ _  __ _       ##
+##      | |\/| / -_|_-<_-</ _` / _` / -_) |__/ _ \/ _` / _` | | ' \/ _` |      ##
+##      |_|  |_\___/__/__/\__,_\__, \___|____\___/\__, \__, |_|_||_\__, |      ##
+##                             |___/              |___/|___/       |___/       ##
+##                     All Message-Logging Related Config!                     ##
+##  -------------------------------------------------------------------------  ##
+message-logging:
+
+  # If the message logging module is enabled or not.
+  enabled: true
+
+  # How many messages are stored for each player.
+  # A length of about 20 000 will result in 1MB/Player on average.
+  # Default is 50 (~2.5KB/Player)
+  max-history: 50
 
 
 
@@ -185,4 +206,4 @@ server-list:
 
 
 ## DO NOT CHANGE THIS! ##
-version: 5
+version: 6

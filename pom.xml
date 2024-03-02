@@ -6,11 +6,11 @@
 
     <groupId>com.marcpg</groupId>
     <artifactId>Peelocity</artifactId>
-    <version>0.2.0-BETA</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Peelocity</name>
-    <description>General purpose Velocity plugin with all kinds of features.</description>
+    <description>An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support.</description>
     <url>https://marcpg.com/peelocity</url>
 
     <properties>
@@ -141,15 +141,15 @@
                     <relocations>
                         <relocation>
                             <pattern>dev.dejvokep.boostedyaml</pattern>
-                            <shadedPattern>com.marcpg.peelocity_old.lib</shadedPattern>
+                            <shadedPattern>com.marcpg.peelocity.lib</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>com.alessiodp.libby</pattern>
-                            <shadedPattern>com.marcpg.peelocity_old.lib</shadedPattern>
+                            <shadedPattern>com.marcpg.peelocity.lib</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>com.marcpg.peelocity_old.lib</shadedPattern>
+                            <shadedPattern>com.marcpg.peelocity.lib</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
