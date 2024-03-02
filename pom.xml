@@ -74,7 +74,7 @@
                 <filtering>true</filtering>
                 <excludes>
                     <exclude>icon.png</exclude>
-                    <exclude>lang/*</exclude>
+                    <exclude>translations.properties</exclude>
                 </excludes>
             </resource>
         </resources>

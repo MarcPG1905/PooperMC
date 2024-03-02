@@ -14,9 +14,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.event.PostOrder;
-import com.velocitypowered.api.event.ResultedEvent;
 import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
@@ -36,29 +34,6 @@ public class Muting {
     private static final List<String> TIME_TYPES = List.of("sec", "min", "h", "d", "wk", "mo");
     private static final Storage<UUID> STORAGE = Configuration.storageType.createStorage("mutes", "player");
     private static final Time MAX_TIME = new Time(1, Time.Unit.YEARS);
-
-    @Subscribe(order = PostOrder.FIRST)
-    public void onLogin(@NotNull LoginEvent event) {
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-        Locale l = event.getPlayer().getEffectiveLocale();
-
-        if (!STORAGE.contains(uuid)) return;
-
-        Map<String, Object> mute = STORAGE.get(uuid);
-
-        if ((Boolean) mute.get("permanent") && (System.currentTimeMillis() * 0.001) > (Long) mute.get("expires")) {
-            STORAGE.remove(uuid);
-            player.sendMessage(Translation.component(l, "moderation.ban.expired.msg").color(NamedTextColor.GREEN));
-        } else
-            event.setResult(ResultedEvent.ComponentResult.denied(Translation.component(l, "moderation.ban.join.title").color(NamedTextColor.RED)
-                    .appendNewline().appendNewline()
-                    .append(Translation.component(l, "moderation.expiration", "").color(NamedTextColor.GRAY)
-                            .append((Boolean) mute.get("permanent") ? Translation.component(l, "moderation.time.permanent").color(NamedTextColor.RED) :
-                                    Component.text(Time.preciselyFormat((Long) mute.get("expires") - Instant.now().getEpochSecond()), NamedTextColor.BLUE)))
-                    .appendNewline()
-                    .append(Translation.component(l, "moderation.reason", "").color(NamedTextColor.GRAY).append(Component.text((String) mute.get("reason"), NamedTextColor.BLUE)))));
-    }
 
     @Subscribe(order = PostOrder.FIRST)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {

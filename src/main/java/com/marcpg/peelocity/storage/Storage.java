@@ -20,7 +20,7 @@ public abstract class Storage<T> {
                     case RAM -> new RamStorage<>(name, primaryKeyName);
                 };
             } catch (SQLException | IOException | ClassNotFoundException e) {
-                Peelocity.LOG.error("Couldn't create storage \"" + name + "\". Using the default (RAM) now: " + e.getMessage());
+                Peelocity.LOG.error("Couldn't create storage \"" + name + "\". Using the default RAM storage instead now: " + e.getMessage());
                 return new RamStorage<>(name, primaryKeyName);
             }
         }
@@ -36,7 +36,7 @@ public abstract class Storage<T> {
 
     public abstract boolean contains(T key);
 
-    public abstract void add(Map<String, Object> entry);
+    public abstract void add(Map<String, Object> entries);
 
     public abstract void remove(T key);
 

@@ -18,6 +18,7 @@ import com.velocitypowered.api.util.Favicon;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
+import dev.dejvokep.boostedyaml.route.Route;
 import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
 import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
@@ -25,10 +26,12 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -69,14 +72,18 @@ public class Configuration {
         } catch (FileAlreadyExistsException ignored) {}
     }
 
-    public static void load(@NotNull Peelocity peelocity) throws IOException {
+    public static void load(@NotNull InputStream peeYml) throws IOException {
         doc = YamlDocument.create(
                 Peelocity.DATA_DIR.resolve("pee.yml").toFile(),
-                Objects.requireNonNull(peelocity.getClass().getResourceAsStream("pee.yml")),
+                peeYml,
                 GeneralSettings.DEFAULT,
                 LoaderSettings.builder().setAutoUpdate(true).build(),
                 DumperSettings.DEFAULT,
-                UpdaterSettings.builder().setVersioning(new BasicVersioning("version")).setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
+                UpdaterSettings.builder()
+                        .setVersioning(new BasicVersioning("version"))
+                        .addIgnoredRoute("6", Route.fromString("gamemodes"))
+                        .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
+                        .build()
         );
         routes = doc.getRoutesAsStrings(true).stream().filter(r -> !doc.isSection(r)).toList();
 
@@ -93,6 +100,7 @@ public class Configuration {
         serverList = doc.getSection("server-list");
         gamemodes = doc.getSection("gamemodes").getStringRouteMappedValues(false).entrySet().stream()
                 .filter(e -> e.getValue() instanceof Integer)
+                .filter(e -> !(e.getKey().equals("game1") || e.getKey().equals("game2")))
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> (Integer) e.getValue()));
 
         MessageHistory.enabled = doc.getBoolean("message-logging.enabled");
@@ -100,12 +108,12 @@ public class Configuration {
 
         if (serverList.getBoolean("enabled")) {
             ServerList.motd = serverList.getBoolean("custom-motd");
-            if (ServerList.motd) ServerList.motdList = serverList.getStringList("server-list.custom-motd-messages").stream()
+            if (ServerList.motd) ServerList.motdList = serverList.getStringList("custom-motd-messages").stream()
                     .map(s -> MiniMessage.miniMessage().deserialize(s))
                     .toList();
 
-            ServerList.favicon = serverList.getBoolean("custom-motd");
-            if (ServerList.favicon) ServerList.faviconList = serverList.getStringList("server-list.custom-favicon-urls").stream()
+            ServerList.favicon = serverList.getBoolean("custom-favicon");
+            if (ServerList.favicon) ServerList.faviconList = serverList.getStringList("custom-favicon-urls").stream()
                     .map(s -> {
                         try {
                             return Favicon.create(ImageIO.read(new URI(s).toURL()));
@@ -161,7 +169,8 @@ public class Configuration {
         }
     }
 
-    public static BrigadierCommand command() {
+    @Contract(" -> new")
+    public static @NotNull BrigadierCommand command() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("config")
                 .requires(source -> source.hasPermission("pee.admin"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
@@ -296,12 +305,6 @@ public class Configuration {
                 }
             }
             Peelocity.LOG.info("Downloaded and loaded all recent translations!");
-
-            try {
-                Translation.loadProperties(this.langFolder.toFile());
-            } catch (IOException e) {
-                Peelocity.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
-            }
         }
     }
 }

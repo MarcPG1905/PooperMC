@@ -169,19 +169,20 @@ public class PartySystem {
                                         player.sendMessage(Translation.component(l, "party.accept.no_invite", targetArg).color(RED));
                                         return 1;
                                     }
+                                    if (!PLAYER_PARTIES.containsKey(targetUuid)) {
+                                        player.sendMessage(Translation.component(l, "party.accept.too_late", targetArg).color(RED));
+                                        return 1;
+                                    }
 
                                     Peelocity.SERVER.getPlayer(targetUuid).ifPresentOrElse(
                                             target -> {
-                                                if (PLAYER_PARTIES.containsKey(targetUuid)) {
-                                                    player.sendMessage(Translation.component(l, "party.accept.too_late", targetArg).color(RED));
-                                                } else {
-                                                    PLAYER_PARTIES.put(playerUuid, PLAYER_PARTIES.get(targetUuid));
-                                                    PARTIES.get(PLAYER_PARTIES.get(targetUuid)).put(playerUuid, false);
+                                                PARTIES.get(PLAYER_PARTIES.get(targetUuid)).keySet().forEach(uuid -> Peelocity.SERVER.getPlayer(uuid).ifPresent(
+                                                        p -> p.sendMessage(Translation.component(player.getEffectiveLocale(), "party.accept.msg", player.getUsername()).color(YELLOW))));
 
-                                                    player.sendMessage(Translation.component(l, "party.accept.confirm").color(GREEN));
-                                                    PARTIES.get(PLAYER_PARTIES.get(targetUuid)).keySet().forEach(uuid -> Peelocity.SERVER.getPlayer(uuid).ifPresent(
-                                                            p -> p.sendMessage(Translation.component(player.getEffectiveLocale(), "party.accept.msg", player.getUsername()).color(YELLOW))));
-                                                }
+                                                PLAYER_PARTIES.put(playerUuid, PLAYER_PARTIES.get(targetUuid));
+                                                PARTIES.get(PLAYER_PARTIES.get(targetUuid)).put(playerUuid, false);
+
+                                                player.sendMessage(Translation.component(l, "party.accept.confirm").color(GREEN));
 
                                                 INVITATIONS.get(playerUuid).remove(targetUuid);
                                                 if (INVITATIONS.get(playerUuid).isEmpty())
@@ -208,6 +209,9 @@ public class PartySystem {
                                     } else {
                                         PARTIES.remove(PLAYER_PARTIES.get(playerUuid));
                                     }
+                                } else {
+                                    PARTIES.get(PLAYER_PARTIES.get(playerUuid)).keySet().forEach(uuid -> Peelocity.SERVER.getPlayer(uuid).ifPresent(
+                                            p -> p.sendMessage(Translation.component(player.getEffectiveLocale(), "party.leave.msg", player.getUsername()).color(YELLOW))));
                                 }
                                 party.remove(playerUuid);
                                 PLAYER_PARTIES.remove(playerUuid);
@@ -278,7 +282,7 @@ public class PartySystem {
 
                                         for (UUID uuid : PARTIES.get(PLAYER_PARTIES.get(playerUuid)).keySet()) {
                                             Peelocity.SERVER.getPlayer(uuid).ifPresent(t ->
-                                                    t.sendMessage(Translation.component(t.getEffectiveLocale(), "party.message", player.getUsername(), content)));
+                                                    t.sendMessage(Translation.component(t.getEffectiveLocale(), "party.message", player.getUsername(), content).color(DARK_AQUA)));
                                         }
                                     } else {
                                         player.sendMessage(Translation.component(player.getEffectiveLocale(), "party.not_in_any").color(RED));
@@ -295,7 +299,7 @@ public class PartySystem {
 
                             if (PLAYER_PARTIES.containsKey(playerUuid)) {
                                 for (Map.Entry<UUID, Boolean> target : PARTIES.get(PLAYER_PARTIES.get(playerUuid)).entrySet()) {
-                                    player.sendMessage(Component.text("- " + PlayerCache.PLAYERS.get(target.getKey()) + (target.getValue() ? Translation.string(l, "party.list.leader") : ""), target.getValue() ? GOLD : WHITE));
+                                    player.sendMessage(Component.text("- " + PlayerCache.PLAYERS.get(target.getKey()) + (target.getValue() ? " " + Translation.string(l, "party.list.leader") : ""), target.getValue() ? GOLD : WHITE));
                                 }
                             } else {
                                 player.sendMessage(Translation.component(l, "party.not_in_any").color(RED));

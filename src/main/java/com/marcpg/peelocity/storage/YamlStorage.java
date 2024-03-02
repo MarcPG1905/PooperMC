@@ -23,12 +23,9 @@ public class YamlStorage<T> extends Storage<T> {
         return this.doc.contains(key.toString());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void add(@NotNull Map<String, Object> entry) {
-        T key = (T) entry.get(this.primaryKeyName);
-        entry.remove(this.primaryKeyName);
-        entry.forEach((s, o) -> this.doc.set(key + "." + s, o));
+    public void add(@NotNull Map<String, Object> entries) {
+        entries.forEach((s, o) -> this.doc.set(entries.get(this.primaryKeyName).toString() + "." + s, o));
     }
 
     @Override

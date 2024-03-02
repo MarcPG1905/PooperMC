@@ -58,15 +58,16 @@ public class FriendSystem {
                                             (FRIEND_REQUESTS.containsKey(targetUuid) && FRIEND_REQUESTS.get(targetUuid).contains(playerUuid))) {
                                         player.sendMessage(Translation.component(l, "friend.add.already_requested", targetArg).color(YELLOW));
                                     } else {
-                                        if (FRIEND_REQUESTS.containsKey(playerUuid)) {
-                                            FRIEND_REQUESTS.get(playerUuid).add(targetUuid);
+                                        if (FRIEND_REQUESTS.containsKey(targetUuid)) {
+                                            FRIEND_REQUESTS.get(targetUuid).add(playerUuid);
                                         } else {
-                                            FRIEND_REQUESTS.put(playerUuid, new HashSet<>(Set.of(targetUuid)));
+                                            FRIEND_REQUESTS.put(targetUuid, new HashSet<>(Set.of(playerUuid)));
                                         }
                                         player.sendMessage(Translation.component(l, "friend.add.confirm", targetArg).color(GREEN));
                                         Peelocity.SERVER.getPlayer(targetUuid).ifPresent(t -> {
                                             Locale tl = t.getEffectiveLocale();
                                             t.sendMessage(Translation.component(tl, "friend.add.msg.1", player.getUsername()).color(GREEN)
+                                                    .appendSpace()
                                                     .append(Translation.component(tl, "friend.add.msg.2").color(YELLOW)
                                                             .hoverEvent(HoverEvent.showText(Translation.component(tl, "friend.add.msg.2.tooltip")))
                                                             .clickEvent(ClickEvent.runCommand("/friend accept " + player.getUsername())))
@@ -136,7 +137,8 @@ public class FriendSystem {
                                         if (getFriendship(playerUuid, targetUuid) == null) {
                                             STORAGE.add(Map.of("uuid", UUID.randomUUID(), "player1", playerUuid, "player2", targetUuid));
                                             requests.remove(targetUuid);
-                                            if (requests.isEmpty()) FRIEND_REQUESTS.remove(playerUuid);
+                                            if (requests.isEmpty())
+                                                FRIEND_REQUESTS.remove(playerUuid);
 
                                             player.sendMessage(Translation.component(l, "friend.accept.confirm", targetArg).color(GREEN));
                                             Peelocity.SERVER.getPlayer(targetUuid).ifPresent(t ->
@@ -194,7 +196,7 @@ public class FriendSystem {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("list")
                         .executes(context -> {
                             Player player = (Player) context.getSource();
-                            STORAGE.get(m -> m.get("player1") == player.getUniqueId() ^ m.get("player2") == player.getUniqueId())
+                            STORAGE.get(m -> m.get("player1") == player.getUniqueId() || m.get("player2") == player.getUniqueId())
                                     .forEach(m -> player.sendMessage(Component.text("- " + PlayerCache.PLAYERS.get((UUID) m.get("uuid")))));
                             return 1;
                         })

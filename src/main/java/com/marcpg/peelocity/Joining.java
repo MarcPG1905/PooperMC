@@ -29,53 +29,6 @@ import java.util.UUID;
 public class Joining {
     public static final MinecraftChannelIdentifier PLUGIN_MESSAGE_IDENTIFIER = MinecraftChannelIdentifier.from("peelocity:joining");
 
-    // Chaos Code, don't touch, it works:
-    public static void runLogic(@NotNull Player player, Pair<String, Integer> gamemode) {
-        player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.play.search").color(NamedTextColor.GRAY));
-
-        RegisteredServer targetServer;
-        List<Player> players = new ArrayList<>();
-
-        if (PartySystem.PLAYER_PARTIES.containsKey(player.getUniqueId())) {
-            Map<UUID, Boolean> party = PartySystem.PARTIES.get(PartySystem.PLAYER_PARTIES.get(player.getUniqueId()));
-
-            if (!party.get(player.getUniqueId())) {
-                player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.play.not_leader").color(NamedTextColor.RED));
-                return;
-            }
-            targetServer = findServer(gamemode.left(), gamemode.right(), party.size());
-            party.keySet().stream()
-                    .map(uuid -> Peelocity.SERVER.getPlayer(uuid))
-                    .forEach(m -> m.ifPresent(players::add));
-        } else {
-            targetServer = findServer(gamemode.left(), gamemode.right(), 1);
-            players.add(player);
-        }
-
-        if (targetServer != null) {
-            join(targetServer, players.toArray(Player[]::new));
-        } else {
-            player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.play.failure").color(NamedTextColor.RED));
-        }
-    }
-    // The following code is readable :D
-
-    public static @Nullable RegisteredServer findServer(String serverNamespace, int playerLimit, int players) {
-        for (RegisteredServer server : Peelocity.SERVER.getAllServers()) {
-            if (server.getServerInfo().getName().startsWith(serverNamespace) && server.getPlayersConnected().size() < (playerLimit - players)) {
-                return server;
-            }
-        }
-        return null;
-    }
-
-    public static void join(RegisteredServer server, Player @NotNull ... players) {
-        for (Player target : players) {
-            target.createConnectionRequest(server).fireAndForget();
-            Peelocity.SERVER.getScheduler().buildTask(Peelocity.INSTANCE, () ->
-                    target.sendMessage(Translation.component(target.getEffectiveLocale(), "cmd.play.success.finish").color(NamedTextColor.GREEN))).delay(Duration.ofSeconds(2)).schedule();
-        }
-    }
 
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
@@ -110,10 +63,57 @@ public class Joining {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("hub")
                 .requires(source -> source instanceof Player)
                 .executes(context -> {
-                    join(findServer("lobby", 500, 1));
+                    join(findServer("lobby", 500, 1), (Player) context.getSource());
                     return 1;
                 })
                 .build()
         );
+    }
+
+    // Chaos Code, don't touch, it works:
+    private static void runLogic(@NotNull Player player, Pair<String, Integer> gamemode) {
+        player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.play.search").color(NamedTextColor.GRAY));
+
+        RegisteredServer targetServer;
+        List<Player> players = new ArrayList<>();
+
+        if (PartySystem.PLAYER_PARTIES.containsKey(player.getUniqueId())) {
+            Map<UUID, Boolean> party = PartySystem.PARTIES.get(PartySystem.PLAYER_PARTIES.get(player.getUniqueId()));
+
+            if (!party.get(player.getUniqueId())) {
+                player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.play.not_leader").color(NamedTextColor.RED));
+                return;
+            }
+            targetServer = findServer(gamemode.left(), gamemode.right(), party.size());
+            party.keySet().stream()
+                    .map(uuid -> Peelocity.SERVER.getPlayer(uuid))
+                    .forEach(m -> m.ifPresent(players::add));
+        } else {
+            targetServer = findServer(gamemode.left(), gamemode.right(), 1);
+            players.add(player);
+        }
+
+        if (targetServer != null) {
+            join(targetServer, players.toArray(Player[]::new));
+        } else {
+            player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.play.failure").color(NamedTextColor.RED));
+        }
+    }
+    // The following code is readable :D
+
+    private static @Nullable RegisteredServer findServer(String serverNamespace, int playerLimit, int players) {
+        for (RegisteredServer server : Peelocity.SERVER.matchServer(serverNamespace)) {
+            if (server.getPlayersConnected().size() < (playerLimit - players))
+                return server;
+        }
+        return null;
+    }
+
+    private static void join(RegisteredServer server, Player @NotNull ... players) {
+        for (Player target : players) {
+            target.createConnectionRequest(server).fireAndForget();
+            Peelocity.SERVER.getScheduler().buildTask(Peelocity.INSTANCE, () ->
+                    target.sendMessage(Translation.component(target.getEffectiveLocale(), "cmd.play.success.finish").color(NamedTextColor.GREEN))).delay(Duration.ofSeconds(2)).schedule();
+        }
     }
 }

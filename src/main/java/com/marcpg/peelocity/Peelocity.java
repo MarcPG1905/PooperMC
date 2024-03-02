@@ -5,7 +5,6 @@ import com.marcpg.color.Ansi;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.features.*;
 import com.marcpg.peelocity.moderation.*;
-import com.marcpg.peelocity.social.FriendSystem;
 import com.marcpg.peelocity.social.PartySystem;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 @Plugin(
@@ -45,7 +45,7 @@ import java.util.Locale;
 )
 public class Peelocity {
     public static final String VERSION = "1.0.0";
-    public static final int BUILD = 1;
+    public static final int BUILD = 2;
 
     public static Logger LOG;
     public static ProxyServer SERVER;
@@ -72,7 +72,7 @@ public class Peelocity {
         SERVER.getChannelRegistrar().register(Joining.PLUGIN_MESSAGE_IDENTIFIER);
 
         Configuration.createDataDirectory();
-        Configuration.load(this);
+        Configuration.load(Objects.requireNonNull(this.getClass().getResourceAsStream("/pee.yml")));
 
         this.metrics(this.metricsFactory.make(this, 21102));
         this.events(SERVER.getEventManager());
@@ -83,6 +83,14 @@ public class Peelocity {
         LOG.info(Ansi.formattedString("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!", Ansi.GREEN));
 
         this.sendWelcome();
+
+        try {
+            Translation.loadProperties(DATA_DIR.resolve("lang").toFile());
+        } catch (IOException e) {
+            Peelocity.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
+        }
+
+        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity") || SERVER.getPluginManager().isLoaded("unsignedvelocity");
     }
 
     @Subscribe
@@ -109,6 +117,9 @@ public class Peelocity {
     void events(@NotNull EventManager manager) {
         LOG.info("Registering Events...");
         manager.register(this, new PartySystem());
+        manager.register(this, new Joining());
+        manager.register(this, new Banning());
+        manager.register(this, new Muting());
 
         if (Configuration.chatUtilities.getBoolean("enabled")) manager.register(this, new ChatUtilities());
         if (Configuration.serverList.getBoolean("enabled")) manager.register(this, new ServerList());
@@ -123,7 +134,7 @@ public class Peelocity {
 
         manager.register("ban", Banning.banCommand());
         manager.register("config", Configuration.command(), "peelocity-configuration");
-        manager.register("friend", FriendSystem.command());
+        // TODO: manager.register("friend", FriendSystem.command());
         manager.register("hub", Joining.hubCommand(), "lobby");
         manager.register("join", Joining.joinCommand(), "play");
         manager.register("kick", Kicking.command());
@@ -146,11 +157,18 @@ public class Peelocity {
         SERVER.getEventManager().unregisterListeners(this);
 
         Configuration.createDataDirectory();
-        Configuration.load(this);
+        Configuration.load(Objects.requireNonNull(this.getClass().getResourceAsStream("/pee.yml")));
 
         this.metrics(this.metricsFactory.make(this, 21102));
         this.events(SERVER.getEventManager());
         this.commands(SERVER.getCommandManager());
+
+        try {
+            Translation.loadProperties(DATA_DIR.resolve("lang").toFile());
+        } catch (IOException e) {
+            Peelocity.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
+            throw new IOException();
+        }
     }
 
     BrigadierCommand command() {

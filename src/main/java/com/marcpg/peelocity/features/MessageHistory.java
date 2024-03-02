@@ -91,7 +91,8 @@ public class MessageHistory {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMMM d, HH:mm");
 
-    public static BrigadierCommand command() {
+    @Contract(" -> new")
+    public static @NotNull BrigadierCommand command() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("msg-hist")
                 .requires(source -> source.hasPermission("pee.msg-hist"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())

@@ -41,8 +41,8 @@ public class DatabaseStorage<T> extends Storage<T> {
         });
     }
 
-    public void createTable(String values) throws SQLException {
-        String query = (TYPE == SQLConnection.DatabaseType.MS_SQL_SERVER ? "IF OBJECT_ID(N'" + this.name + "', N'U') IS NULL CREATE TABLE " : "CREATE TABLE IF NOT EXISTS ") + this.name + "(" + values;
+    private void createTable(String values) throws SQLException {
+        String query = (TYPE == SQLConnection.DatabaseType.MS_SQL_SERVER ? "IF OBJECT_ID(N'" + this.name + "', N'U') IS NULL CREATE TABLE " : "CREATE TABLE IF NOT EXISTS ") + this.name + "(" + values + ");";
         this.connection.connection().prepareStatement(query).executeUpdate();
     }
 
@@ -52,14 +52,8 @@ public class DatabaseStorage<T> extends Storage<T> {
     }
 
     @Override
-    public void add(@NotNull Map<String, Object> entry) {
-        T primaryKey = (T) entry.get(this.primaryKeyName);
-        if (entry.size() == 1) {
-            this.connection.add(primaryKey);
-        } else {
-            entry.remove(this.primaryKeyName);
-            this.connection.add(primaryKey, entry.values().toArray(Object[]::new));
-        }
+    public void add(@NotNull Map<String, Object> entries) {
+        this.connection.add(entries);
     }
 
     @Override

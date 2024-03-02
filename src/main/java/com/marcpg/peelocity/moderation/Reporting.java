@@ -14,6 +14,8 @@ import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.IOException;
@@ -24,7 +26,8 @@ import java.util.UUID;
 public class Reporting {
     public static final List<String> REASONS = List.of("cheats", "spam", "swearing", "exploiting", "other");
 
-    public static BrigadierCommand command() {
+    @Contract(" -> new")
+    public static @NotNull BrigadierCommand command() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("report")
                 .requires(source -> source instanceof Player)
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
@@ -51,7 +54,7 @@ public class Reporting {
 
                                             String reason = context.getArgument("reason", String.class);
 
-                                            if (reason.isBlank() || REASONS.contains(reason)) {
+                                            if (!REASONS.contains(reason)) {
                                                 player.sendMessage(Translation.component(l, "report.invalid_reason", reason).color(NamedTextColor.RED));
                                                 return 1;
                                             }

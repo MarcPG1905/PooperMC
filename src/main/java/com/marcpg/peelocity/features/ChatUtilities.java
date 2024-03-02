@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 public class ChatUtilities {
     private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
 
+    public static boolean signedVelocityInstalled;
+
     @Subscribe(order = PostOrder.FIRST)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         if (!event.getResult().isAllowed()) return;
@@ -60,7 +62,12 @@ public class ChatUtilities {
             }
         }
 
-        event.setResult(PlayerChatEvent.ChatResult.denied());
+        if (signedVelocityInstalled) {
+            event.setResult(PlayerChatEvent.ChatResult.denied());
+        } else {
+            Peelocity.LOG.warn("SignedVelocity isn't installed, which means that colors and global chat won't work! Please install SignedVelocity or UnSignedVelocity on Velocity and the backend servers.");
+            return;
+        }
 
         Component finalMessage = canUse(player, "colors") ? colorize(content) : Component.text(content);
         if (Configuration.globalChat) {
@@ -71,14 +78,14 @@ public class ChatUtilities {
     }
 
 
-    public static boolean canUse(Player player, String chatUtil) {
+    private static boolean canUse(Player player, String chatUtil) {
         return Configuration.chatUtilities.getBoolean(chatUtil + ".enabled") && !Configuration.chatUtilities.getBoolean(chatUtil + ".permission") || player.hasPermission("pee.chat." + chatUtil);
     }
 
-    public static final TagResolver COLORS = TagResolver.resolver(StandardTags.reset(), StandardTags.color());
-    public static final TagResolver STYLES = TagResolver.resolver(StandardTags.reset(), StandardTags.color(), StandardTags.decorations());
+    private static final TagResolver COLORS = TagResolver.resolver(StandardTags.reset(), StandardTags.color());
+    private static final TagResolver STYLES = TagResolver.resolver(StandardTags.reset(), StandardTags.color(), StandardTags.decorations());
 
-    public static @NotNull Component colorize(String original) {
-        return MiniMessage.miniMessage().deserialize(original, Configuration.chatUtilities.getBoolean("colors.styles") ? STYLES : COLORS);
+    private static @NotNull Component colorize(String original) {
+        return MiniMessage.builder().tags(Configuration.chatUtilities.getBoolean("colors.styles") ? STYLES : COLORS).build().deserialize(original);
     }
 }

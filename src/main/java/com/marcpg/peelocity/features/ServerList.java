@@ -29,11 +29,11 @@ public class ServerList {
         ServerPing.Builder ping = e.getPing().asBuilder();
         try {
             // Custom/Random MotDs
-            if (motd)
+            if (motd && !motdList.isEmpty())
                 ping.description(Randomizer.fromCollection(motdList));
 
             // Custom/Random Favicons (Server Icons)
-            if (favicon)
+            if (favicon && !faviconList.isEmpty())
                 ping.favicon(Randomizer.fromCollection(faviconList));
 
             // Fake/Custom Player-Count

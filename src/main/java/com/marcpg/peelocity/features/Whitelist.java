@@ -57,7 +57,7 @@ public class Whitelist {
                                     if (STORAGE.contains(target)) {
                                         source.sendMessage(Translation.component(l, "server.whitelist.add.already_whitelisted", target).color(NamedTextColor.YELLOW));
                                     } else {
-                                        STORAGE.add(Map.of("name", target));
+                                        STORAGE.add(Map.of("username", target));
                                         source.sendMessage(Translation.component(l, "server.whitelist.add.confirm", target).color(NamedTextColor.GREEN));
                                     }
                                     return 1;

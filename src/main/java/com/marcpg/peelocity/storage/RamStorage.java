@@ -1,7 +1,5 @@
 package com.marcpg.peelocity.storage;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +19,8 @@ public class RamStorage<T> extends Storage<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void add(@NotNull Map<String, Object> entry) {
-        T key = (T) entry.get(this.primaryKeyName);
-        entry.remove(this.primaryKeyName);
-        this.storage.put(key, entry);
+    public void add(Map<String, Object> entries) {
+        this.storage.put((T) entries.get(this.primaryKeyName), entries);
     }
 
     @Override
