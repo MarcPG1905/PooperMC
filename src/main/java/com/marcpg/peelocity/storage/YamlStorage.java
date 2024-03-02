@@ -26,11 +26,21 @@ public class YamlStorage<T> extends Storage<T> {
     @Override
     public void add(@NotNull Map<String, Object> entries) {
         entries.forEach((s, o) -> this.doc.set(entries.get(this.primaryKeyName).toString() + "." + s, o));
+        try {
+            this.doc.save();
+        } catch (IOException e) {
+            Peelocity.LOG.error("Couldn't save " + this.name + ".yml!");
+        }
     }
 
     @Override
     public void remove(@NotNull T key) {
         this.doc.remove(key.toString());
+        try {
+            this.doc.save();
+        } catch (IOException e) {
+            Peelocity.LOG.error("Couldn't save " + this.name + ".yml!");
+        }
     }
 
     @Override
