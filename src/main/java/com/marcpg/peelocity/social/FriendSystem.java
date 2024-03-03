@@ -4,7 +4,10 @@ import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.Configuration;
 import com.marcpg.peelocity.Peelocity;
 import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.peelocity.storage.DatabaseStorage;
+import com.marcpg.peelocity.storage.RamStorage;
 import com.marcpg.peelocity.storage.Storage;
+import com.marcpg.peelocity.storage.YamlStorage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -36,7 +39,7 @@ public class FriendSystem {
                                 .suggests((context, builder) -> {
                                     String sourceName = ((Player) context.getSource()).getUsername();
                                     PlayerCache.PLAYERS.values().stream()
-                                            .filter(sourceName::equals)
+                                            .filter(s -> !s.equals(sourceName))
                                             .forEach(builder::suggest);
                                     return builder.buildFuture();
                                 })
@@ -82,10 +85,11 @@ public class FriendSystem {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("remove")
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                                 .suggests((context, builder) -> {
-                                    String sourceName = ((Player) context.getSource()).getUsername();
-                                    PlayerCache.PLAYERS.values().stream()
-                                            .filter(sourceName::equals)
-                                            .forEach(builder::suggest);
+                                    UUID playerUuid = ((Player) context.getSource()).getUniqueId();
+                                    getFriendships(((Player) context.getSource()).getUniqueId()).forEach(m -> {
+                                        UUID friend = (UUID) (m.get("player1").equals(playerUuid) ? m.get("player2") : m.get("player1"));
+                                        builder.suggest(PlayerCache.PLAYERS.get(friend));
+                                    });
                                     return builder.buildFuture();
                                 })
                                 .executes(context -> {
@@ -99,6 +103,7 @@ public class FriendSystem {
                                     }
 
                                     UUID friendship = getFriendship(player.getUniqueId(), targetUuid);
+                                    System.out.println(friendship);
                                     if (friendship != null) {
                                         STORAGE.remove(friendship);
                                         player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.remove.confirm", targetArg).color(YELLOW));
@@ -196,8 +201,19 @@ public class FriendSystem {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("list")
                         .executes(context -> {
                             Player player = (Player) context.getSource();
-                            STORAGE.get(m -> m.get("player1") == player.getUniqueId() || m.get("player2") == player.getUniqueId())
-                                    .forEach(m -> player.sendMessage(Component.text("- " + PlayerCache.PLAYERS.get((UUID) m.get("uuid")))));
+                            UUID playerUuid = player.getUniqueId();
+
+                            List<Map<String, Object>> friendships = getFriendships(playerUuid);
+
+                            if (friendships.isEmpty()) {
+                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.list.none").color(YELLOW));
+                            } else {
+                                player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.list.list", friendships.size()).color(GREEN));
+                                friendships.forEach(m -> {
+                                    UUID friend = (UUID) (m.get("player1").equals(playerUuid) ? m.get("player2") : m.get("player1"));
+                                    player.sendMessage(Component.text("- " + PlayerCache.PLAYERS.get(friend)));
+                                });
+                            }
                             return 1;
                         })
                 )
@@ -221,8 +237,29 @@ public class FriendSystem {
         );
     }
 
+    private static List<Map<String, Object>> getFriendships(UUID player) {
+        if (STORAGE instanceof DatabaseStorage<UUID> databaseStorage) {
+            return List.copyOf(databaseStorage.get("player1 = ? OR player2 = ?", player, player));
+        } else if (STORAGE instanceof RamStorage<UUID> ramStorage) {
+            return List.copyOf(ramStorage.get(m -> m.get("player1").equals(player) || m.get("player2").equals(player)));
+        } else if (STORAGE instanceof YamlStorage<UUID> yamlStorage) {
+            return List.copyOf(yamlStorage.get(m -> m.get("player1").equals(player) || m.get("player2").equals(player)));
+        } else {
+            return List.of();
+        }
+    }
+
     private static @Nullable UUID getFriendship(UUID player1, UUID player2) {
-        List<Map<String, Object>> map = STORAGE.get(m -> (m.get("player1") == player1 && m.get("player2") == player2) || (m.get("player2") == player1 && m.get("player1") == player2));
-        return map.isEmpty() ? null : (UUID) map.get(0).get("uuid");
+        List<Map<String, Object>> maps = List.of();
+
+        if (STORAGE instanceof DatabaseStorage<UUID> databaseStorage) {
+            maps = List.copyOf(databaseStorage.get("player1 = ? AND player2 = ? OR player2 = ? AND player1 = ?", player1, player2, player1, player2));
+        } else if (STORAGE instanceof RamStorage<UUID> ramStorage) {
+            maps = List.copyOf(ramStorage.get(m -> (m.get("player1").equals(player1) && m.get("player2").equals(player2)) || (m.get("player2").equals(player1) && m.get("player1").equals(player2))));
+        } else if (STORAGE instanceof YamlStorage<UUID> yamlStorage) {
+            maps = List.copyOf(yamlStorage.get(m -> (m.get("player1").equals(player1) && m.get("player2").equals(player2)) || (m.get("player2").equals(player1) && m.get("player1").equals(player2))));
+        }
+
+        return maps.isEmpty() ? null : (UUID) maps.get(0).get("uuid");
     }
 }

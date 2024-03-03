@@ -65,7 +65,7 @@ public class ChatUtilities {
         if (signedVelocityInstalled) {
             event.setResult(PlayerChatEvent.ChatResult.denied());
         } else {
-            Peelocity.LOG.warn("SignedVelocity isn't installed, which means that colors and global chat won't work! Please install SignedVelocity or UnSignedVelocity on Velocity and the backend servers.");
+            Peelocity.LOG.warn("SignedVelocity isn't installed, which means that colors and global chat won't work! Please install SignedVelocity on both the proxy and the backend servers.");
             return;
         }
 

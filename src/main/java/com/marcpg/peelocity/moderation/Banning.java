@@ -46,7 +46,9 @@ public class Banning {
 
         Map<String, Object> ban = STORAGE.get(uuid);
 
-        if ((Boolean) ban.get("permanent") && (System.currentTimeMillis() * 0.001) > (Long) ban.get("expires")) {
+        if (player.hasPermission("pee.ban") || player.hasPermission("pee.admin")) {
+            STORAGE.remove(uuid);
+        } else if ((Boolean) ban.get("permanent") && (System.currentTimeMillis() * 0.001) > (Long) ban.get("expires")) {
             STORAGE.remove(uuid);
             player.sendMessage(Translation.component(l, "moderation.ban.expired.msg").color(NamedTextColor.GREEN));
         } else
@@ -65,7 +67,10 @@ public class Banning {
                 .requires(source -> source.hasPermission("pee.ban"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            PlayerCache.PLAYERS.values().forEach(builder::suggest);
+                            String sourceName = context.getSource() instanceof Player player ? player.getUsername() : "";
+                            PlayerCache.PLAYERS.values().parallelStream()
+                                    .filter(s -> !sourceName.equals(s))
+                                    .forEach(builder::suggest);
                             return builder.buildFuture();
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("time", StringArgumentType.word())
@@ -160,7 +165,11 @@ public class Banning {
                 .requires(source -> source.hasPermission("pee.ban"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            STORAGE.get(m -> true).forEach(m -> builder.suggest(PlayerCache.PLAYERS.get((UUID) m.get("player"))));
+                            String sourceName = context.getSource() instanceof Player player ? player.getUsername() : "";
+                            STORAGE.getAll().parallelStream()
+                                    .map(m -> (UUID) m.get("player"))
+                                    .map(PlayerCache.PLAYERS::get)
+                                    .forEach(builder::suggest);
                             return builder.buildFuture();
                         })
                         .executes(context -> {

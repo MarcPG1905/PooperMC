@@ -86,7 +86,7 @@ public class PartySystem {
                                     if (PLAYER_PARTIES.containsKey(playerUuid)) {
                                         Set<UUID> playersInParty = PARTIES.get(PLAYER_PARTIES.get(playerUuid)).keySet();
                                         Peelocity.SERVER.getAllPlayers().parallelStream()
-                                                .filter(player -> !playersInParty.contains(playerUuid))
+                                                .filter(player -> !playersInParty.contains(playerUuid) && player != context.getSource())
                                                 .map(Player::getUsername)
                                                 .forEach(builder::suggest);
                                     }
@@ -144,7 +144,10 @@ public class PartySystem {
                                 .suggests((context, builder) -> {
                                     UUID playerUuid = ((Player) context.getSource()).getUniqueId();
                                     if (INVITATIONS.containsKey(playerUuid)) {
-                                        INVITATIONS.get(playerUuid).forEach(uuid -> Peelocity.SERVER.getPlayer(uuid).ifPresent(p -> builder.suggest(p.getUsername())));
+                                        INVITATIONS.get(playerUuid).parallelStream().forEach(uuid -> {
+                                            if (uuid != playerUuid)
+                                                builder.suggest(PlayerCache.PLAYERS.get(uuid));
+                                        });
                                     }
                                     return builder.buildFuture();
                                 })
@@ -194,6 +197,40 @@ public class PartySystem {
                                 })
                         )
                 )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("deny")
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
+                                .suggests((context, builder) -> {
+                                    UUID playerUuid = ((Player) context.getSource()).getUniqueId();
+                                    if (INVITATIONS.containsKey(playerUuid)) {
+                                        INVITATIONS.get(playerUuid).parallelStream().forEach(uuid -> {
+                                            if (uuid != playerUuid)
+                                                builder.suggest(PlayerCache.PLAYERS.get(uuid));
+                                        });
+                                    }
+                                    return builder.buildFuture();
+                                })
+                                .executes(context -> {
+                                    Player player = (Player) context.getSource();
+                                    UUID playerUuid = player.getUniqueId();
+                                    String targetArg = context.getArgument("player", String.class);
+                                    UUID targetUuid = PlayerCache.getUuid(targetArg);
+
+                                    if (!INVITATIONS.containsKey(playerUuid) || !INVITATIONS.get(playerUuid).contains(targetUuid)) {
+                                        player.sendMessage(Translation.component(player.getEffectiveLocale(), "party.accept.no_invite", targetArg).color(RED));
+                                        return 1;
+                                    }
+
+                                    INVITATIONS.get(playerUuid).remove(targetUuid);
+                                    if (INVITATIONS.get(playerUuid).isEmpty())
+                                        INVITATIONS.remove(playerUuid);
+
+                                    player.sendMessage(Translation.component(player.getEffectiveLocale(), "party.deny.confirm").color(YELLOW));
+                                    Peelocity.SERVER.getPlayer(targetUuid).ifPresent(target -> target.sendMessage(Translation.component(target.getEffectiveLocale(), "party.deny.msg", player.getUsername()).color(RED)));
+
+                                    return 1;
+                                })
+                        )
+                )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("leave")
                         .executes(context -> {
                             Player player = (Player) context.getSource();
@@ -228,7 +265,7 @@ public class PartySystem {
                                     UUID playerUuid = ((Player) context.getSource()).getUniqueId();
                                     if (PLAYER_PARTIES.containsKey(playerUuid)) {
                                         PARTIES.get(PLAYER_PARTIES.get(playerUuid)).entrySet().stream()
-                                                .filter(e -> !e.getValue())
+                                                .filter(e -> !e.getValue() && e.getKey() != playerUuid)
                                                 .forEach(e -> Peelocity.SERVER.getPlayer(e.getKey()).ifPresent(p -> builder.suggest(p.getUsername())));
                                     }
                                     return builder.buildFuture();

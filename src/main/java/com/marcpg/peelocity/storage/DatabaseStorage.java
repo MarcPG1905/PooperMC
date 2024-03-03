@@ -7,13 +7,9 @@ import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.peelocity.Peelocity;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
-import java.util.function.Predicate;
 
 @SuppressWarnings("unchecked")
 public class DatabaseStorage<T> extends Storage<T> {
@@ -66,21 +62,13 @@ public class DatabaseStorage<T> extends Storage<T> {
         return this.connection.getRowMap(key);
     }
 
+    public Collection<Map<String, Object>> get(String predicate, Object... replacements) {
+        return this.connection.getRowMapsMatching(predicate, replacements);
+    }
+
     @Override
-    public List<Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
-        try (PreparedStatement preparedStatement = this.connection.connection().prepareStatement("SELECT " + this.primaryKeyName + " FROM " + this.name)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                List<Map<String, Object>> list = new ArrayList<>();
-                while (resultSet.next()) {
-                    Map<String, Object> result = this.get((T) resultSet.getObject(this.primaryKeyName));
-                    if (predicate.test(result))
-                        list.add(result);
-                }
-                return list;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public Collection<Map<String, Object>> getAll() {
+        return null;
     }
 
     public static void loadDependency() {

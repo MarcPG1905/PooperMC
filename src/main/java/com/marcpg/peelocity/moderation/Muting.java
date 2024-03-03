@@ -45,7 +45,9 @@ public class Muting {
 
         Map<String, Object> mute = STORAGE.get(uuid);
 
-        if ((System.currentTimeMillis() * 0.001) > (Long) mute.get("expires")) {
+        if (player.hasPermission("pee.mute") || player.hasPermission("pee.admin")) {
+            STORAGE.remove(uuid);
+        } else if ((System.currentTimeMillis() * 0.001) > (Long) mute.get("expires")) {
             STORAGE.remove(uuid);
             player.sendMessage(Translation.component(l, "moderation.mute.expired.msg").color(NamedTextColor.GREEN));
         } else {
@@ -62,7 +64,10 @@ public class Muting {
                 .requires(source -> source.hasPermission("pee.mute"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            PlayerCache.PLAYERS.values().forEach(builder::suggest);
+                            String sourceName = context.getSource() instanceof Player player ? player.getUsername() : "";
+                            PlayerCache.PLAYERS.values().parallelStream()
+                                    .filter(s -> !sourceName.equals(s))
+                                    .forEach(builder::suggest);
                             return builder.buildFuture();
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("time", StringArgumentType.word())
@@ -150,7 +155,12 @@ public class Muting {
                 .requires(source -> source.hasPermission("pee.mute"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            STORAGE.get(m -> true).forEach(m -> builder.suggest(PlayerCache.PLAYERS.get((UUID) m.get("player"))));
+                            String sourceName = context.getSource() instanceof Player player ? player.getUsername() : "";
+                            STORAGE.getAll().parallelStream()
+                                    .map(m -> (UUID) m.get("player"))
+                                    .map(PlayerCache.PLAYERS::get)
+                                    .filter(s -> !sourceName.equals(s))
+                                    .forEach(builder::suggest);
                             return builder.buildFuture();
                         })
                         .executes(context -> {

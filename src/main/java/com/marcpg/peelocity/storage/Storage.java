@@ -4,9 +4,8 @@ import com.marcpg.peelocity.Peelocity;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public abstract class Storage<T> {
     public enum StorageType {
@@ -42,5 +41,5 @@ public abstract class Storage<T> {
 
     public abstract Map<String, Object> get(T key);
 
-    public abstract List<Map<String, Object>> get(Predicate<Map<String, Object>> predicate);
+    public abstract Collection<Map<String, Object>> getAll();
 }

@@ -1,7 +1,7 @@
 package com.marcpg.peelocity.storage;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -33,11 +33,12 @@ public class RamStorage<T> extends Storage<T> {
         return this.storage.get(key);
     }
 
+    public Collection<Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
+        return this.storage.values().stream().filter(predicate).toList();
+    }
+
     @Override
-    public List<Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
-        return this.storage.entrySet().parallelStream()
-                .filter(e -> predicate.test(e.getValue()))
-                .map(Map.Entry::getValue)
-                .toList();
+    public Collection<Map<String, Object>> getAll() {
+        return this.storage.values();
     }
 }

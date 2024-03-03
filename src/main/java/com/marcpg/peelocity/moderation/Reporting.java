@@ -32,7 +32,10 @@ public class Reporting {
                 .requires(source -> source instanceof Player)
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            PlayerCache.PLAYERS.values().forEach(builder::suggest);
+                            String sourceName = ((Player) context.getSource()).getUsername();
+                            PlayerCache.PLAYERS.values().stream()
+                                    .filter(sourceName::equals)
+                                    .forEach(builder::suggest);
                             return builder.buildFuture();
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.word())

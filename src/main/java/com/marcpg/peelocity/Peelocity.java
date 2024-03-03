@@ -5,6 +5,7 @@ import com.marcpg.color.Ansi;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.features.*;
 import com.marcpg.peelocity.moderation.*;
+import com.marcpg.peelocity.social.FriendSystem;
 import com.marcpg.peelocity.social.PartySystem;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
@@ -16,6 +17,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
@@ -41,11 +43,12 @@ import java.util.Objects;
         version = "1.0.0",
         description = "An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support.",
         url = "https://marcpg.com/peelocity",
-        authors = { "MarcPG" }
+        authors = { "MarcPG" },
+        dependencies = { @Dependency(id = "signedvelocity") }
 )
 public class Peelocity {
-    public static final String VERSION = "1.0.0";
-    public static final int BUILD = 2;
+    public static final String VERSION = "1.0.1";
+    public static final int BUILD = 1;
 
     public static Logger LOG;
     public static ProxyServer SERVER;
@@ -90,7 +93,7 @@ public class Peelocity {
             Peelocity.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
         }
 
-        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity") || SERVER.getPluginManager().isLoaded("unsignedvelocity");
+        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
     }
 
     @Subscribe
@@ -134,7 +137,7 @@ public class Peelocity {
 
         manager.register("ban", Banning.banCommand());
         manager.register("config", Configuration.command(), "peelocity-configuration");
-        // TODO: manager.register("friend", FriendSystem.command());
+        manager.register("friend", FriendSystem.command());
         manager.register("hub", Joining.hubCommand(), "lobby");
         manager.register("join", Joining.joinCommand(), "play");
         manager.register("kick", Kicking.command());

@@ -67,7 +67,7 @@ public class Whitelist {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("remove")
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                                 .suggests((context, builder) -> {
-                                    STORAGE.get(m -> true).forEach(m -> builder.suggest(m.keySet().stream().findFirst().orElse("")));
+                                    STORAGE.getAll().forEach(m -> builder.suggest(m.keySet().stream().findFirst().orElse("")));
                                     return builder.buildFuture();
                                 })
                                 .executes(context -> {
@@ -90,11 +90,11 @@ public class Whitelist {
                             CommandSource source = context.getSource();
                             Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
 
-                            List<String> whitelistedNames = STORAGE.get(m -> true).stream().map(m -> m.keySet().stream().findFirst().orElse("")).toList();
+                            List<String> whitelistedNames = STORAGE.getAll().stream().map(m -> m.keySet().stream().findFirst().orElse("")).toList();
                             if (whitelistedNames.isEmpty()) {
                                 source.sendMessage(Translation.component(l, "server.whitelist.empty").color(NamedTextColor.YELLOW));
                             } else {
-                                source.sendMessage(Translation.component(l, "server.whitelist.list", STORAGE.get(m -> true).size()).color(NamedTextColor.GREEN));
+                                source.sendMessage(Translation.component(l, "server.whitelist.list", STORAGE.getAll().size()).color(NamedTextColor.GREEN));
                                 whitelistedNames.forEach(p -> source.sendMessage(Component.text("- " + p, NamedTextColor.GRAY)));
                             }
                             return 1;

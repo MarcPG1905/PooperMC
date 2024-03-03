@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -48,11 +48,17 @@ public class YamlStorage<T> extends Storage<T> {
         return this.doc.getSection(key.toString()).getStringRouteMappedValues(false);
     }
 
-    @Override
-    public List<Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
+    public Collection<Map<String, Object>> get(Predicate<Map<String, Object>> predicate) {
         return this.doc.getRoutesAsStrings(false).parallelStream()
                 .map(s -> this.doc.getSection(s).getStringRouteMappedValues(false))
                 .filter(predicate)
+                .toList();
+    }
+
+    @Override
+    public Collection<Map<String, Object>> getAll() {
+        return this.doc.getRoutesAsStrings(false).parallelStream()
+                .map(s -> this.doc.getSection(s).getStringRouteMappedValues(false))
                 .toList();
     }
 }
