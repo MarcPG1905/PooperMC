@@ -109,7 +109,7 @@ public class Joining {
         return null;
     }
 
-    private static void join(RegisteredServer server, Player @NotNull ... players) {
+    private static void join(RegisteredServer server, @NotNull Player... players) {
         for (Player target : players) {
             target.createConnectionRequest(server).fireAndForget();
             Peelocity.SERVER.getScheduler().buildTask(Peelocity.INSTANCE, () ->

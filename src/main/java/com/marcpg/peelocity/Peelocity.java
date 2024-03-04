@@ -40,11 +40,11 @@ import java.util.Objects;
 @Plugin(
         id = "peelocity",
         name = "Peelocity",
-        version = "1.0.0",
+        version = Peelocity.VERSION,
         description = "An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support.",
         url = "https://marcpg.com/peelocity",
         authors = { "MarcPG" },
-        dependencies = { @Dependency(id = "signedvelocity") }
+        dependencies = { @Dependency(id = "signedvelocity", optional = true) }
 )
 public class Peelocity {
     public static final String VERSION = "1.0.1";

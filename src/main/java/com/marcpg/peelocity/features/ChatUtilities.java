@@ -6,6 +6,7 @@ import com.marcpg.peelocity.Peelocity;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import net.kyori.adventure.key.Key;
@@ -62,11 +63,11 @@ public class ChatUtilities {
             }
         }
 
-        if (signedVelocityInstalled) {
-            event.setResult(PlayerChatEvent.ChatResult.denied());
-        } else {
+        if (!signedVelocityInstalled && player.getIdentifiedKey() != null && player.getProtocolVersion().compareTo(ProtocolVersion.MINECRAFT_1_19_1) >= 0) {
             Peelocity.LOG.warn("SignedVelocity isn't installed, which means that colors and global chat won't work! Please install SignedVelocity on both the proxy and the backend servers.");
             return;
+        } else {
+            event.setResult(PlayerChatEvent.ChatResult.denied());
         }
 
         Component finalMessage = canUse(player, "colors") ? colorize(content) : Component.text(content);
