@@ -11,11 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class PlayerCache {
+public final class PlayerCache {
     public static final HashMap<UUID, String> PLAYERS = new HashMap<>();
     private static final Path path = Peelocity.DATA_DIR.resolve("playercache");
 
     public static void load() throws IOException {
+        Peelocity.LOG.info("Loading Player-Cache...");
         if (path.toFile().createNewFile()) return;
         Files.readAllLines(path).parallelStream()
                 .map(l -> l.split(", *"))

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class ServerList {
+public final class ServerList {
     public static boolean motd;
     public static List<Component> motdList;
     public static boolean favicon;

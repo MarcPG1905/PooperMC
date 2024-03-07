@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-public class Banning {
+public final class Banning {
     private static final List<String> TIME_TYPES = List.of("min", "h", "d", "wk", "mo", "yr");
     private static final Storage<UUID> STORAGE = Configuration.storageType.createStorage("bans", "player");
     private static final Time MAX_TIME = new Time(5, Time.Unit.YEARS);

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class Joining {
+public final class Joining {
     public static final MinecraftChannelIdentifier PLUGIN_MESSAGE_IDENTIFIER = MinecraftChannelIdentifier.from("peelocity:joining");
 
 

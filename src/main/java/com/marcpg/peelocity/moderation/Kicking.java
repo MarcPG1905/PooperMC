@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-public class Kicking {
+public final class Kicking {
     @Contract(" -> new")
     public static @NotNull BrigadierCommand command() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("kick")

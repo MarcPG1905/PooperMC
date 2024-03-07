@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class Whitelist {
+public final class Whitelist {
     public static Storage<String> STORAGE;
 
     @Subscribe(order = PostOrder.EARLY)

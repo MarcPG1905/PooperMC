@@ -30,7 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-public class Muting {
+public final class Muting {
     private static final List<String> TIME_TYPES = List.of("sec", "min", "h", "d", "wk", "mo");
     private static final Storage<UUID> STORAGE = Configuration.storageType.createStorage("mutes", "player");
     private static final Time MAX_TIME = new Time(1, Time.Unit.YEARS);

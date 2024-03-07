@@ -24,7 +24,7 @@ import java.util.*;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-public class FriendSystem {
+public final class FriendSystem {
     private static final HashMap<UUID, HashSet<UUID>> FRIEND_REQUESTS = new HashMap<>();
     private static Storage<UUID> STORAGE;
 

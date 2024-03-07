@@ -23,7 +23,7 @@ import java.util.*;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-public class PartySystem {
+public final class PartySystem {
     private static final HashMap<UUID, HashSet<UUID>> INVITATIONS = new HashMap<>();
     public static final Map<UUID, HashMap<UUID, Boolean>> PARTIES = new HashMap<>();
     public static final Map<UUID, UUID> PLAYER_PARTIES = new HashMap<>();

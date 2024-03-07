@@ -27,6 +27,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -40,15 +41,16 @@ import java.util.Objects;
 @Plugin(
         id = "peelocity",
         name = "Peelocity",
-        version = Peelocity.VERSION,
+        version = Peelocity.VERSION + "+build." + Peelocity.BUILD,
         description = "An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support.",
         url = "https://marcpg.com/peelocity",
         authors = { "MarcPG" },
         dependencies = { @Dependency(id = "signedvelocity", optional = true) }
 )
-public class Peelocity {
+public final class Peelocity {
     public static final String VERSION = "1.0.1";
-    public static final int BUILD = 1;
+    public static final int BUILD = 3;
+    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(1, VERSION + "+build." + BUILD, "ERROR");
 
     public static Logger LOG;
     public static ProxyServer SERVER;
@@ -74,6 +76,8 @@ public class Peelocity {
 
         SERVER.getChannelRegistrar().register(Joining.PLUGIN_MESSAGE_IDENTIFIER);
 
+        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
+
         Configuration.createDataDirectory();
         Configuration.load(Objects.requireNonNull(this.getClass().getResourceAsStream("/pee.yml")));
 
@@ -82,6 +86,7 @@ public class Peelocity {
         this.commands(SERVER.getCommandManager());
 
         PlayerCache.load();
+        UpdateChecker.checkUpdates();
 
         LOG.info(Ansi.formattedString("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!", Ansi.GREEN));
 
@@ -92,8 +97,6 @@ public class Peelocity {
         } catch (IOException e) {
             Peelocity.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
         }
-
-        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
     }
 
     @Subscribe
@@ -105,7 +108,7 @@ public class Peelocity {
         LOG.info(Ansi.yellow("    __   __  __"));
         LOG.info(Ansi.yellow("   |__) |__ |__ Peelocity " + VERSION));
         LOG.info(Ansi.yellow("   |    |__ |__ https://marcpg.com/peelocity"));
-        LOG.info(Ansi.formattedString("   Version: " + VERSION + " (Build " + BUILD + ")", Ansi.DARK_GRAY));
+        LOG.info(Ansi.formattedString("   Version: " + VERSION + "+build." + BUILD, Ansi.DARK_GRAY));
     }
 
     void metrics(@NotNull Metrics metrics) {
@@ -159,12 +162,16 @@ public class Peelocity {
         this.commands.forEach(SERVER.getCommandManager()::unregister);
         SERVER.getEventManager().unregisterListeners(this);
 
+        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
+
         Configuration.createDataDirectory();
         Configuration.load(Objects.requireNonNull(this.getClass().getResourceAsStream("/pee.yml")));
 
         this.metrics(this.metricsFactory.make(this, 21102));
         this.events(SERVER.getEventManager());
         this.commands(SERVER.getCommandManager());
+
+        UpdateChecker.checkUpdates();
 
         try {
             Translation.loadProperties(DATA_DIR.resolve("lang").toFile());
@@ -174,12 +181,13 @@ public class Peelocity {
         }
     }
 
-    BrigadierCommand command() {
+    @Contract(" -> new")
+    @NotNull BrigadierCommand command() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("peelocity")
                 .executes(context -> {
                     CommandSource source = context.getSource();
                     Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
-                    source.sendMessage(Component.text("Peelocity ").decorate(TextDecoration.BOLD).append(Component.text(VERSION + " (" + BUILD + ")").decoration(TextDecoration.BOLD, false)).color(NamedTextColor.YELLOW));
+                    source.sendMessage(Component.text("Peelocity ").decorate(TextDecoration.BOLD).append(Component.text(VERSION + "+build." + BUILD).decoration(TextDecoration.BOLD, false)).color(NamedTextColor.YELLOW));
                     source.sendMessage(Translation.component(l, "cmd.peelocity.info"));
                     return 1;
                 })

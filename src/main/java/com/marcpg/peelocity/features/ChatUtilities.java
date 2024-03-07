@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChatUtilities {
+public final class ChatUtilities {
     private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
 
     public static boolean signedVelocityInstalled;

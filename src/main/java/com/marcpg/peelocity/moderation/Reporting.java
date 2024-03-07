@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class Reporting {
+public final class Reporting {
     public static final List<String> REASONS = List.of("cheats", "spam", "swearing", "exploiting", "other");
 
     @Contract(" -> new")

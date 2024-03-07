@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class MessageHistory {
+public final class MessageHistory {
     public record MessageData(Date time, String content, Type type, @Nullable String receiver) {
         public enum Type { NORMAL, STAFF, PRIVATE, PARTY }
 

@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class PrivateMessaging {
+public final class PrivateMessaging {
     public static final Map<UUID, String> LAST_RECEIVERS = new HashMap<>();
 
     @Contract(" -> new")

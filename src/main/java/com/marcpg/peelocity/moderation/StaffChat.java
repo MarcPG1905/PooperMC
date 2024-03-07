@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 
-public class StaffChat {
+public final class StaffChat {
     @Contract(" -> new")
     public static @NotNull BrigadierCommand command() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("staff")

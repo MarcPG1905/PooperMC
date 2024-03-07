@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 
 import static com.marcpg.data.database.sql.SQLConnection.DatabaseType.*;
 
-public class Configuration {
+public final class Configuration {
     private static final List<SQLConnection.DatabaseType> ALLOWED_DATABASES = List.of(POSTGRESQL, MYSQL, MARIADB, MS_SQL_SERVER, ORACLE);
 
     public static YamlDocument doc;
@@ -73,6 +73,8 @@ public class Configuration {
     }
 
     public static void load(@NotNull InputStream peeYml) throws IOException {
+        Peelocity.LOG.info("Loading the Configuration (pee.yml)...");
+
         doc = YamlDocument.create(
                 Peelocity.DATA_DIR.resolve("pee.yml").toFile(),
                 peeYml,
@@ -277,7 +279,7 @@ public class Configuration {
         );
     }
 
-    private static class TranslationDownloadTask implements Runnable {
+    private final static class TranslationDownloadTask implements Runnable {
         private final Path langFolder = Peelocity.DATA_DIR.resolve("lang");
         private static final int MAX_RETRIES = 3;
 
