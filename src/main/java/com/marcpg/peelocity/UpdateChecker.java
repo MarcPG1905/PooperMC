@@ -1,5 +1,6 @@
 package com.marcpg.peelocity;
 
+import com.marcpg.color.Ansi;
 import com.marcpg.web.Downloads;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -14,16 +15,16 @@ public final class UpdateChecker {
     private static final Path PATH = Peelocity.DATA_DIR.resolve(".latest_version");
 
     public static void checkUpdates() {
-        Peelocity.LOG.info("Checking for the latest version of Peelocity...");
+        Peelocity.LOG.info(Ansi.formattedString("Checking for the latest version of Peelocity...", Ansi.DARK_GRAY));
 
         Version latest = getLatestVersion();
         if (latest.updateIdentifier() > Peelocity.CURRENT_VERSION.updateIdentifier()) {
-            Peelocity.LOG.warn("You're " + (latest.updateIdentifier() - Peelocity.CURRENT_VERSION.updateIdentifier()) + " builds behind! Newest version is: " + latest.fullName());
-            Peelocity.LOG.warn("You can download the newest version at " + latest.link());
+            Peelocity.LOG.warn("You're " + (latest.updateIdentifier() - Peelocity.CURRENT_VERSION.updateIdentifier()) + " build(s) behind!");
+            Peelocity.LOG.warn("Latest version is " + latest.fullName() + ". Update at " + latest.link());
         } else if (latest.updateIdentifier() == Peelocity.CURRENT_VERSION.updateIdentifier()) {
-            Peelocity.LOG.info("You're on the latest Peelocity version.");
+            Peelocity.LOG.info(Ansi.formattedString("You're on the latest Peelocity version!"));
         } else {
-            Peelocity.LOG.error("The version you're running is later than the newest version!");
+            Peelocity.LOG.error("The version you're running is later than the newest version. Please report this bug to a developer!");
         }
     }
 
@@ -42,7 +43,7 @@ public final class UpdateChecker {
         @Contract("_ -> new")
         public static @NotNull Version parseVersion(@NotNull String commaSeparated) {
             String[] parts = commaSeparated.split(", ");
-            return new Version(Integer.parseInt(parts[0]), parts[1], parts[2]);
+            return new Version(Integer.parseInt(parts[0]), parts[1], parts[2].strip());
         }
 
         @Contract(pure = true)

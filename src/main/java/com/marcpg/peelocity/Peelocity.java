@@ -49,8 +49,8 @@ import java.util.Objects;
 )
 public final class Peelocity {
     public static final String VERSION = "1.0.1";
-    public static final int BUILD = 3;
-    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(1, VERSION + "+build." + BUILD, "ERROR");
+    public static final int BUILD = 4;
+    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(2, VERSION + "+build." + BUILD, "ERROR");
 
     public static Logger LOG;
     public static ProxyServer SERVER;
@@ -72,6 +72,9 @@ public final class Peelocity {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) throws IOException {
+        // Not sure if this even does anything, just making sure:
+        if (Locale.getDefault() == null) Locale.setDefault(new Locale("en", "US"));
+
         long start = System.currentTimeMillis();
 
         SERVER.getChannelRegistrar().register(Joining.PLUGIN_MESSAGE_IDENTIFIER);
@@ -88,7 +91,7 @@ public final class Peelocity {
         PlayerCache.load();
         UpdateChecker.checkUpdates();
 
-        LOG.info(Ansi.formattedString("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!", Ansi.GREEN));
+        LOG.info(Ansi.green("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!"));
 
         this.sendWelcome();
 
@@ -112,7 +115,7 @@ public final class Peelocity {
     }
 
     void metrics(@NotNull Metrics metrics) {
-        LOG.info("Sending Metrics to bStats...");
+        LOG.info(Ansi.formattedString("Sending Metrics to bStats...", Ansi.DARK_GRAY));
         metrics.addCustomChart(new SimplePie("chat_utils", () -> String.valueOf(Configuration.chatUtilities.getBoolean("enabled"))));
         metrics.addCustomChart(new SimplePie("server_list", () -> String.valueOf(Configuration.serverList.getBoolean("enabled"))));
         metrics.addCustomChart(new SimplePie("storage_method", () -> Configuration.storageType.name().toLowerCase()));
@@ -121,7 +124,7 @@ public final class Peelocity {
     }
 
     void events(@NotNull EventManager manager) {
-        LOG.info("Registering Events...");
+        LOG.info(Ansi.formattedString("Registering Events...", Ansi.DARK_GRAY));
         manager.register(this, new PartySystem());
         manager.register(this, new Joining());
         manager.register(this, new Banning());
@@ -136,7 +139,7 @@ public final class Peelocity {
     }
 
     void commands(@NotNull CommandManager manager) {
-        LOG.info("Registering Commands...");
+        LOG.info(Ansi.formattedString("Registering Commands...", Ansi.DARK_GRAY));
 
         manager.register("ban", Banning.banCommand());
         manager.register("config", Configuration.command(), "peelocity-configuration");
@@ -186,7 +189,7 @@ public final class Peelocity {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("peelocity")
                 .executes(context -> {
                     CommandSource source = context.getSource();
-                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                     source.sendMessage(Component.text("Peelocity ").decorate(TextDecoration.BOLD).append(Component.text(VERSION + "+build." + BUILD).decoration(TextDecoration.BOLD, false)).color(NamedTextColor.YELLOW));
                     source.sendMessage(Translation.component(l, "cmd.peelocity.info"));
                     return 1;
@@ -195,7 +198,7 @@ public final class Peelocity {
                         .requires(source -> source.hasPermission("pee.admin"))
                         .executes(context -> {
                             CommandSource source = context.getSource();
-                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
 
                             try {
                                 this.reload();

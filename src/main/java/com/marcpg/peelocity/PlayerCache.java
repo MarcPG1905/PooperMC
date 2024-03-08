@@ -1,5 +1,6 @@
 package com.marcpg.peelocity;
 
+import com.marcpg.color.Ansi;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public final class PlayerCache {
     private static final Path path = Peelocity.DATA_DIR.resolve("playercache");
 
     public static void load() throws IOException {
-        Peelocity.LOG.info("Loading Player-Cache...");
+        Peelocity.LOG.info(Ansi.formattedString("Loading Player-Cache...", Ansi.DARK_GRAY));
         if (path.toFile().createNewFile()) return;
         Files.readAllLines(path).parallelStream()
                 .map(l -> l.split(", *"))

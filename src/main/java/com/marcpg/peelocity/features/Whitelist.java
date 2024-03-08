@@ -51,7 +51,7 @@ public final class Whitelist {
                                 })
                                 .executes(context -> {
                                     CommandSource source = context.getSource();
-                                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                                     String target = context.getArgument("player", String.class);
 
                                     if (STORAGE.contains(target)) {
@@ -72,7 +72,7 @@ public final class Whitelist {
                                 })
                                 .executes(context -> {
                                     CommandSource source = context.getSource();
-                                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                                     String target = context.getArgument("player", String.class);
 
                                     if (STORAGE.contains(target)) {
@@ -88,7 +88,7 @@ public final class Whitelist {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("list")
                         .executes(context -> {
                             CommandSource source = context.getSource();
-                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
 
                             List<String> whitelistedNames = STORAGE.getAll().stream().map(m -> m.keySet().stream().findFirst().orElse("")).toList();
                             if (whitelistedNames.isEmpty()) {

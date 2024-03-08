@@ -1,5 +1,6 @@
 package com.marcpg.peelocity;
 
+import com.marcpg.color.Ansi;
 import com.marcpg.data.database.sql.SQLConnection;
 import com.marcpg.lang.Translation;
 import com.marcpg.peelocity.features.MessageHistory;
@@ -73,7 +74,7 @@ public final class Configuration {
     }
 
     public static void load(@NotNull InputStream peeYml) throws IOException {
-        Peelocity.LOG.info("Loading the Configuration (pee.yml)...");
+        Peelocity.LOG.info(Ansi.formattedString("Loading the Configuration (pee.yml)...", Ansi.DARK_GRAY));
 
         doc = YamlDocument.create(
                 Peelocity.DATA_DIR.resolve("pee.yml").toFile(),
@@ -183,7 +184,7 @@ public final class Configuration {
                         .then(LiteralArgumentBuilder.<CommandSource>literal("get")
                                 .executes(context -> {
                                     CommandSource source = context.getSource();
-                                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                                     String route = context.getArgument("entry", String.class);
 
                                     if (doc.isList(route)) {
@@ -208,7 +209,7 @@ public final class Configuration {
                                         })
                                         .executes(context -> {
                                             CommandSource source = context.getSource();
-                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                                             String route = context.getArgument("entry", String.class);
 
                                             if (!doc.contains(route)) {
@@ -248,7 +249,7 @@ public final class Configuration {
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
                                         .executes(context -> {
                                             CommandSource source = context.getSource();
-                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                                             String route = context.getArgument("entry", String.class);
 
                                             if (!doc.contains(route)) {

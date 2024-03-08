@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.marcpg"
-version = "1.0.1+build.3"
+version = "1.0.1+build.4"
 description = "An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support."
 java.sourceCompatibility = JavaVersion.VERSION_17
 

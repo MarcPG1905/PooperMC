@@ -83,7 +83,7 @@ public final class Banning {
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.greedyString())
                                         .executes(context -> {
                                             CommandSource source = context.getSource();
-                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                                             String targetArg = context.getArgument("player", String.class);
                                             UUID targetUuid = PlayerCache.getUuid(targetArg);
 
@@ -174,7 +174,7 @@ public final class Banning {
                         })
                         .executes(context -> {
                             CommandSource source = context.getSource();
-                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : new Locale("en", "US");
+                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                             String targetArg = context.getArgument("player", String.class);
                             UUID targetUuid = PlayerCache.getUuid(targetArg);
 
