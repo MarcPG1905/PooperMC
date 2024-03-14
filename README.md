@@ -5,6 +5,11 @@ The modern codebase using Java 17+ allows for fast response times and always up-
 Although the plugin is still in development, it is already a valid choice for any server network, that needs a working and lightweight plugin.  
 Read more at https://marcpg.com/peelocity (soon...)!
 
+## Requirements
+
+- **SignedVelocity**: https://modrinth.com/plugin/signedvelocity
+- **Java 17 or higher**. Find instructions on how to install or update Java [here](https://docs.papermc.io/misc/java-install).
+
 ## Releases
 
 You can find our official releases on these platforms:
@@ -14,10 +19,67 @@ You can find our official releases on these platforms:
 - SpigotMC: [spigotmc.org/resources/peelocity.115129](https://www.spigotmc.org/resources/peelocity.115129/)
 - Planet Minecraft: [planetminecraft.com/mod/peelocity-all-in-one-proxy-plugin](https://www.planetminecraft.com/mod/peelocity-all-in-one-proxy-plugin/)
 
-## Requirements
+## Features
 
-- **SignedVelocity**: https://modrinth.com/plugin/signedvelocity
-- **Java 17 or higher**. Find instructions on how to install or update Java [here](https://docs.papermc.io/misc/java-install).
+Most features can be enabled/disabled in the configration (`./plugins/peelocity/pee.yml`).  
+Some aren't enabled by default, so make sure to check out the configuration!
+
+### Chat Utilities
+- **Message Logging:** All messages are logged and can be seen by moderators using `/msg-hist`
+- **Private Messaging:** You can globally message someone using `/msg PlayerName` or `/w` to reply.
+- **Mentions:** By writing `@PlayerName`, you can ping another player or `@everyone`.
+- **Chat Colors:** You can use MiniMessage's colors and styles in the chat.
+
+### Custom Server List
+- **Better MotD:** Simple custom MotDs, that use MiniMessage and can be randomized.
+- **Better Favicons:** Custom server icons from image links, that can be randomized.
+- **Online Player-Count:** You can set a custom/fake online player count, although that's dishonest and not recommended.
+- **Better Player-Limit:** You can set the custom max players. Also allows for the max players always being one more than the online players.
+
+### Moderation
+Everything moderation-related is also sent/logged to a Discord webhook.
+- Better Bans with expiration, permanent-bans and reasons.
+- Better Kicks with reasons.
+- Mutes with expiration and reasons.
+- Easy Reports that can be used by anyone and are pretty easy to use.
+- A staff chat, where all staff members (pee.staff permission) can chat privately.
+
+### Social Stuff
+- A simple friend system with friend requests and not much usage.
+- A simple party system with invites, joining matches together and party chatting.
+
+### Other
+- A global whitelist for the whole proxy, with a command and storage.
+- Join logic to join a gamemode configured in the configuration and also supports a plugin message using `peelocity:joining`, for lobby plugins.
+- Player-Cache to also have access to offline players instead of only online players.
+- An easy-to-use setup that ships right with the plugin JAR. See below for more info!
+
+## Setup
+
+PeeUp, which is the built-in configuration setup is an easy and fast way of setting up your peelocity configuration for your server.
+
+### Running PeeUp
+
+To run PeeUp, you just have to follow a few simple steps.  
+It's built-in, which means no additional downloads. Simply run the plugin JAR archive (`Peelocity-?.jar`) as a Java program, like you run your Velocity server:
+
+```shell
+java -jar Peelocity.jar
+#         ^^^^^^^^^^^^^ <- Your JAR File!
+```
+
+Make sure to replace the `plugins/Peelocity-VERSION.jar` with the actual plugin JAR file!
+
+### Requirements
+
+- Running on any Windows or UNIX-based (macOS, Linux, etc.) machine.
+- Running in a proper environment. Will not work in IDE or embedded consoles.
+- A working keyboard with at least the basic alphabetical and numeral keys.
+
+### Limitations
+
+- Things like the custom MotDs and Favicons need to be configured manually.
+- You **cannot** quit the setup by pressing Ctrl+C, as the program temporarily overrides some input methods. (Fixed soon!)
 
 ## Usage
 

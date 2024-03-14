@@ -21,7 +21,7 @@ public final class ServerList {
     public static int showMaxPlayers;
 
     @Subscribe(order = PostOrder.LATE)
-    public EventTask onProxyPing(ProxyPingEvent event) {
+    public @NotNull EventTask onProxyPing(ProxyPingEvent event) {
         return EventTask.async(() -> this.format(event));
     }
 

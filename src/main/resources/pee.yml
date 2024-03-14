@@ -70,9 +70,11 @@ database:
 
   # The type of database.
   #   Available Types:
-  #     |-> postgresql : recommended
-  #     |-> mariadb    : preferred over mysql
-  #     |-> mysql      : might be unstable
+  #     |-> postgresql    : recommended
+  #     |-> mariadb       : preferred over mysql
+  #     |-> mysql         :
+  #     |-> ms_sql_server : = Microsoft SQL Server
+  #     |-> oracle        :
   type: postgresql
 
   # The address/ip of the database. Can be localhost.

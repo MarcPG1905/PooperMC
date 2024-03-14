@@ -6,11 +6,12 @@ plugins {
 }
 
 group = "com.marcpg"
-version = "1.0.1+build.4"
+version = "1.0.2+build.1"
 description = "An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support."
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
+    mavenLocal()
     mavenCentral()
 
     maven {
@@ -31,7 +32,7 @@ dependencies {
     compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     implementation("com.alessiodp.libby:libby-velocity:2.0.0-SNAPSHOT")
-    implementation("com.marcpg:libpg:0.0.7")
+    implementation("com.marcpg:libpg:0.0.8")
     implementation("dev.dejvokep:boosted-yaml:1.3.2")
     implementation("org.bstats:bstats-velocity:3.0.2")
 }
@@ -39,7 +40,10 @@ dependencies {
 tasks {
     jar {
         dependsOn(shadowJar)
-        enabled = false;
+        enabled = false
+        manifest {
+            attributes["Main-Class"] = "com.marcpg.peelocity.PeeUp"
+        }
     }
     shadowJar {
         relocate("com.alessiodp.libby", "com.marcpg.peelocity.libs")

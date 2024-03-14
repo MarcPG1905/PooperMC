@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
@@ -48,8 +49,8 @@ import java.util.Objects;
         dependencies = { @Dependency(id = "signedvelocity", optional = true) }
 )
 public final class Peelocity {
-    public static final String VERSION = "1.0.1";
-    public static final int BUILD = 4;
+    public static final String VERSION = "1.0.2";
+    public static final int BUILD = 1;
     public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(2, VERSION + "+build." + BUILD, "ERROR");
 
     public static Logger LOG;
@@ -98,7 +99,14 @@ public final class Peelocity {
         try {
             Translation.loadProperties(DATA_DIR.resolve("lang").toFile());
         } catch (IOException e) {
-            Peelocity.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
+            LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
+        }
+
+        Path path = DATA_DIR.resolve(".no_setup");
+        if (path.toFile().createNewFile()) {
+            Files.setAttribute(path, "dos:hidden", true);
+            LOG.info(Ansi.formattedString("Please consider checking out the Peelocity setup, by running Peelocity-?.jar as a java program.", Ansi.BRIGHT_BLUE, Ansi.BLINK));
+            LOG.info(Ansi.formattedString("See further instructions on https://github.com/MarcPG1905/Peelocity#setup!", Ansi.BRIGHT_BLUE, Ansi.BLINK));
         }
     }
 

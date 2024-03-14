@@ -165,7 +165,6 @@ public final class Banning {
                 .requires(source -> source.hasPermission("pee.ban"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            String sourceName = context.getSource() instanceof Player player ? player.getUsername() : "";
                             STORAGE.getAll().parallelStream()
                                     .map(m -> (UUID) m.get("player"))
                                     .map(PlayerCache.PLAYERS::get)
