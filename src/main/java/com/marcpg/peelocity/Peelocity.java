@@ -50,8 +50,8 @@ import java.util.Objects;
 )
 public final class Peelocity {
     public static final String VERSION = "1.0.2";
-    public static final int BUILD = 2;
-    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(3, VERSION + "+build." + BUILD, "ERROR");
+    public static final int BUILD = 3;
+    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(4, VERSION + "+build." + BUILD, "ERROR");
 
     public static Logger LOG;
     public static ProxyServer SERVER;

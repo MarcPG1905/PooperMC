@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.marcpg"
-version = "1.0.2+build.2"
+version = "1.0.2+build.3"
 description = "An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support."
 java.sourceCompatibility = JavaVersion.VERSION_17
 
@@ -49,8 +49,6 @@ tasks {
         relocate("com.alessiodp.libby", "com.marcpg.peelocity.libs")
         relocate("dev.dejvokep.boostedyaml", "com.marcpg.peelocity.libs")
         relocate("org.bstats", "com.marcpg.peelocity.libs")
-
-        minimize()
 
         dependencies {
             exclude(dependency("net.kyori:adventure-api"))
