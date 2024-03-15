@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.marcpg"
-version = "1.0.2+build.1"
+version = "1.0.2+build.2"
 description = "An all-in-one solution for Server networks. Everything from administration tools, to moderation utilities and database support."
 java.sourceCompatibility = JavaVersion.VERSION_17
 
@@ -51,6 +51,12 @@ tasks {
         relocate("org.bstats", "com.marcpg.peelocity.libs")
 
         minimize()
+
+        dependencies {
+            exclude(dependency("net.kyori:adventure-api"))
+        }
+
+        exclude("**/icon.png", "**/translations.properties")
     }
     runVelocity {
         velocityVersion("3.3.0-SNAPSHOT")

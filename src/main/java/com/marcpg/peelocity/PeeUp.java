@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
 
-@SuppressWarnings("UnstableApiUsage")
 public class PeeUp {
     private static final File file = Paths.get("").toAbsolutePath().resolve("peelocity/pee.yml").toFile();
     private static final Map<String, String> storageMethods = Map.of(
@@ -46,17 +45,18 @@ public class PeeUp {
                 result -> {
                     try {
                         YamlDocument doc = YamlDocument.create(file, GeneralSettings.DEFAULT, DumperSettings.DEFAULT);
-                        System.out.println(Ansi.green("Applying your configuration..."));
+                        System.out.println(Ansi.green("\nApplying your configuration..."));
                         result.toIterator().forEachRemaining(r -> {
                             doc.set(Route.fromString(r.id(), '_'), r.id().equals("storage-method") ? storageMethods.get((String) r.result()) : (r.id().equals("database_type") ? databaseTypes.get((String) r.result()) : r.result()));
                             System.out.println(Ansi.gray("Setting " + r.id() + " to " + r.result().toString()));
                         });
+                        doc.save();
                         System.out.println(Ansi.green("Done!"));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 },
-                new TextQuestion("moderator-webhook", "Moderation Webhook", "The Moderation Discord/Guilded webhook that all moderation-related messages will be sent to, such as bans, kicks, mutes, reports, etc.", 150),
+                new TextQuestion("moderator-webhook", "Moderation Webhook", "The Moderation Discord/Guilded webhook that all moderation-related messages will be sent to, such as bans, kicks, mutes, reports, etc. \nSet to 'none' to disable this module!", 150),
                 new BooleanQuestion("enable-translations", "Enable Translations?", "Should we download translations other than en_US, which is the default language?"),
                 new BooleanQuestion("global-chat", "Global Chatting?", "Should all messages sent by players be sent to the whole proxy server, instead of only the player's current backend-server? May produce lag on very high player counts (20k+ players).", false),
                 new BooleanQuestion("whitelist-enabled", "Enable the Whitelist?", "Enables a server-wide whitelist. To add players, you can use '/whitelist add PlayerName'.", false),
@@ -73,7 +73,7 @@ public class PeeUp {
 
 
                 new BooleanQuestion("message-logging_enabled", "Enable Message Logging", "Enables logging all messages sent by players, including party chats, private messages, etc. Message history can be accessed by moderators using the /msg-hist command. This is stored using a simple file-based approach, so it will not use the specified storage-method, but plain text."),
-                new IntegerQuestion("message-logging_max-history", "Max Message Logging History", "How many messages are stored for each player. A length of about 20k will result in 1MB for each player on average. \nDefault is 50, which is about 2.5KB per player.", 0, Integer.MAX_VALUE).setRequirement("message-logging_enabled", true),
+                new IntegerQuestion("message-logging_max-history", "Max Message Logging History", "How many messages are stored for each player. A length of about 20k will result in 1MB for each player on average. \nDefault is 50, which is about 2.5KB per player.", 0, Long.MAX_VALUE).setRequirement("message-logging_enabled", true),
 
 
                 new BooleanQuestion("chatutility_enabled", "Enable Chat Utilities", "Enables chat utilities, which provide chat colors, styles and mentions/pings. The different features can be configured separately, if this is enabled."),
