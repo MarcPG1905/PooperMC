@@ -21,7 +21,7 @@ You can find our official releases on these platforms:
 
 ## Features
 
-Most features can be enabled/disabled in the configration (`./plugins/peelocity/pee.yml`).  
+Most features can be enabled/disabled in the configuration (`./plugins/peelocity/pee.yml`).  
 Some aren't enabled by default, so make sure to check out the configuration!
 
 ### Chat Utilities

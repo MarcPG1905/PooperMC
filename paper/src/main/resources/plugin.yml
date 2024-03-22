@@ -1,0 +1,116 @@
+### Plugin Name ###
+name: PooperMC
+
+### Plugin Description ###
+description: An all-in-one solution for servers. Everything from administration tools, to moderation utilities and database support.
+
+### Build Version ###
+version: '${version}'
+
+### Main Class ###
+main: com.marcpg.poopermc.PaperPooper
+
+### PaperAPI Version ###
+api-version: '1.20'
+
+### Developers of the Plugin ###
+authors:
+  - MarcPG
+
+### Plugin Website ###
+website: https://marcpg.com/pooper/paper/
+ 
+### Logging Prefix ###
+prefix: Pooper
+
+### All Commands ###
+commands:
+
+  ## Improved Banning ##
+  ban:
+    usage: /<command> <player> <time> <reason>
+    description: Bans a player off the server.
+    permission: poo.ban
+    permission-message: You cannot ban players!
+
+  ## Improved Pardoning/Unbanning ##
+  pardon:
+    usage: /<command> <player>
+    aliases:
+      - unban
+    description: Pardons/Unbans a player from the server.
+    permission: poo.ban
+    permission-message: You cannot pardon/unban players!
+
+  ## Easy Configuration Management ##
+  config:
+    usage: /<command> <entry> (get|set|add) [value]
+    aliases:
+      - ink-configuration
+      - pooper-paper-configuration
+    description: Does configuration stuff.
+    permission: poo.admin
+    permission-message: You cannot modify the configuration!
+
+  ## Friend System ##
+  friend:
+    usage: /<command> (add|remove|accept|deny|list|help) [player]
+    description: Friends-related stuff.
+
+  ## Party System ##
+  party:
+    usage: /<command> (create|invite|accept|deny|leave|promote|message|list|help) [player|content]
+    description: Party-related stuff.
+
+  ## Improved Kicking ##
+  kick:
+    usage: /<command> <player> <reason>
+    description: Kicks a player with a reason.
+
+  ## Improved Muting ##
+  mute:
+    usage: /<command> <player> <time> <reason>
+    description: Mutes a player on the server.
+    permission: poo.mute
+    permission-message: You cannot mute players!
+
+  ## Improved Unmuting ##
+  unmute:
+    usage: /<command> <player>
+    description: Unmutes a player on the server.
+    permission: poo.mute
+    permission-message: You cannot unmute players!
+
+  ## Plugin-Related Stuff ##
+  ink:
+    usage: /<command> [reload]
+    aliases:
+      - paper-plugin
+      - pooper-paper
+    description: Either gets the current version or reloads Pooper/Ink.
+
+  ## Easy Player Reporting ##
+  report:
+    usage: /<command> <player> <reason> <info>
+    aliases: snitch
+    description: Reports another player to the moderation team.
+
+  ## Staff Chat ##
+  staff:
+    usage: /<command> <player> <reason> <info>
+    aliases:
+      - staff-chat
+      - sc
+    description: Sends messages into the staff-chat.
+    permission: poo.staff
+    permission-message: You do not have access to the staff chat!
+
+  ## Message Logging ##
+  msg-hist:
+    usage: /<command> <player>
+    aliases:
+      - message-history
+      - chat-activity
+    description: Gets someone else's message history.
+    permission: poo.msg-hist
+    permission-message: You do not have access to message history!
