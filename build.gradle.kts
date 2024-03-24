@@ -25,8 +25,7 @@ repositories {
 
 dependencies {
     implementation(project(":common"))
-    // TODO: implementation(project(":bungeecord"))
-    implementation(project(":paper"))
+    implementation(project(":bukkit"))
     implementation(project(":velocity"))
 }
 
@@ -49,13 +48,12 @@ subprojects {
     }
 
     dependencies {
+        implementation("dev.dejvokep:boosted-yaml:1.3.2")
+        implementation("com.marcpg:libpg:0.1.0")
         if (project.name != "common")
             implementation(project(":common"))
-
-        implementation("com.alessiodp.libby:libby-core:2.0.0-SNAPSHOT")
-        implementation("com.marcpg:libpg:0.1.0")
-        implementation("org.slf4j:slf4j-api:2.0.12")
-        implementation("dev.dejvokep:boosted-yaml:1.3.2")
+        if (project.name != "setup")
+            implementation("com.alessiodp.libby:libby-core:2.0.0-SNAPSHOT")
     }
 
     tasks {
@@ -67,16 +65,12 @@ subprojects {
         }
         shadowJar {
             relocate("com.alessiodp.libby", "com.marcpg.libs.libby")
+            relocate("dev.dejvokep.boostedyaml", "com.marcpg.libs.boostedyaml")
             relocate("com.marcpg.poopermc", "com.marcpg.common")
             relocate("org.bstats", "com.marcpg.common")
 
-            dependencies {
-                exclude(dependency("net.kyori:adventure-api"))
-                if (project.name != "setup") {
-                    exclude(dependency("net.java.dev.jna:jna"))
-                }
-            }
-            exclude("**/icon.png", "**/translations.properties")
+            exclude("**/icon.png", "**/translations.properties", "net/kyori/**")
+            if (project.name != "setup") exclude("com/sun/jna/**")
         }
     }
 }
@@ -89,7 +83,11 @@ tasks {
         delete(file("build/platforms"))
     }
     shadowJar {
+        relocate("com.alessiodp.libby", "com.marcpg.libs.libby")
+        relocate("dev.dejvokep.boostedyaml", "com.marcpg.libs.boostedyaml")
         relocate("org.bstats", "com.marcpg.common")
+
+        exclude("**/icon.png", "**/translations.properties", "com/sun/jna/**", "net/kyori/**")
     }
 }
 
@@ -97,8 +95,7 @@ fun outputTasks(): List<Task> {
     return listOf(
         "shadowJar",
         ":setup:shadowJar",
-        // TODO: ":bungeecord:shadowJar",
-        ":paper:shadowJar",
+        ":bukkit:shadowJar",
         ":velocity:shadowJar",
     ).map { tasks.findByPath(it)!! }
 }

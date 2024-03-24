@@ -2,7 +2,6 @@ rootProject.name = "PooperMC"
 include(
     "setup",
     "common",
-    "paper",
+    "bukkit",
     "velocity",
-    "bungeecord",
 )
