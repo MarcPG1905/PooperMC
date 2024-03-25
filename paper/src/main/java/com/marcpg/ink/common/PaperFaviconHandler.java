@@ -25,4 +25,9 @@ public class PaperFaviconHandler implements FaviconHandler<CachedServerIcon> {
     public CachedServerIcon randomIcon() {
         return favicons.get(RANDOM.nextInt(favicons.size()));
     }
+
+    @Override
+    public boolean hasValues() {
+        return !favicons.isEmpty();
+    }
 }

@@ -50,7 +50,6 @@ subprojects {
     dependencies {
         implementation("dev.dejvokep:boosted-yaml:1.3.2")
         implementation("com.marcpg:libpg:0.1.0")
-        compileOnly("net.kyori:adventure-text-minimessage:4.16.0")
         if (project.name != "common")
             implementation(project(":common"))
         if (project.name != "setup")

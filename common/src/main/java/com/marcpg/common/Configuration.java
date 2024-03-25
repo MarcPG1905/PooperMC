@@ -58,7 +58,7 @@ public class Configuration {
     public static boolean serverListMotd;
     public static List<Component> serverListMotdList;
     public static boolean serverListFavicon;
-    public static FaviconHandler<?> serverListFaviconList;
+    public static FaviconHandler<?> serverListFavicons;
     public static int serverListShowCurrentPlayers;
     public static int serverListShowMaxPlayers;
     // ------------ Server List ------------
@@ -172,7 +172,7 @@ public class Configuration {
                         Pooper.LOG.error("One or more of the provided favicons is not 64x64 pixels!");
                     }
                 });
-                serverListFaviconList = faviconHandler;
+                serverListFavicons = faviconHandler;
             }
 
             serverListShowMaxPlayers = doc.getInt("server-list.show-max-players");

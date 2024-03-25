@@ -1,7 +1,6 @@
 package com.marcpg.ink.features;
 
 import com.marcpg.common.Configuration;
-import com.marcpg.ink.Ink;
 import com.marcpg.libpg.lang.Translation;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;

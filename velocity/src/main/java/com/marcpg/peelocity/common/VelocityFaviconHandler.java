@@ -23,4 +23,9 @@ public class VelocityFaviconHandler implements FaviconHandler<Favicon> {
     public Favicon randomIcon() {
         return favicons.get(RANDOM.nextInt(favicons.size()));
     }
+
+    @Override
+    public boolean hasValues() {
+        return !favicons.isEmpty();
+    }
 }

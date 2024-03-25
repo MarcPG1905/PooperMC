@@ -10,6 +10,7 @@ public interface FaviconHandler<T> {
 
     void addIcon(BufferedImage image) throws InvalidSizeException;
     T randomIcon();
+    boolean hasValues();
 
     final class InvalidSizeException extends Exception {
         public InvalidSizeException(@NotNull BufferedImage image) {
