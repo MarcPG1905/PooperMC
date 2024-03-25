@@ -1,9 +1,10 @@
 package com.marcpg.peelocity;
 
 import com.google.common.io.ByteStreams;
+import com.marcpg.common.Configuration;
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.libpg.storing.Pair;
-import com.marcpg.peelocity.social.PartySystem;
+import com.marcpg.peelocity.social.VelocityPartySystem;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -77,8 +78,8 @@ public final class Joining {
         RegisteredServer targetServer;
         List<Player> players = new ArrayList<>();
 
-        if (PartySystem.PLAYER_PARTIES.containsKey(player.getUniqueId())) {
-            Map<UUID, Boolean> party = PartySystem.PARTIES.get(PartySystem.PLAYER_PARTIES.get(player.getUniqueId()));
+        if (VelocityPartySystem.PLAYER_PARTIES.containsKey(player.getUniqueId())) {
+            Map<UUID, Boolean> party = VelocityPartySystem.PARTIES.get(VelocityPartySystem.PLAYER_PARTIES.get(player.getUniqueId()));
 
             if (!party.get(player.getUniqueId())) {
                 player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.play.not_leader").color(NamedTextColor.RED));

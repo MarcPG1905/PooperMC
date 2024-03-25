@@ -18,7 +18,7 @@ public final class PlayerCache {
     private static final Path path = Pooper.DATA_DIR.resolve("playercache");
 
     public static void load() throws IOException {
-        Pooper.LOG.info(Ansi.formattedString("Loading Player-Cache...", Ansi.DARK_GRAY));
+        Pooper.LOG.info(Ansi.gray("Loading Player-Cache..."));
         if (path.toFile().createNewFile()) return;
         Files.readAllLines(path).parallelStream()
                 .map(l -> l.split(", *"))

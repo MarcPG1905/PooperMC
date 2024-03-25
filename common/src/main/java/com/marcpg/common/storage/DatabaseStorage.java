@@ -12,18 +12,18 @@ import java.util.Collection;
 import java.util.Map;
 
 public class DatabaseStorage<T> extends Storage<T> {
-    public static SQLConnection.DatabaseType TYPE;
-    public static String ADDRESS;
-    public static int PORT;
-    public static String NAME;
-    public static String USERNAME;
-    public static String PASSWORD;
+    public static SQLConnection.DatabaseType type;
+    public static String address;
+    public static int port;
+    public static String databaseName;
+    public static String username;
+    public static String password;
 
     private final AutoCatchingSQLConnection<T> connection;
 
     public DatabaseStorage(String name, String primaryKeyName) throws SQLException, ClassNotFoundException {
         super(name, primaryKeyName);
-        this.connection = new AutoCatchingSQLConnection<>(TYPE, ADDRESS, PORT, NAME, USERNAME, PASSWORD, name, primaryKeyName, e -> Pooper.LOG.error("Couldn't interact with the " + name + " database: " + e.getMessage()));
+        this.connection = new AutoCatchingSQLConnection<>(type, address, port, databaseName, username, password, name, primaryKeyName, e -> Pooper.LOG.error("Couldn't interact with the " + name + " database: " + e.getMessage()));
         this.createTable(switch (name) {
             case "friendships" -> "uuid UUID PRIMARY KEY, player1 UUID NOT NULL, player2 UUID NOT NULL";
             case "bans" -> "player UUID PRIMARY KEY, permanent BOOLEAN NOT NULL, expires BIGINT NOT NULL, duration BIGINT NOT NULL, reason TEXT NOT NULL";
@@ -35,7 +35,7 @@ public class DatabaseStorage<T> extends Storage<T> {
 
     @SuppressWarnings("resource")
     private void createTable(String values) throws SQLException {
-        String query = (TYPE == SQLConnection.DatabaseType.MS_SQL_SERVER ? "IF OBJECT_ID(N'" + this.name + "', N'U') IS NULL CREATE TABLE " : "CREATE TABLE IF NOT EXISTS ") + this.name + "(" + values + ");";
+        String query = (type == SQLConnection.DatabaseType.MS_SQL_SERVER ? "IF OBJECT_ID(N'" + this.name + "', N'U') IS NULL CREATE TABLE " : "CREATE TABLE IF NOT EXISTS ") + this.name + "(" + values + ");";
         this.connection.connection().prepareStatement(query).executeUpdate();
     }
 
@@ -70,7 +70,7 @@ public class DatabaseStorage<T> extends Storage<T> {
 
     public static void loadDependency(@NotNull LibraryManager manager) {
         manager.addSonatype();
-        String[] info = switch (TYPE) {
+        String[] info = switch (type) {
             case MYSQL -> new String[]{ "com{}mysql", "mysql-connector-j", "8.3.0" };
             case MARIADB -> new String[]{ "org{}mariadb{}jdbc", "mariadb-java-client", "3.3.2" };
             case MS_SQL_SERVER -> new String[]{ "com{}microsoft{}sqlserver", "mssql-jdbc", "12.6.0.jre11" };

@@ -1,14 +1,15 @@
 package com.marcpg.common.moderation;
 
-import com.marcpg.libpg.data.time.Time;
-import com.marcpg.libpg.lang.Translation;
-import com.marcpg.libpg.web.discord.Embed;
-import com.marcpg.libpg.web.discord.Webhook;
+import com.marcpg.common.Configuration;
 import com.marcpg.common.Pooper;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.entity.OnlinePlayer;
 import com.marcpg.common.storage.Storage;
 import com.marcpg.common.util.InvalidCommandArgsException;
+import com.marcpg.libpg.data.time.Time;
+import com.marcpg.libpg.lang.Translation;
+import com.marcpg.libpg.web.discord.Embed;
+import com.marcpg.libpg.web.discord.Webhook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
@@ -53,16 +54,16 @@ public class Muting {
                 "reason", reason
         ));
 
-        if (Pooper.MOD_WEBHOOK != null) {
+        if (Configuration.modWebhook != null) {
             try {
-                Pooper.MOD_WEBHOOK.post(new Embed("Minecraft Mute", player.name() + " got muted by " + sourceName + "!", Color.YELLOW, List.of(
+                Configuration.modWebhook.post(new Embed("Minecraft Mute", player.name() + " got muted by " + sourceName + "!", Color.YELLOW, List.of(
                         new Embed.Field("Muted", player.name(), true),
                         new Embed.Field("Moderator", sourceName, true),
                         new Embed.Field("Time", time.getPreciselyFormatted(), true),
                         new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
                 )));
             } catch (IOException e) {
-                Pooper.LOG.warn("Couldn't send Discord webhook to " + Pooper.MOD_WEBHOOK.getUrl() +"!");
+                Pooper.LOG.warn("Couldn't send Discord webhook to " + Configuration.modWebhook.getUrl() +"!");
             }
         }
 
@@ -75,14 +76,14 @@ public class Muting {
 
         STORAGE.remove(player.uuid());
 
-        if (Pooper.MOD_WEBHOOK != null) {
+        if (Configuration.modWebhook != null) {
             try {
-                Pooper.MOD_WEBHOOK.post(new Embed("Minecraft **Un**mute", player.name() + "'s mute got removed by " + sourceName + ".", Color.YELLOW, List.of(
+                Configuration.modWebhook.post(new Embed("Minecraft **Un**mute", player.name() + "'s mute got removed by " + sourceName + ".", Color.YELLOW, List.of(
                         new Embed.Field("Unmuted", player.name(), true),
                         new Embed.Field("Moderator", sourceName, true)
                 )));
             } catch (IOException e) {
-                Pooper.LOG.warn("Couldn't send Discord webhook to " + Pooper.MOD_WEBHOOK.getUrl() +"!");
+                Pooper.LOG.warn("Couldn't send Discord webhook to " + Configuration.modWebhook.getUrl() +"!");
             }
         }
 

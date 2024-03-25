@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.marcpg.poopermc"
-version = "1.1.0+build.1"
+version = "1.1.0+build.3"
 description = "An all-in-one solution for servers. Everything from administration tools, to moderation utilities and database support."
 
 java.sourceCompatibility = JavaVersion.VERSION_17
@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":bukkit"))
+    implementation(project(":paper"))
     implementation(project(":velocity"))
 }
 
@@ -50,6 +50,7 @@ subprojects {
     dependencies {
         implementation("dev.dejvokep:boosted-yaml:1.3.2")
         implementation("com.marcpg:libpg:0.1.0")
+        compileOnly("net.kyori:adventure-text-minimessage:4.16.0")
         if (project.name != "common")
             implementation(project(":common"))
         if (project.name != "setup")
@@ -72,6 +73,11 @@ subprojects {
             exclude("**/icon.png", "**/translations.properties", "net/kyori/**")
             if (project.name != "setup") exclude("com/sun/jna/**")
         }
+        processResources {
+            filter {
+                it.replace("\${version}", version.toString())
+            }
+        }
     }
 }
 
@@ -87,7 +93,7 @@ tasks {
         relocate("dev.dejvokep.boostedyaml", "com.marcpg.libs.boostedyaml")
         relocate("org.bstats", "com.marcpg.common")
 
-        exclude("**/icon.png", "**/translations.properties", "com/sun/jna/**", "net/kyori/**")
+        exclude("**/icon.png", "com/sun/jna/**", "net/kyori/**")
     }
 }
 
@@ -95,7 +101,8 @@ fun outputTasks(): List<Task> {
     return listOf(
         "shadowJar",
         ":setup:shadowJar",
-        ":bukkit:shadowJar",
+        ":fabric:shadowJar",
+        ":paper:shadowJar",
         ":velocity:shadowJar",
     ).map { tasks.findByPath(it)!! }
 }

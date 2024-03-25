@@ -1,20 +1,28 @@
 package com.marcpg.peelocity;
 
+import com.alessiodp.libby.VelocityLibraryManager;
 import com.google.inject.Inject;
-import com.marcpg.libpg.color.Ansi;
-import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.features.ChatUtilities;
-import com.marcpg.peelocity.features.ServerList;
-import com.marcpg.peelocity.features.Whitelist;
-import com.marcpg.peelocity.moderation.*;
+import com.marcpg.common.Configuration;
+import com.marcpg.common.Platform;
 import com.marcpg.common.Pooper;
-import com.marcpg.peelocity.features.PrivateMessaging;
-import com.marcpg.peelocity.social.VelocityFriendSystem;
-import com.marcpg.peelocity.social.PartySystem;
 import com.marcpg.common.features.MessageLogging;
+import com.marcpg.common.logger.SLF4JLogger;
 import com.marcpg.common.storage.Storage;
 import com.marcpg.common.util.UpdateChecker;
+import com.marcpg.libpg.color.Ansi;
+import com.marcpg.libpg.lang.Translation;
+import com.marcpg.peelocity.common.VelocityAsyncScheduler;
+import com.marcpg.peelocity.common.VelocityFaviconHandler;
+import com.marcpg.peelocity.features.VelocityChatUtilities;
+import com.marcpg.peelocity.features.VelocityPrivateMessaging;
+import com.marcpg.peelocity.features.VelocityServerList;
+import com.marcpg.peelocity.features.VelocityWhitelist;
+import com.marcpg.peelocity.moderation.*;
+import com.marcpg.peelocity.social.VelocityFriendSystem;
+import com.marcpg.peelocity.social.VelocityPartySystem;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandSource;
@@ -42,19 +50,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+
+import static com.marcpg.common.Configuration.doc;
 
 @Plugin(
         id = "pooper",
         name = "PooperMC",
         version = Pooper.VERSION + "+build." + Pooper.BUILD,
         description = "An all-in-one solution for servers. Everything from administration tools, to moderation utilities and database support.",
-        url = "https://marcpg.com/poopermc/velocity",
+        url = "https://marcpg.com/pooper/velocity",
         authors = { "MarcPG" },
         dependencies = { @Dependency(id = "signedvelocity", optional = true) }
 )
 public final class Peelocity {
-    static { Pooper.PLATFORM = Pooper.Platform.VELOCITY; }
+    static { Pooper.PLATFORM = Platform.VELOCITY; }
 
     private static final List<String> commands = List.of("ban", "config", "friend", "hub", "join", "kick", "msg",
             "mute", "pardon", "party", "peelocity", "report", "staff", "unmute", "w", "whitelist", "msg-hist");
@@ -68,7 +77,7 @@ public final class Peelocity {
     public Peelocity(Logger logger, ProxyServer server, @DataDirectory Path dataDirectory) {
         SERVER = server;
         INSTANCE = this;
-        Pooper.LOG = logger;
+        Pooper.LOG = new SLF4JLogger(logger);
         Pooper.DATA_DIR = dataDirectory;
     }
 
@@ -80,10 +89,14 @@ public final class Peelocity {
 
         SERVER.getChannelRegistrar().register(Joining.PLUGIN_MESSAGE_IDENTIFIER);
 
-        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
+        VelocityChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
 
-        Configuration.createDataDirectory();
-        Configuration.load(Objects.requireNonNull(this.getClass().getResourceAsStream("/config.yml")));
+        Configuration.createFileTree();
+        Configuration.load(
+                new VelocityFaviconHandler(),
+                new VelocityLibraryManager<>(this, (Logger) Pooper.LOG.getNativeLogger(), Pooper.DATA_DIR, SERVER.getPluginManager()),
+                new VelocityAsyncScheduler(this, SERVER.getScheduler())
+        );
 
         this.metrics(metricsFactory.make(this, Pooper.METRICS_ID));
         this.events(SERVER.getEventManager());
@@ -118,29 +131,29 @@ public final class Peelocity {
     void sendWelcome() {
         Pooper.LOG.info(Ansi.yellow("    __   __  __"));
         Pooper.LOG.info(Ansi.yellow("   |__) |__ |__ PooperMC for Velocity (Peelocity) " + Pooper.VERSION));
-        Pooper.LOG.info(Ansi.yellow("   |    |__ |__ https://marcpg.com/poopermc/velocity"));
+        Pooper.LOG.info(Ansi.yellow("   |    |__ |__ https://marcpg.com/pooper/velocity"));
         Pooper.LOG.info(Ansi.gray("   Version: " + Pooper.VERSION + "+build." + Pooper.BUILD));
     }
 
     void metrics(@NotNull Metrics metrics) {
         Pooper.LOG.info(Ansi.gray("Sending Metrics to bStats..."));
         metrics.addCustomChart(new SimplePie("chat_utils", () -> String.valueOf(Configuration.chatUtilities.getBoolean("enabled"))));
-        metrics.addCustomChart(new SimplePie("server_list", () -> String.valueOf(Configuration.serverList.getBoolean("enabled"))));
+        metrics.addCustomChart(new SimplePie("server_list", () -> String.valueOf(doc.getBoolean("server-list.enabled"))));
         metrics.addCustomChart(new SimplePie("storage_method", () -> Storage.storageType.name().toLowerCase()));
-        metrics.addCustomChart(new SimplePie("translations", () -> String.valueOf(Configuration.translations)));
+        metrics.addCustomChart(new SimplePie("translations", () -> String.valueOf(Configuration.downloadTranslations)));
         metrics.addCustomChart(new SimplePie("whitelist", () -> String.valueOf(Configuration.whitelist)));
     }
 
     void events(@NotNull EventManager manager) {
         Pooper.LOG.info(Ansi.gray("Registering Events..."));
-        manager.register(this, new PartySystem());
+        manager.register(this, new VelocityPartySystem());
         manager.register(this, new Joining());
         manager.register(this, new VelocityBanning());
         manager.register(this, new VelocityMuting());
 
-        if (Configuration.chatUtilities.getBoolean("enabled")) manager.register(this, new ChatUtilities());
-        if (Configuration.serverList.getBoolean("enabled")) manager.register(this, new ServerList());
-        if (Configuration.whitelist) manager.register(this, new Whitelist());
+        if (Configuration.chatUtilities.getBoolean("enabled")) manager.register(this, new VelocityChatUtilities());
+        if (doc.getBoolean("server-list.enabled")) manager.register(this, new VelocityServerList());
+        if (Configuration.whitelist) manager.register(this, new VelocityWhitelist());
         if (MessageLogging.enabled) manager.register(this, new BasicEvents());
 
         manager.register(this, LoginEvent.class, PostOrder.LAST, event -> PlayerCache.PLAYERS.put(event.getPlayer().getUniqueId(), event.getPlayer().getUsername()));
@@ -150,22 +163,22 @@ public final class Peelocity {
         Pooper.LOG.info(Ansi.gray("Registering Commands..."));
 
         manager.register("ban", VelocityBanning.banCommand());
-        manager.register("config", Configuration.command(), "peelocity-configuration", "pooper-velocity-configuration");
+        manager.register("config", configCommand(), "peelocity-configuration", "pooper-velocity-configuration");
         manager.register("friend", VelocityFriendSystem.command());
         manager.register("hub", Joining.hubCommand(), "lobby");
         manager.register("join", Joining.joinCommand(), "play");
         manager.register("kick", VelocityKicking.command());
-        manager.register("msg", PrivateMessaging.msgCommand(), "dm", "tell", "whisper");
+        manager.register("msg", VelocityPrivateMessaging.msgCommand(), "dm", "tell", "whisper");
         manager.register("mute", VelocityMuting.muteCommand());
         manager.register("pardon", VelocityBanning.pardonCommand(), "unban");
-        manager.register("party", PartySystem.command());
-        manager.register("peelocity", this.command(), "velocity-plugin", "pooper-velocity");
+        manager.register("party", VelocityPartySystem.command());
+        manager.register("peelocity", command(), "velocity-plugin", "pooper-velocity");
         manager.register("report", VelocityReporting.command(), "snitch");
         manager.register("staff", VelocityStaffChat.command(), "staff-chat", "sc");
         manager.register("unmute", VelocityMuting.unmuteCommand());
-        manager.register("w", PrivateMessaging.wCommand(), "reply");
+        manager.register("w", VelocityPrivateMessaging.wCommand(), "reply");
 
-        if (Configuration.whitelist) manager.register("whitelist", Whitelist.command());
+        if (Configuration.whitelist) manager.register("whitelist", VelocityWhitelist.command());
         if (MessageLogging.enabled) manager.register("msg-hist", Commands.msgHist(), "message-history", "chat-activity");
     }
 
@@ -173,10 +186,14 @@ public final class Peelocity {
         commands.forEach(SERVER.getCommandManager()::unregister);
         SERVER.getEventManager().unregisterListeners(this);
 
-        ChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
+        VelocityChatUtilities.signedVelocityInstalled = SERVER.getPluginManager().isLoaded("signedvelocity");
 
-        Configuration.createDataDirectory();
-        Configuration.load(Objects.requireNonNull(this.getClass().getResourceAsStream("/config.yml")));
+        Configuration.createFileTree();
+        Configuration.load(
+                new VelocityFaviconHandler(),
+                new VelocityLibraryManager<>(this, (Logger) Pooper.LOG.getNativeLogger(), Pooper.DATA_DIR, SERVER.getPluginManager()),
+                new VelocityAsyncScheduler(this, SERVER.getScheduler())
+        );
 
         this.metrics(metricsFactory.make(this, Pooper.METRICS_ID));
         this.events(SERVER.getEventManager());
@@ -218,6 +235,113 @@ public final class Peelocity {
                             return 1;
                         })
                 )
+        );
+    }
+
+    @NotNull BrigadierCommand configCommand() {
+        return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("config")
+                .requires(source -> source.hasPermission("poo.admin"))
+                .then(RequiredArgumentBuilder.<CommandSource, String>argument("entry", StringArgumentType.word())
+                        .suggests((context, builder) -> {
+                            Configuration.routes.forEach(builder::suggest);
+                            return builder.buildFuture();
+                        })
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("get")
+                                .executes(context -> {
+                                    CommandSource source = context.getSource();
+                                    Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
+                                    String route = context.getArgument("entry", String.class);
+
+                                    if (doc.isList(route)) {
+                                        source.sendMessage(Translation.component(l, "cmd.config.get.list", route).color(NamedTextColor.YELLOW));
+                                        doc.getList(route).forEach(o -> source.sendMessage(Component.text("- " + o.toString())));
+                                    } else if (doc.contains(route)) {
+                                        source.sendMessage(Translation.component(l, "cmd.config.get.object", route, doc.getString(route)).color(NamedTextColor.YELLOW));
+                                    } else {
+                                        source.sendMessage(Translation.component(l, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
+                                    }
+                                    return 1;
+                                })
+                        )
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("set")
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
+                                        .suggests((context, builder) -> {
+                                            if (doc.isBoolean(context.getArgument("entry", String.class))) {
+                                                builder.suggest("true");
+                                                builder.suggest("false");
+                                            }
+                                            return builder.buildFuture();
+                                        })
+                                        .executes(context -> {
+                                            CommandSource source = context.getSource();
+                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
+                                            String route = context.getArgument("entry", String.class);
+
+                                            if (!doc.contains(route)) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            String stringValue = context.getArgument("value", String.class);
+
+                                            if (doc.isSection(route) || doc.isList(route)) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.set.section_list").color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            if (doc.isBoolean(route))
+                                                doc.set(route, Boolean.parseBoolean(stringValue));
+                                            else if (doc.isInt(route))
+                                                doc.set(route, Integer.parseInt(stringValue));
+                                            else
+                                                doc.set(route, stringValue);
+
+                                            try {
+                                                doc.save();
+                                            } catch (IOException e) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.error").color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            source.sendMessage(Translation.component(l, "cmd.config.set.confirm", route, stringValue).color(NamedTextColor.YELLOW));
+                                            source.sendMessage(Translation.component(l, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
+
+                                            return 1;
+                                        })
+                                )
+                        )
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("add")
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
+                                        .executes(context -> {
+                                            CommandSource source = context.getSource();
+                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
+                                            String route = context.getArgument("entry", String.class);
+
+                                            if (!doc.contains(route)) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            List<String> list = doc.getStringList(route);
+                                            list.add(context.getArgument("value", String.class));
+                                            doc.set(route, list);
+
+                                            try {
+                                                doc.save();
+                                            } catch (IOException e) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.error").color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            source.sendMessage(Translation.component(l, "cmd.config.add.confirm", route, context.getArgument("value", String.class)).color(NamedTextColor.YELLOW));
+                                            source.sendMessage(Translation.component(l, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
+
+                                            return 1;
+                                        })
+                                )
+                        )
+                )
+                .build()
         );
     }
 }

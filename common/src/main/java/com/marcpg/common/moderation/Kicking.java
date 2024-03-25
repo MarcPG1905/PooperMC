@@ -1,5 +1,6 @@
 package com.marcpg.common.moderation;
 
+import com.marcpg.common.Configuration;
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.libpg.web.discord.Embed;
 import com.marcpg.libpg.web.discord.Webhook;
@@ -22,15 +23,15 @@ public class Kicking {
                 .append(Translation.component(l, "moderation.reason", "").color(NamedTextColor.GRAY))
                 .append(Component.text(reason, NamedTextColor.BLUE)));
 
-        if (Pooper.MOD_WEBHOOK != null) {
+        if (Configuration.modWebhook != null) {
             try {
-                Pooper.MOD_WEBHOOK.post(new Embed("Minecraft Kick", player.name() + " got kicked by " + sourceName + "!", Color.GREEN, List.of(
+                Configuration.modWebhook.post(new Embed("Minecraft Kick", player.name() + " got kicked by " + sourceName + "!", Color.GREEN, List.of(
                         new Embed.Field("Kicked", player.name(), true),
                         new Embed.Field("Moderator", sourceName, true),
                         new Embed.Field("Reason", Webhook.escapeJson(reason).trim(), false)
                 )));
             } catch (IOException e) {
-                Pooper.LOG.warn("Couldn't send Discord webhook to " + Pooper.MOD_WEBHOOK.getUrl() +"!");
+                Pooper.LOG.warn("Couldn't send Discord webhook to " + Configuration.modWebhook.getUrl() +"!");
             }
         }
 

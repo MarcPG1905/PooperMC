@@ -1,12 +1,13 @@
 package com.marcpg.common.moderation;
 
-import com.marcpg.libpg.text.Formatter;
-import com.marcpg.libpg.web.discord.Embed;
-import com.marcpg.libpg.web.discord.Webhook;
+import com.marcpg.common.Configuration;
 import com.marcpg.common.Pooper;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.entity.OnlinePlayer;
 import com.marcpg.common.util.InvalidCommandArgsException;
+import com.marcpg.libpg.text.Formatter;
+import com.marcpg.libpg.web.discord.Embed;
+import com.marcpg.libpg.web.discord.Webhook;
 
 import java.awt.*;
 import java.io.IOException;
@@ -19,16 +20,16 @@ public class Reporting {
         if (!REASONS.contains(reason))
             throw new InvalidCommandArgsException("report.invalid_reason", reason);
 
-        if (Pooper.MOD_WEBHOOK != null) {
+        if (Configuration.modWebhook != null) {
             try {
-                Pooper.MOD_WEBHOOK.post(new Embed("New Report!", null, Color.decode("#FF5555"), List.of(
+                Configuration.modWebhook.post(new Embed("New Report!", null, Color.decode("#FF5555"), List.of(
                         new Embed.Field("Reported User", player.name(), true),
                         new Embed.Field("Who Reported?", reporter.name(), true),
                         new Embed.Field("Reason", Formatter.toPascalCase(reason), true),
                         new Embed.Field("Additional Info", Webhook.escapeJson(info).trim(), false)
                 )));
             } catch (IOException e) {
-                Pooper.LOG.warn("Couldn't send Discord webhook to " + Pooper.MOD_WEBHOOK.getUrl() +"!");
+                Pooper.LOG.warn("Couldn't send Discord webhook to " + Configuration.modWebhook.getUrl() +"!");
                 throw new InvalidCommandArgsException("report.error");
             }
         } else {
