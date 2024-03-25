@@ -9,7 +9,8 @@ base {
 dependencies {
     implementation("com.alessiodp.libby:libby-bukkit:2.0.0-SNAPSHOT")
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    implementation("net.kyori:adventure-text-minimessage:4.16.0")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
 }
 
 tasks {

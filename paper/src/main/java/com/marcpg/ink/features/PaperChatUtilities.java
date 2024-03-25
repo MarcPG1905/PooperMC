@@ -8,7 +8,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
@@ -29,7 +29,7 @@ public class PaperChatUtilities implements Listener {
         Component message = event.message();
 
         if (canUse(player, "mentions")) {
-            Matcher matcher = MENTION_PATTERN.matcher(PlainTextComponentSerializer.plainText().serialize(message));
+            Matcher matcher = MENTION_PATTERN.matcher(PlainComponentSerializer.plain().serialize(message));
             while (matcher.find()) {
                 String mentioned = matcher.group(1);
 
@@ -37,14 +37,14 @@ public class PaperChatUtilities implements Listener {
                     Bukkit.getOnlinePlayers().forEach(p -> {
                         p.showTitle(Title.title(Translation.component(p.locale(), "chat.mentions.title").color(NamedTextColor.BLUE),
                                 Translation.component(p.locale(), "chat.mentions.subtitle.everyone", player.getName()).color(NamedTextColor.DARK_GREEN)));
-                        p.playSound(p, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 1.0f, 1.0f);
+                        p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 1.0f, 1.0f);
                     });
                 } else {
                     Player p = Bukkit.getPlayer(mentioned);
                     if (p != null) {
                         p.showTitle(Title.title(Translation.component(p.locale(), "chat.mentions.title").color(NamedTextColor.BLUE),
                                 Translation.component(p.locale(), "chat.mentions.subtitle", player.getName()).color(NamedTextColor.DARK_GREEN)));
-                        p.playSound(p, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 1.0f, 1.0f);
+                        p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 1.0f, 1.0f);
                     } else {
                         player.sendMessage(Translation.component(player.locale(), "cmd.player_not_found", mentioned).color(NamedTextColor.GRAY));
                     }
@@ -53,7 +53,7 @@ public class PaperChatUtilities implements Listener {
         }
 
         if (canUse(player, "colors"))
-            event.message(colorize(PlainTextComponentSerializer.plainText().serialize(message)));
+            event.message(colorize(PlainComponentSerializer.plain().serialize(message)));
     }
 
 

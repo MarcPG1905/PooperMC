@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import java.time.Instant;
 import java.util.*;
 
+@SuppressWarnings("deprecation") // Bukkit#getOfflinePlayer(String)
 public class PaperBanning implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerLogin(@NotNull PlayerLoginEvent event) {

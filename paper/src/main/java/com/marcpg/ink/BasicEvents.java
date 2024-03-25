@@ -3,7 +3,7 @@ package com.marcpg.ink;
 import com.marcpg.common.features.MessageLogging;
 import com.marcpg.ink.common.PaperPlayer;
 import io.papermc.paper.event.player.AsyncChatEvent;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -18,7 +18,7 @@ public class BasicEvents implements Listener {
         if (MessageLogging.enabled) {
             MessageLogging.saveMessage(PaperPlayer.ofPlayer(event.getPlayer()), new MessageLogging.MessageData(
                     new Date(),
-                    PlainTextComponentSerializer.plainText().serialize(event.message()).replace(" || ", " \\==|==\\==|== "),
+                    PlainComponentSerializer.plain().serialize(event.message()).replace(" || ", " \\==|==\\==|== "),
                     MessageLogging.MessageData.Type.NORMAL,
                     null
             ));
