@@ -1,9 +1,9 @@
-# Peelocity
+# PooperMC
 
-Is a all-in-one solution for you Minecraft server network, which aims to provide all features you need inside just one simple plugin. Being lightweight and efficient, Peelocity tries to provide as many features as possible, while having a simple and easy to maintain codebase.  
+Formally known as Peelocity, is a all-in-one solution for you Minecraft server network, which aims to provide all features you need inside just one simple plugin. Being lightweight and efficient, PooperMC tries to provide as many features as possible, while having a simple and easy to maintain codebase.  
 The modern codebase using Java 17+ allows for fast response times and always up-to-date code.  
 Although the plugin is still in development, it is already a valid choice for any server network, that needs a working and lightweight plugin.  
-Read more at https://marcpg.com/peelocity (soon...)!
+Read more at https://marcpg.com/poopermc (soon...)!
 
 ## Requirements
 
@@ -13,15 +13,16 @@ Read more at https://marcpg.com/peelocity (soon...)!
 ## Releases
 
 You can find our official releases on these platforms:
-- GitHub: [github.com/MarcPG1905/Peelocity/releases](https://github.com/MarcPG1905/Peelocity/releases)
-- Modrinth (Recommended): [modrinth.com/plugin/peelocity](https://modrinth.com/plugin/peelocity)
-- Hangar: [hangar.papermc.io/MarcPG1905/Peelocity](https://hangar.papermc.io/MarcPG1905/Peelocity)
-- SpigotMC: [spigotmc.org/resources/peelocity.115129](https://www.spigotmc.org/resources/peelocity.115129/)
+- Modrinth (Recommended): [modrinth.com/plugin/pooper](https://modrinth.com/plugin/pooper)
+- GitHub: [github.com/MarcPG1905/PooperMC/releases](https://github.com/MarcPG1905/PooperMC/releases)
+- Hangar: [hangar.papermc.io/MarcPG1905/PooperMC](https://hangar.papermc.io/MarcPG1905/PooperMC)
+- SpigotMC: [spigotmc.org/resources/poopermc.115129](https://www.spigotmc.org/resources/poopermc.115129/)
 - Planet Minecraft: [planetminecraft.com/mod/peelocity-all-in-one-proxy-plugin](https://www.planetminecraft.com/mod/peelocity-all-in-one-proxy-plugin/)
+- CurseForge: [curseforge.com/minecraft/bukkit-plugins/pooper](https://www.curseforge.com/minecraft/bukkit-plugins/pooper)
 
 ## Features
 
-Most features can be enabled/disabled in the configuration (`./plugins/peelocity/pee.yml`).  
+Most features can be enabled/disabled in the configration.  
 Some aren't enabled by default, so make sure to check out the configuration!
 
 ### Chat Utilities
@@ -50,25 +51,27 @@ Everything moderation-related is also sent/logged to a Discord webhook.
 
 ### Other
 - A global whitelist for the whole proxy, with a command and storage.
-- Join logic to join a gamemode configured in the configuration and also supports a plugin message using `peelocity:joining`, for lobby plugins.
+- Join logic to join a gamemode configured in the configuration and also supports a plugin message using `pooper:joining`, for lobby plugins.
 - Player-Cache to also have access to offline players instead of only online players.
 - An easy-to-use setup that ships right with the plugin JAR. See below for more info!
 
 ## Setup
 
-PeeUp, which is the built-in configuration setup is an easy and fast way of setting up your peelocity configuration for your server.
+PeeUp, which is a simple configuration setup, is an easy and fast way of setting up your PooperMC configuration for your server.
 
 ### Running PeeUp
 
-To run PeeUp, you just have to follow a few simple steps.  
-It's built-in, which means no additional downloads. Simply run the plugin JAR archive (`Peelocity-?.jar`) as a Java program, like you run your Velocity server:
+To run PeeUp, you just have to follow a few simple steps:
 
+1. Download the Setup JAR file.
+2. Move the JAR file into your plugins folder or your server folder.
+3. Run the Setup:
 ```shell
-java -jar Peelocity.jar
-#         ^^^^^^^^^^^^^ <- Your JAR File!
+java -jar PooperMC-VERSION-Setup.jar
+#         ^^^^^^^^^^^^^^^^^^^^^^ <- Your JAR File!
 ```
 
-Make sure to replace the `plugins/Peelocity-VERSION.jar` with the actual plugin JAR file!
+Make sure to replace the `PooperMC-VERSION-Setup.jar` with the actual JAR file!
 
 ### Requirements
 
@@ -79,22 +82,22 @@ Make sure to replace the `plugins/Peelocity-VERSION.jar` with the actual plugin 
 ### Limitations
 
 - Things like the custom MotDs and Favicons need to be configured manually.
-- You **cannot** quit the setup by pressing Ctrl+C, as the program temporarily overrides some input methods. (Fixed soon!)
+- That's it.
 
 ## Usage
 
 ### Configuration
 
-The configuration is designed to be simple and descriptive. You can find everything you need inside the configuration file (./plugin/Peelocity/pee.yml), which ships with useful descriptions.
+The configuration is designed to be simple and descriptive. You can find everything you need inside the configuration file, which ships with useful descriptions.
 
 ### Translations
 
-Translations are automatically downloaded over [a simple database](https://marcpg.com/peelocity/translations/), which means that you don't have to do anything, except have a stable internet connection. The downloads itself will only take a few kilobytes on each startup.
+Translations are automatically downloaded over [a simple database](https://marcpg.com/poopermc/translations/), which means that you don't have to do anything, except have a stable internet connection. The downloads itself will only take a few kilobytes on each startup.
 
 ### Data Storing
 
 There are multiple ways of storing the data, that you can set in the configuration. YAML and RAM both don't require additional configuration.  
-But if you want to use a database, you will need to set it up yourself. For simple instructions, please visit the [database help page](https://marcpg.com/peelocity/database) (soon...)!
+But if you want to use a database, you will need to set it up yourself. For simple instructions, please visit the [database help page](https://marcpg.com/poopermc/database) (soon...)!
 
 ## Future Goals
 
@@ -122,6 +125,6 @@ If you don't use Discord or like to contact me otherwise, please rely on one of 
 
 ### Used Libraries
 
-Peelocity is made to be as lightweight as possible. We only use two utility libraries, which are very small:
+PooperMC is made to be as lightweight as possible. We only use two utility libraries, which are very small:
 - [LibPG](https://github.com/MarcPG1905/LibPG) - A utility library provided by MarcPG, which has various features, like downloads, pairs, time formats, etc.
 - [boosted-yaml](https://github.com/dejvokep/boosted-yaml) - Provides a reliable and lightweight configuration library with file versions, and more.
