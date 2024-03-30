@@ -107,8 +107,6 @@ public final class Peelocity {
 
         Pooper.LOG.info(Ansi.green("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!"));
 
-        sendWelcome();
-
         try {
             Translation.loadProperties(Pooper.DATA_DIR.resolve("lang").toFile());
         } catch (IOException e) {
@@ -118,21 +116,15 @@ public final class Peelocity {
         Path path = Pooper.DATA_DIR.resolve(".no_setup");
         if (path.toFile().createNewFile()) {
             Files.setAttribute(path, "dos:hidden", true);
-            Pooper.LOG.info(Ansi.formattedString("Please consider checking out the Peelocity setup, by running Peelocity-?.jar as a java program.", Ansi.BRIGHT_BLUE, Ansi.BLINK));
-            Pooper.LOG.info(Ansi.formattedString("See further instructions on https://github.com/MarcPG1905/Peelocity#setup!", Ansi.BRIGHT_BLUE, Ansi.BLINK));
+            Pooper.LOG.info(Ansi.formattedString("Please consider checking out the PooperMC setup: https://github.com/MarcPG1905/PooperMC#setup!", Ansi.BRIGHT_BLUE, Ansi.BLINK));
         }
+
+        Pooper.sendInfo(Pooper.LOG);
     }
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent ignoredEvent) throws IOException {
         PlayerCache.save();
-    }
-
-    void sendWelcome() {
-        Pooper.LOG.info(Ansi.yellow("    __   __  __"));
-        Pooper.LOG.info(Ansi.yellow("   |__) |__ |__ PooperMC for Velocity (Peelocity) " + Pooper.VERSION));
-        Pooper.LOG.info(Ansi.yellow("   |    |__ |__ https://marcpg.com/pooper/velocity"));
-        Pooper.LOG.info(Ansi.gray("   Version: " + Pooper.VERSION + "+build." + Pooper.BUILD));
     }
 
     void metrics(@NotNull Metrics metrics) {
@@ -195,9 +187,9 @@ public final class Peelocity {
                 new VelocityAsyncScheduler(this, SERVER.getScheduler())
         );
 
-        this.metrics(metricsFactory.make(this, Pooper.METRICS_ID));
-        this.events(SERVER.getEventManager());
-        this.commands(SERVER.getCommandManager());
+        metrics(metricsFactory.make(this, Pooper.METRICS_ID));
+        events(SERVER.getEventManager());
+        commands(SERVER.getCommandManager());
 
         UpdateChecker.checkUpdates();
 
@@ -215,7 +207,7 @@ public final class Peelocity {
                     CommandSource source = context.getSource();
                     Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                     source.sendMessage(Component.text("Peelocity ").decorate(TextDecoration.BOLD).append(Component.text(Pooper.VERSION + "+build." + Pooper.BUILD).decoration(TextDecoration.BOLD, false)).color(NamedTextColor.YELLOW));
-                    source.sendMessage(Translation.component(l, "cmd.peelocity.info"));
+                    source.sendMessage(Translation.component(l, "license"));
                     return 1;
                 })
                 .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
@@ -226,10 +218,9 @@ public final class Peelocity {
 
                             try {
                                 this.reload();
+                                source.sendMessage(Translation.component(l, "cmd.reload.confirm").color(NamedTextColor.GREEN));
                             } catch (IOException e) {
                                 source.sendMessage(Translation.component(l, "cmd.reload.error").color(NamedTextColor.RED));
-                            } finally {
-                                source.sendMessage(Translation.component(l, "cmd.reload.confirm").color(NamedTextColor.GREEN));
                             }
 
                             return 1;
@@ -281,20 +272,20 @@ public final class Peelocity {
                                                 source.sendMessage(Translation.component(l, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
                                                 return 1;
                                             }
-
-                                            String stringValue = context.getArgument("value", String.class);
-
                                             if (doc.isSection(route) || doc.isList(route)) {
                                                 source.sendMessage(Translation.component(l, "cmd.config.set.section_list").color(NamedTextColor.RED));
                                                 return 1;
                                             }
 
-                                            if (doc.isBoolean(route))
-                                                doc.set(route, Boolean.parseBoolean(stringValue));
-                                            else if (doc.isInt(route))
-                                                doc.set(route, Integer.parseInt(stringValue));
-                                            else
-                                                doc.set(route, stringValue);
+                                            String value = context.getArgument("value", String.class);
+
+                                            if (doc.isBoolean(route)) {
+                                                doc.set(route, Boolean.parseBoolean(value));
+                                            } else if (doc.isInt(route)) {
+                                                doc.set(route, Integer.parseInt(value));
+                                            } else {
+                                                doc.set(route, value);
+                                            }
 
                                             try {
                                                 doc.save();
@@ -303,8 +294,8 @@ public final class Peelocity {
                                                 return 1;
                                             }
 
-                                            source.sendMessage(Translation.component(l, "cmd.config.set.confirm", route, stringValue).color(NamedTextColor.YELLOW));
-                                            source.sendMessage(Translation.component(l, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
+                                            source.sendMessage(Translation.component(l, "cmd.config.set.confirm", route, value).color(NamedTextColor.YELLOW));
+                                            source.sendMessage(Translation.component(l, "cmd.config.reload_to_apply", Pooper.PLATFORM.specialName.toLowerCase()).color(NamedTextColor.GRAY));
 
                                             return 1;
                                         })
@@ -333,7 +324,42 @@ public final class Peelocity {
                                                 return 1;
                                             }
 
-                                            source.sendMessage(Translation.component(l, "cmd.config.add.confirm", route, context.getArgument("value", String.class)).color(NamedTextColor.YELLOW));
+                                            source.sendMessage(Translation.component(l, "cmd.config.add.confirm", context.getArgument("value", String.class), route).color(NamedTextColor.YELLOW));
+                                            source.sendMessage(Translation.component(l, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
+
+                                            return 1;
+                                        })
+                                )
+                        )
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("remove")
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("value", StringArgumentType.greedyString())
+                                        .executes(context -> {
+                                            CommandSource source = context.getSource();
+                                            Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
+                                            String route = context.getArgument("entry", String.class);
+                                            String arg = context.getArgument("value", String.class);
+
+                                            if (!doc.contains(route)) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.key_not_existing", route).color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            List<String> list = doc.getStringList(route);
+                                            if (!list.contains(arg)) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.remove.not_containing", arg, route).color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+                                            list.remove(context.getArgument("value", String.class));
+                                            doc.set(route, list);
+
+                                            try {
+                                                doc.save();
+                                            } catch (IOException e) {
+                                                source.sendMessage(Translation.component(l, "cmd.config.error").color(NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            source.sendMessage(Translation.component(l, "cmd.config.remove.confirm", arg, route).color(NamedTextColor.YELLOW));
                                             source.sendMessage(Translation.component(l, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
 
                                             return 1;

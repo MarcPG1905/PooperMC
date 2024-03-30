@@ -22,7 +22,7 @@ You can find our official releases on these platforms:
 
 ## Features
 
-Most features can be enabled/disabled in the configration.  
+Most features can be enabled/disabled in the configuration.  
 Some aren't enabled by default, so make sure to check out the configuration!
 
 ### Chat Utilities

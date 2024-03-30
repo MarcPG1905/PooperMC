@@ -27,13 +27,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.Objects;
 
 public class Ink extends JavaPlugin {
+    public static Ink INSTANCE;
+
     static { setPlatform(); }
 
     @Override
     public void onEnable() {
+        INSTANCE = this;
+
         // Ensure that the PaperAPI is supported!
         try {
             Class.forName("io.papermc.paper.text.PaperComponents");
@@ -72,8 +75,6 @@ public class Ink extends JavaPlugin {
 
         Pooper.LOG.info(Ansi.green("Loaded all components, took " + (System.currentTimeMillis() - start) + "ms!"));
 
-        sendWelcome();
-
         try {
             Translation.loadProperties(new File(getDataFolder(), "lang"));
         } catch (IOException e) {
@@ -84,28 +85,13 @@ public class Ink extends JavaPlugin {
             Path path = Pooper.DATA_DIR.resolve(".no_setup");
             if (path.toFile().createNewFile()) {
                 Files.setAttribute(path, "dos:hidden", true);
-                Pooper.LOG.info(Ansi.formattedString("Please consider checking out the PooperMC setup, by running PooperMC-?.jar as a java program.", Ansi.BRIGHT_BLUE, Ansi.BLINK));
-                Pooper.LOG.info(Ansi.formattedString("See further instructions on https://github.com/MarcPG1905/PooperMC#setup!", Ansi.BRIGHT_BLUE, Ansi.BLINK));
+                Pooper.LOG.info(Ansi.formattedString("Please consider checking out the PooperMC setup: https://github.com/MarcPG1905/PooperMC#setup!", Ansi.BRIGHT_BLUE, Ansi.BLINK));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
 
-    void sendWelcome() {
-        switch (Pooper.PLATFORM) {
-            case PAPER -> {
-                Pooper.LOG.info(Ansi.yellow("   ~|~|\\  || /"));
-                Pooper.LOG.info(Ansi.yellow("    | | \\ ||(   PooperMC for Paper (Ink) " + Pooper.VERSION));
-                Pooper.LOG.info(Ansi.yellow("   _|_|  \\|| \\_ https://marcpg.com/pooper/bukkit"));
-            }
-            case PURPUR -> {
-                Pooper.LOG.info(Ansi.yellow("    _  _  _ "));
-                Pooper.LOG.info(Ansi.yellow("   |_)/ \\/ \\ PooperMC for Purpur (Poopur) " + Pooper.VERSION));
-                Pooper.LOG.info(Ansi.yellow("   |  \\_/\\_/ https://marcpg.com/pooper/bukkit"));
-            }
-        }
-        Pooper.LOG.info(Ansi.gray("   Version: " + Pooper.VERSION + "+build." + Pooper.BUILD));
+        Pooper.sendInfo(Pooper.LOG);
     }
 
     void metrics(@NotNull Metrics metrics) {
@@ -127,16 +113,19 @@ public class Ink extends JavaPlugin {
         if (Configuration.doc.getBoolean("server-list.enabled")) manager.registerEvents(new PaperServerList(), this);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     void commands() {
-        Objects.requireNonNull(getCommand("msg-hist")).setExecutor(new Commands.MsgHistCommand());
-        Objects.requireNonNull(getCommand("ban")).setExecutor(new PaperBanning.BanCommand());
-        Objects.requireNonNull(getCommand("pardon")).setExecutor(new PaperBanning.PardonCommand());
-        Objects.requireNonNull(getCommand("mute")).setExecutor(new PaperMuting.MuteCommand());
-        Objects.requireNonNull(getCommand("unmute")).setExecutor(new PaperMuting.UnmuteCommand());
-        Objects.requireNonNull(getCommand("kick")).setExecutor(new PaperKicking());
-        Objects.requireNonNull(getCommand("report")).setExecutor(new PaperReporting());
-        Objects.requireNonNull(getCommand("friend")).setExecutor(new PaperFriendSystem());
-        Objects.requireNonNull(getCommand("staff")).setExecutor(new PaperStaffChat());
+        getCommand("ban").setExecutor(new PaperBanning.BanCommand());
+        getCommand("config").setExecutor(new Commands.ConfigCommand());
+        getCommand("friend").setExecutor(new PaperFriendSystem());
+        getCommand("ink").setExecutor(new Commands.InkCommand());
+        getCommand("kick").setExecutor(new PaperKicking());
+        getCommand("msg-hist").setExecutor(new Commands.MsgHistCommand());
+        getCommand("mute").setExecutor(new PaperMuting.MuteCommand());
+        getCommand("pardon").setExecutor(new PaperBanning.PardonCommand());
+        getCommand("report").setExecutor(new PaperReporting());
+        getCommand("staff").setExecutor(new PaperStaffChat());
+        getCommand("unmute").setExecutor(new PaperMuting.UnmuteCommand());
     }
 
     private static void setPlatform() {
@@ -145,5 +134,26 @@ public class Ink extends JavaPlugin {
             Class.forName("org.purpurmc.purpur.event.PlayerAFKEvent");
             Pooper.PLATFORM = Platform.PURPUR;
         } catch (ClassNotFoundException ignored) {}
+    }
+
+    void reload() throws IOException {
+        Configuration.createFileTree();
+        Configuration.load(
+                new PaperFaviconHandler(),
+                new BukkitLibraryManager(this, getDataFolder().getName()),
+                Pooper.SCHEDULER
+        );
+
+        metrics(new Metrics(this, Pooper.METRICS_ID));
+        events(getServer().getPluginManager());
+        commands();
+
+        UpdateChecker.checkUpdates();
+
+        try {
+            Translation.loadProperties(new File(getDataFolder(), "lang"));
+        } catch (IOException e) {
+            Pooper.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
+        }
     }
 }

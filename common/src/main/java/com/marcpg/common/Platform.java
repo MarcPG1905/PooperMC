@@ -1,39 +1,39 @@
 package com.marcpg.common;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+
 import java.io.InputStream;
 import java.util.Objects;
 
 public enum Platform {
-    BUNGEECORD("BungeeCord", "Carabiner", "???", PlatformType.PROXY),
-    WATERFALL("Waterfall", "WaterFail", "???", PlatformType.PROXY),
-    SPONGE("Sponge", "Water", "???", PlatformType.PLUGIN),
-    NUKKIT("Nukkit", "Nugget", "???", PlatformType.PLUGIN),
-    FABRIC("Fabric", "FaBrick", "???", PlatformType.MOD),
-    QUILT("Quilt", "Pillow", "???", PlatformType.MOD),
-    FORGE("Forge", "Forgery", "???", PlatformType.MOD),
-    PAPER("Paper", "Ink", "PooperMC", PlatformType.PLUGIN),
-    PURPUR("Purpur", "Poopur", "PooperMC", PlatformType.PLUGIN),
-    VELOCITY("Velocity", "Peelocity", "pooper", PlatformType.PROXY),
-    UNKNOWN("Invalid Platform", "Invalid Platform", "invalid_platform", PlatformType.PLUGIN);
+    SPONGE("Sponge", "Water", NamedTextColor.BLUE, "???", PlatformType.PLUGIN),
+    NUKKIT("Nukkit", "Nugget", TextColor.color(162, 110, 41), "???", PlatformType.PLUGIN),
+    FABRIC("Fabric", "FaBrick", TextColor.color(165, 72, 66), "???", PlatformType.MOD),
+    QUILT("Quilt", "Pillow", TextColor.color(194, 225, 247), "???", PlatformType.MOD),
+    FORGE("Forge", "Forgery", TextColor.color(162, 110, 41), "???", PlatformType.MOD),
+    NEO_FORGE("NeoForge", "PaleoForge", TextColor.color(161, 161, 161), "???", PlatformType.MOD),
+    PAPER("Paper", "Ink", NamedTextColor.DARK_BLUE, "PooperMC", PlatformType.PLUGIN),
+    PURPUR("Purpur", "Poopur", TextColor.color(161, 114, 96), "PooperMC", PlatformType.PLUGIN),
+    VELOCITY("Velocity", "Peelocity", NamedTextColor.YELLOW, "pooper", PlatformType.PROXY),
+    UNKNOWN("Invalid Platform", "Invalid Platform", NamedTextColor.RED, "invalid_platform", PlatformType.PLUGIN);
 
     public final String realName;
     public final String specialName;
+    public final TextColor color;
     public final String dataDirName;
     public final PlatformType type;
 
-    Platform(String real, String funny, String dataDir, PlatformType type) {
+    Platform(String real, String funny, TextColor color, String dataDir, PlatformType type) {
         this.realName = real;
         this.specialName = funny;
+        this.color = color;
         this.dataDirName = dataDir;
         this.type = type;
     }
 
     public InputStream configResource() {
         return Objects.requireNonNull(getClass().getResourceAsStream("/config-" + type.name().toLowerCase() + ".yml"));
-    }
-
-    public boolean isProxy() {
-        return this == VELOCITY || this == BUNGEECORD || this == WATERFALL;
     }
 
     public enum PlatformType { PROXY, PLUGIN, MOD }

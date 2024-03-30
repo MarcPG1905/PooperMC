@@ -102,7 +102,7 @@ public class Configuration {
         downloadTranslations = doc.getBoolean("enable-translations");
 
         // Proxy-Only Stuff
-        if (Pooper.PLATFORM.isProxy()) {
+        if (Pooper.PLATFORM == Platform.VELOCITY) {
             // gamemodes
             gamemodes = doc.getSection("gamemodes").getStringRouteMappedValues(false).entrySet().stream()
                     .filter(e -> e.getValue() instanceof Integer)
@@ -142,7 +142,7 @@ public class Configuration {
 
             if (DatabaseStorage.username.equals(Objects.requireNonNull(doc.getDefaults()).getString("database.user")) ||
                     DatabaseStorage.password.equals(doc.getDefaults().getString("database.passwd"))) {
-                Pooper.LOG.error("Please configure the database before running Peelocity!");
+                Pooper.LOG.error("Please configure the database before running PooperMC!");
             } else {
                 DatabaseStorage.loadDependency(libraryManager);
             }
