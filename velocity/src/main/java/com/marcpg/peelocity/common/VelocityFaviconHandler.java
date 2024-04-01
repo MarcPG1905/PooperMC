@@ -7,9 +7,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VelocityFaviconHandler implements FaviconHandler<Favicon> {
-    private final List<Favicon> favicons = new ArrayList<>();
-
+public class VelocityFaviconHandler extends FaviconHandler<Favicon> {
     @Override
     public void addIcon(BufferedImage image) throws InvalidSizeException {
         try {
@@ -17,15 +15,5 @@ public class VelocityFaviconHandler implements FaviconHandler<Favicon> {
         } catch (IllegalArgumentException e) {
             throw new InvalidSizeException(image);
         }
-    }
-
-    @Override
-    public Favicon randomIcon() {
-        return favicons.get(RANDOM.nextInt(favicons.size()));
-    }
-
-    @Override
-    public boolean hasValues() {
-        return !favicons.isEmpty();
     }
 }

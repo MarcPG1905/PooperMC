@@ -9,9 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PaperFaviconHandler implements FaviconHandler<CachedServerIcon> {
-    private final List<CachedServerIcon> favicons = new ArrayList<>();
-
+public class PaperFaviconHandler extends FaviconHandler<CachedServerIcon> {
     @Override
     public void addIcon(@NotNull BufferedImage image) throws InvalidSizeException {
         try {
@@ -19,15 +17,5 @@ public class PaperFaviconHandler implements FaviconHandler<CachedServerIcon> {
         } catch (Exception e) {
             throw new InvalidSizeException(image);
         }
-    }
-
-    @Override
-    public CachedServerIcon randomIcon() {
-        return favicons.get(RANDOM.nextInt(favicons.size()));
-    }
-
-    @Override
-    public boolean hasValues() {
-        return !favicons.isEmpty();
     }
 }

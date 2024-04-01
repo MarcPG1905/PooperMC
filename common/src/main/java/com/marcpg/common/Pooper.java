@@ -12,7 +12,7 @@ import java.nio.file.Path;
 public class Pooper {
     // ++++++++++ CONSTANTS ++++++++++
     public static final String VERSION = "1.1.0";
-    public static final int BUILD = 3;
+    public static final int BUILD = 4;
     public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(5, VERSION + "+build." + BUILD, "ERROR");
     public static final int METRICS_ID = 21102;
 
