@@ -1,14 +1,15 @@
+
 # PooperMC
 
-Formally known as Peelocity, is a all-in-one solution for you Minecraft server network, which aims to provide all features you need inside just one simple plugin. Being lightweight and efficient, PooperMC tries to provide as many features as possible, while having a simple and easy to maintain codebase.  
+Formally known as Peelocity, is an all-in-one solution for your Minecraft server network, which aims to provide all the features you need inside just one simple plugin. Being lightweight and efficient, PooperMC tries to provide as many features as possible, while having a simple and easy-to-maintain codebase.  
 The modern codebase using Java 17+ allows for fast response times and always up-to-date code.  
 Although the plugin is still in development, it is already a valid choice for any server network, that needs a working and lightweight plugin.  
 Read more at https://marcpg.com/poopermc (soon...)!
 
 ## Requirements
 
-- **SignedVelocity**: https://modrinth.com/plugin/signedvelocity
 - **Java 17 or higher**. Find instructions on how to install or update Java [here](https://docs.papermc.io/misc/java-install).
+- **SignedVelocity** (Only for Velocity): https://modrinth.com/plugin/signedvelocity
 
 ## Releases
 
@@ -35,11 +36,11 @@ Some aren't enabled by default, so make sure to check out the configuration!
 - **Better MotD:** Simple custom MotDs, that use MiniMessage and can be randomized.
 - **Better Favicons:** Custom server icons from image links, that can be randomized.
 - **Online Player-Count:** You can set a custom/fake online player count, although that's dishonest and not recommended.
-- **Better Player-Limit:** You can set the custom max players. Also allows for the max players always being one more than the online players.
+- **Better Player-Limit:** You can set the custom max players. Also allows for the max players to always be one more than the online players.
 
 ### Moderation
-Everything moderation-related is also sent/logged to a Discord webhook.
-- Better Bans with expiration, permanent-bans and reasons.
+Everything moderation-related is also sent/logged to a Discord-Webhook.
+- Better Bans with expiration, permanent bans, and reasons.
 - Better Kicks with reasons.
 - Mutes with expiration and reasons.
 - Easy Reports that can be used by anyone and are pretty easy to use.
@@ -47,11 +48,14 @@ Everything moderation-related is also sent/logged to a Discord webhook.
 
 ### Social Stuff
 - A simple friend system with friend requests and not much usage.
-- A simple party system with invites, joining matches together and party chatting.
+- A simple party system with invites, joining matches together, and party chatting.
+
+### Plugin-Only
+- Optional **Vein-Mining**, which is fully configurable with animation, proper item damage, etc.
 
 ### Other
 - A global whitelist for the whole proxy, with a command and storage.
-- Join logic to join a gamemode configured in the configuration and also supports a plugin message using `pooper:joining`, for lobby plugins.
+- Join logic to join a game mode configured in the configuration and also supports a plugin message using `pooper:joining`, for lobby plugins.
 - Player-Cache to also have access to offline players instead of only online players.
 - An easy-to-use setup that ships right with the plugin JAR. See below for more info!
 
@@ -104,7 +108,7 @@ But if you want to use a database, you will need to set it up yourself. For simp
 Some of the major features that we hope to add in the future are:
 - Simple and lightweight TAB-list utility.
 - A wider range of moderation utilities, such as vanishing.
-- Some features using inventory-interfaces instead of pure commands.
+- Some features use inventory interfaces instead of pure commands.
 - More translations, to make the plugin and all servers using it, accessible to anyone.
 
 ## Contact
@@ -125,6 +129,7 @@ If you don't use Discord or like to contact me otherwise, please rely on one of 
 
 ### Used Libraries
 
-PooperMC is made to be as lightweight as possible. We only use two utility libraries, which are very small:
+PooperMC is made to be as lightweight as possible. We only use three very small utility libraries:
 - [LibPG](https://github.com/MarcPG1905/LibPG) - A utility library provided by MarcPG, which has various features, like downloads, pairs, time formats, etc.
 - [boosted-yaml](https://github.com/dejvokep/boosted-yaml) - Provides a reliable and lightweight configuration library with file versions, and more.
+- [libby](https://github.com/AlessioDP/libby) - Allows for dynamically downloading the database drivers, to have a smaller file size.
