@@ -18,7 +18,7 @@ import java.util.*;
 
 public class FriendSystem {
     public static final HashMap<UUID, HashSet<UUID>> REQUESTS = new HashMap<>();
-    private static final Storage<UUID> STORAGE = Storage.storageType.createStorage("friendships", "uuid");
+    public static final Storage<UUID> STORAGE = Storage.storageType.createStorage("friendships", "uuid");
 
     public static void add(@NotNull OnlinePlayer<?> player, @NotNull IdentifiablePlayer target) throws InvalidCommandArgsException {
         if (getFriendship(player.uuid(), target.uuid()) != null)

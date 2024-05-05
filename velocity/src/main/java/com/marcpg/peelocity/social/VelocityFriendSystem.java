@@ -6,7 +6,7 @@ import com.marcpg.common.social.FriendSystem;
 import com.marcpg.common.util.InvalidCommandArgsException;
 import com.marcpg.common.util.ThrowingBiConsumer;
 import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.peelocity.PlayerCache;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -117,7 +117,7 @@ public final class VelocityFriendSystem {
             player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", target).color(RED));
         } else {
             try {
-                Optional<Player> p = Peelocity.SERVER.getPlayer(targetUuid);
+                Optional<Player> p = PeelocityPlugin.SERVER.getPlayer(targetUuid);
                 operation.accept(VelocityPlayer.ofPlayer(player), p.isPresent() ? new VelocityPlayer(p.get()) : new OfflinePlayer(target, targetUuid));
                 player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend." + operationName + ".confirm", target).color(YELLOW));
             } catch (InvalidCommandArgsException e) {

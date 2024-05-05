@@ -49,6 +49,7 @@ Thumbs.db
 /build
 */build
 /run
+*/run
 
 # IntelliJ specific files/directories
 out

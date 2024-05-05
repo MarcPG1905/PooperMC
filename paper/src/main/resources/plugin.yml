@@ -8,7 +8,7 @@ description: An all-in-one solution for servers. Everything from administration 
 version: ${version}
 
 ### Main Class ###
-main: com.marcpg.ink.Ink
+main: com.marcpg.ink.InkPlugin
 
 ### PaperAPI Version ###
 api-version: '1.20'

@@ -1,11 +1,9 @@
 package com.marcpg.peelocity.common;
 
-import com.marcpg.common.util.FaviconHandler;
+import com.marcpg.common.platform.FaviconHandler;
 import com.velocitypowered.api.util.Favicon;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 public class VelocityFaviconHandler extends FaviconHandler<Favicon> {
     @Override

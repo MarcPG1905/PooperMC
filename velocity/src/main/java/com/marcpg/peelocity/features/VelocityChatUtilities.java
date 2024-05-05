@@ -2,7 +2,7 @@ package com.marcpg.peelocity.features;
 
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.common.Configuration;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.common.Pooper;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
@@ -44,7 +44,7 @@ public final class VelocityChatUtilities {
 
                 Optional<ServerConnection> connection = player.getCurrentServer();
                 if (mentioned.equals("everyone") && canUse(player, "mentions.everyone")) {
-                    Peelocity.SERVER.getAllPlayers().forEach(p -> {
+                    PeelocityPlugin.SERVER.getAllPlayers().forEach(p -> {
                         if (Configuration.globalChat || connection.equals(p.getCurrentServer())) {
                             p.showTitle(Title.title(Translation.component(p.getEffectiveLocale(), "chat.mentions.title").color(NamedTextColor.BLUE),
                                     Translation.component(p.getEffectiveLocale(), "chat.mentions.subtitle.everyone", player.getUsername()).color(NamedTextColor.DARK_GREEN)));
@@ -52,7 +52,7 @@ public final class VelocityChatUtilities {
                         }
                     });
                 } else {
-                    Peelocity.SERVER.getPlayer(mentioned).ifPresentOrElse(p -> {
+                    PeelocityPlugin.SERVER.getPlayer(mentioned).ifPresentOrElse(p -> {
                         if (Configuration.globalChat || connection.equals(p.getCurrentServer())) {
                             Locale l = p.getEffectiveLocale();
                             p.showTitle(Title.title(Translation.component(l, "chat.mentions.title").color(NamedTextColor.BLUE), Translation.component(l, "chat.mentions.subtitle", player.getUsername()).color(NamedTextColor.DARK_GREEN)));
@@ -73,7 +73,7 @@ public final class VelocityChatUtilities {
 
         Component finalMessage = canUse(player, "colors") ? colorize(content) : Component.text(content);
         if (Configuration.globalChat) {
-            Peelocity.SERVER.sendMessage(Component.text("<" + player.getUsername() + "> ").append(finalMessage));
+            PeelocityPlugin.SERVER.sendMessage(Component.text("<" + player.getUsername() + "> ").append(finalMessage));
         } else {
             player.getCurrentServer().ifPresent(connection -> connection.getServer().sendMessage(Component.text("<" + player.getUsername() + "> ").append(finalMessage)));
         }

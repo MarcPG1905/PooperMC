@@ -1,4 +1,4 @@
-package com.marcpg.common.util;
+package com.marcpg.common.platform;
 
 import com.marcpg.libpg.util.Randomizer;
 import org.jetbrains.annotations.NotNull;
@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public abstract class FaviconHandler<T> {
     protected final List<T> favicons = new ArrayList<>();

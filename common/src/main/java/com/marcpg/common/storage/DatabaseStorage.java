@@ -65,7 +65,11 @@ public class DatabaseStorage<T> extends Storage<T> {
 
     @Override
     public Collection<Map<String, Object>> getAll() {
-        return null;
+        return this.connection.getAllRowMaps();
+    }
+
+    public void shutdown() {
+        this.connection.closeConnection();
     }
 
     public static void loadDependency(@NotNull LibraryManager manager) {

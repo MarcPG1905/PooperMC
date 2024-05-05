@@ -4,8 +4,7 @@ import com.alessiodp.libby.LibraryManager;
 import com.marcpg.common.features.MessageLogging;
 import com.marcpg.common.storage.DatabaseStorage;
 import com.marcpg.common.storage.Storage;
-import com.marcpg.common.util.AsyncScheduler;
-import com.marcpg.common.util.FaviconHandler;
+import com.marcpg.common.platform.FaviconHandler;
 import com.marcpg.libpg.color.Ansi;
 import com.marcpg.libpg.data.database.sql.SQLConnection;
 import com.marcpg.libpg.web.Downloads;
@@ -72,7 +71,7 @@ public class Configuration {
         } catch (FileAlreadyExistsException ignored) {}
     }
 
-    public static void load(FaviconHandler<?> faviconHandler, LibraryManager libraryManager, AsyncScheduler scheduler) throws IOException {
+    public static void load(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException {
         Pooper.LOG.info(Ansi.gray("Loading the PooperMC Configuration..."));
 
         doc = YamlDocument.create(
@@ -179,8 +178,10 @@ public class Configuration {
             serverListShowCurrentPlayers = doc.getInt("server-list.show-current-players");
         }
 
+        Pooper.INSTANCE.extraConfiguration(doc);
+
         if (downloadTranslations) {
-            scheduler.schedule(new TranslationDownloadTask());
+            Pooper.SCHEDULER.schedule(new TranslationDownloadTask());
         }
     }
 

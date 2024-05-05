@@ -3,7 +3,7 @@ package com.marcpg.peelocity.moderation;
 import com.marcpg.libpg.data.time.Time;
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.peelocity.PlayerCache;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.moderation.Banning;
@@ -87,7 +87,7 @@ public final class VelocityBanning {
                                             if (targetUuid == null) {
                                                 source.sendMessage(Translation.component(l, "cmd.player_not_found", targetArg).color(NamedTextColor.RED));
                                             } else {
-                                                Optional<Player> target = Peelocity.SERVER.getPlayer(targetUuid);
+                                                Optional<Player> target = PeelocityPlugin.SERVER.getPlayer(targetUuid);
                                                 boolean permanent = context.getArgument("time", String.class).equalsIgnoreCase("permanent");
                                                 Time time = permanent ? new Time(0) : Time.parse(context.getArgument("time", String.class));
                                                 String reason = context.getArgument("reason", String.class);

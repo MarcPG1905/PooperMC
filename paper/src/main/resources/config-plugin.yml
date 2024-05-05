@@ -4,7 +4,7 @@
 ##_______________| |_) / _ \ / _ \| '_ \ / _ \ '__| |\/| | |    _______________##
 ##_______________|  __/ (_) | (_) | |_) |  __/ |  | |  | | |___ _______________##
 ##_______________|_|   \___/ \___/| .__/ \___|_|  |_|  |_|\____|_______________##
-##                           Main |_\ Configuration                            ##
+##                           Main |_| Configuration                            ##
 ##                                                                             ##
 ##        WEBSITE:       https://marcpg.com/poopermc                           ##
 ##        SOURCE-CODE:   https://github.com/MarcPG1905/PooperMC                ##
@@ -186,5 +186,41 @@ server-list:
 
 
 
+##  -------------------------------------------------------------------------  ##
+##          __   __     _             __  __  _        _                       ##
+##          \ \ / /___ (_) _ _   ___ |  \/  |(_) _ _  (_) _ _   __ _           ##
+##           \ V // -_)| || ' \ |___|| |\/| || || ' \ | || ' \ / _` |          ##
+##            \_/ \___||_||_||_|     |_|  |_||_||_||_||_||_||_|\__, |          ##
+##                     The optional Better-Mining Feature.     |___/           ##
+##  -------------------------------------------------------------------------  ##
+# Vein-Mining will allow you to only break one block from an ore-vein,
+# which will result in the whole vein being destroyed.
+vein-mining:
+  # If the Vein-Mining module is enabled or not.
+  enabled: false
+
+  # Sets if you will need to use the right tool, for the vein mining to work.
+  require-proper-tool: true
+
+  # Sets if the vein will be destroyed with a little animation, which just
+  # makes the blocks be destroyed with a little delay between each block.
+  animated: true
+
+  # The maximum distance (radius) in blocks from the initially broken block
+  # that the vein will be destroyed.
+  max-distance: 10
+
+  # If this is enabled, all default ores in Minecraft will automatically be
+  # added to the 'ores' list. This contains all materials ending with "_ore".
+  auto-fill-ores: true
+
+  # A list of all materials that will be counted as a vein. See 'auto-fill'!
+  # Materials here should not contain the namespace (e.g. "minecraft:")!
+  ores:
+    - example_ore
+
+
+
+
 ## DO NOT CHANGE THIS! ##
-version: 6
+version: 7

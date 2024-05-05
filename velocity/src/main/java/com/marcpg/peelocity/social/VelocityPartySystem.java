@@ -2,7 +2,7 @@ package com.marcpg.peelocity.social;
 
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.libpg.util.Randomizer;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.peelocity.PlayerCache;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OnlinePlayer;
@@ -87,7 +87,7 @@ public final class VelocityPartySystem {
                                     UUID playerUuid = ((Player) context.getSource()).getUniqueId();
                                     if (PLAYER_PARTIES.containsKey(playerUuid)) {
                                         Set<UUID> playersInParty = PARTIES.get(PLAYER_PARTIES.get(playerUuid)).keySet();
-                                        Peelocity.SERVER.getAllPlayers().parallelStream()
+                                        PeelocityPlugin.SERVER.getAllPlayers().parallelStream()
                                                 .filter(player -> !playersInParty.contains(playerUuid) && player != context.getSource())
                                                 .map(Player::getUsername)
                                                 .forEach(builder::suggest);
@@ -116,7 +116,7 @@ public final class VelocityPartySystem {
                                         return 1;
                                     }
 
-                                    Peelocity.SERVER.getPlayer(targetUuid).ifPresentOrElse(
+                                    PeelocityPlugin.SERVER.getPlayer(targetUuid).ifPresentOrElse(
                                             target -> {
                                                 if (INVITATIONS.containsKey(targetUuid)) {
                                                     INVITATIONS.get(targetUuid).add(playerUuid);
@@ -179,9 +179,9 @@ public final class VelocityPartySystem {
                                         return 1;
                                     }
 
-                                    Peelocity.SERVER.getPlayer(targetUuid).ifPresentOrElse(
+                                    PeelocityPlugin.SERVER.getPlayer(targetUuid).ifPresentOrElse(
                                             target -> {
-                                                PARTIES.get(PLAYER_PARTIES.get(targetUuid)).keySet().forEach(uuid -> Peelocity.SERVER.getPlayer(uuid).ifPresent(
+                                                PARTIES.get(PLAYER_PARTIES.get(targetUuid)).keySet().forEach(uuid -> PeelocityPlugin.SERVER.getPlayer(uuid).ifPresent(
                                                         p -> p.sendMessage(Translation.component(player.getEffectiveLocale(), "party.accept.msg", player.getUsername()).color(YELLOW))));
 
                                                 PLAYER_PARTIES.put(playerUuid, PLAYER_PARTIES.get(targetUuid));
@@ -227,7 +227,7 @@ public final class VelocityPartySystem {
                                         INVITATIONS.remove(playerUuid);
 
                                     player.sendMessage(Translation.component(player.getEffectiveLocale(), "party.deny.confirm").color(YELLOW));
-                                    Peelocity.SERVER.getPlayer(targetUuid).ifPresent(target -> target.sendMessage(Translation.component(target.getEffectiveLocale(), "party.deny.msg", player.getUsername()).color(RED)));
+                                    PeelocityPlugin.SERVER.getPlayer(targetUuid).ifPresent(target -> target.sendMessage(Translation.component(target.getEffectiveLocale(), "party.deny.msg", player.getUsername()).color(RED)));
 
                                     return 1;
                                 })
@@ -249,7 +249,7 @@ public final class VelocityPartySystem {
                                         PARTIES.remove(PLAYER_PARTIES.get(playerUuid));
                                     }
                                 } else {
-                                    PARTIES.get(PLAYER_PARTIES.get(playerUuid)).keySet().forEach(uuid -> Peelocity.SERVER.getPlayer(uuid).ifPresent(
+                                    PARTIES.get(PLAYER_PARTIES.get(playerUuid)).keySet().forEach(uuid -> PeelocityPlugin.SERVER.getPlayer(uuid).ifPresent(
                                             p -> p.sendMessage(Translation.component(player.getEffectiveLocale(), "party.leave.msg", player.getUsername()).color(YELLOW))));
                                 }
                                 party.remove(playerUuid);
@@ -268,7 +268,7 @@ public final class VelocityPartySystem {
                                     if (PLAYER_PARTIES.containsKey(playerUuid)) {
                                         PARTIES.get(PLAYER_PARTIES.get(playerUuid)).entrySet().stream()
                                                 .filter(e -> !e.getValue() && e.getKey() != playerUuid)
-                                                .forEach(e -> Peelocity.SERVER.getPlayer(e.getKey()).ifPresent(p -> builder.suggest(p.getUsername())));
+                                                .forEach(e -> PeelocityPlugin.SERVER.getPlayer(e.getKey()).ifPresent(p -> builder.suggest(p.getUsername())));
                                     }
                                     return builder.buildFuture();
                                 })
@@ -295,7 +295,7 @@ public final class VelocityPartySystem {
                                         return 1;
                                     }
 
-                                    Peelocity.SERVER.getPlayer(targetUuid).ifPresentOrElse(
+                                    PeelocityPlugin.SERVER.getPlayer(targetUuid).ifPresentOrElse(
                                             target -> {
                                                 party.put(playerUuid, false);
                                                 party.put(targetUuid, true);
@@ -320,7 +320,7 @@ public final class VelocityPartySystem {
                                         MessageLogging.saveMessage(player, new MessageLogging.MessageData(new Date(), content, MessageLogging.MessageData.Type.PARTY, null));
 
                                         for (UUID uuid : PARTIES.get(PLAYER_PARTIES.get(playerUuid)).keySet()) {
-                                            Peelocity.SERVER.getPlayer(uuid).ifPresent(t ->
+                                            PeelocityPlugin.SERVER.getPlayer(uuid).ifPresent(t ->
                                                     t.sendMessage(Translation.component(t.getEffectiveLocale(), "party.message", player.name(), content).color(DARK_AQUA)));
                                         }
                                     } else {

@@ -1,7 +1,7 @@
 package com.marcpg.peelocity.moderation;
 
 import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.moderation.Kicking;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -23,7 +23,7 @@ public final class VelocityKicking {
                 .requires(source -> source.hasPermission("poo.kick"))
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            Peelocity.SERVER.getAllPlayers().parallelStream()
+                            PeelocityPlugin.SERVER.getAllPlayers().parallelStream()
                                     .filter(player -> player != context.getSource())
                                     .map(Player::getUsername)
                                     .forEach(builder::suggest);
@@ -35,7 +35,7 @@ public final class VelocityKicking {
                                     Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                                     String targetArg = context.getArgument("player", String.class);
 
-                                    Peelocity.SERVER.getPlayer(targetArg).ifPresentOrElse(
+                                    PeelocityPlugin.SERVER.getPlayer(targetArg).ifPresentOrElse(
                                             t -> {
                                                 String reason = context.getArgument("reason", String.class);
                                                 Kicking.kick(source instanceof Player player ? player.getUsername() : "Console", new VelocityPlayer(t), reason);

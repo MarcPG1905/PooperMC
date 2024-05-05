@@ -1,4 +1,4 @@
-package com.marcpg.common.util;
+package com.marcpg.common.platform;
 
 import com.marcpg.libpg.data.time.Time;
 

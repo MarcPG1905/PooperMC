@@ -1,5 +1,6 @@
 package com.marcpg.ink;
 
+import com.alessiodp.libby.BukkitLibraryManager;
 import com.marcpg.common.Configuration;
 import com.marcpg.common.Pooper;
 import com.marcpg.common.features.MessageLogging;
@@ -80,7 +81,8 @@ public class Commands {
                 Pooper.sendInfo(sender);
             } else if (args.length == 1 && args[0].equals("reload")) {
                 try {
-                    Ink.INSTANCE.reload();
+                    Pooper.INSTANCE.unload();
+                    Pooper.INSTANCE.loadBasic(Configuration.serverListFavicons, new BukkitLibraryManager(InkPlugin.getPlugin(InkPlugin.class), Pooper.DATA_DIR.toString()));
                     sender.sendMessage(Translation.component(l, "cmd.reload.confirm").color(NamedTextColor.GREEN));
                 } catch (IOException e) {
                     sender.sendMessage(Translation.component(l, "cmd.reload.error").color(NamedTextColor.RED));
@@ -93,7 +95,7 @@ public class Commands {
 
         @Override
         public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-            return List.of("reload");
+            return args.length == 1 ? List.of("reload") : List.of();
         }
     }
 
@@ -146,7 +148,7 @@ public class Commands {
                         }
 
                         sender.sendMessage(Translation.component(l, "cmd.config.set.confirm", args[1], value).color(NamedTextColor.YELLOW));
-                        sender.sendMessage(Translation.component(l, "cmd.config.reload_to_apply", Pooper.PLATFORM.specialName.toLowerCase()).color(NamedTextColor.GRAY));
+                        sender.sendMessage(Translation.component(l, "cmd.config.reload_to_apply", "ink").color(NamedTextColor.GRAY));
                     }
                     case "add" -> {
                         String value = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
@@ -168,7 +170,7 @@ public class Commands {
                         }
 
                         sender.sendMessage(Translation.component(l, "cmd.config.add.confirm", value, args[1]).color(NamedTextColor.YELLOW));
-                        sender.sendMessage(Translation.component(l, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
+                        sender.sendMessage(Translation.component(l, "cmd.config.reload_to_apply", "ink").color(NamedTextColor.GRAY));
                     }
                     case "remove" -> {
                         String value = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
@@ -194,7 +196,7 @@ public class Commands {
                         }
 
                         sender.sendMessage(Translation.component(l, "cmd.config.remove.confirm", value, args[1]).color(NamedTextColor.YELLOW));
-                        sender.sendMessage(Translation.component(l, "cmd.config.reload_to_apply").color(NamedTextColor.GRAY));
+                        sender.sendMessage(Translation.component(l, "cmd.config.reload_to_apply", "ink").color(NamedTextColor.GRAY));
                     }
                     case "get" -> { return false; }
                 }

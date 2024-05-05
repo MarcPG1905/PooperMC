@@ -1,6 +1,6 @@
 package com.marcpg.peelocity.common;
 
-import com.marcpg.common.util.AsyncScheduler;
+import com.marcpg.common.platform.AsyncScheduler;
 import com.marcpg.libpg.data.time.Time;
 import com.velocitypowered.api.scheduler.Scheduler;
 import org.jetbrains.annotations.NotNull;

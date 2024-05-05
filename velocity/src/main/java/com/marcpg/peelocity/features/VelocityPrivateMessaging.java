@@ -1,7 +1,7 @@
 package com.marcpg.peelocity.features;
 
 import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.Peelocity;
+import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.features.MessageLogging;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -29,7 +29,7 @@ public final class VelocityPrivateMessaging {
                 .requires(source -> source instanceof Player)
                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("receiver", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            Peelocity.SERVER.getAllPlayers().forEach(p -> builder.suggest(p.getUsername()));
+                            PeelocityPlugin.SERVER.getAllPlayers().forEach(p -> builder.suggest(p.getUsername()));
                             return builder.buildFuture();
                         })
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("message", StringArgumentType.greedyString())
@@ -37,7 +37,7 @@ public final class VelocityPrivateMessaging {
                                     Player player = (Player) context.getSource();
                                     String receiverArg = context.getArgument("receiver", String.class);
 
-                                    Peelocity.SERVER.getPlayer(receiverArg).ifPresentOrElse(
+                                    PeelocityPlugin.SERVER.getPlayer(receiverArg).ifPresentOrElse(
                                             r -> {
                                                 String message = context.getArgument("message", String.class);
 
@@ -72,7 +72,7 @@ public final class VelocityPrivateMessaging {
                                 return 1;
                             }
 
-                            Peelocity.SERVER.getPlayer(receiverName).ifPresentOrElse(
+                            PeelocityPlugin.SERVER.getPlayer(receiverName).ifPresentOrElse(
                                     r -> {
                                         String message = context.getArgument("message", String.class);
 

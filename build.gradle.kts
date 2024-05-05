@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.marcpg.poopermc"
-version = "1.1.0+build.4"
+version = "1.1.1+build.1"
 description = "An all-in-one solution for servers. Everything from administration tools, to moderation utilities and database support."
 
 java.sourceCompatibility = JavaVersion.VERSION_17

@@ -30,7 +30,6 @@ import java.util.UUID;
 public final class Joining {
     public static final MinecraftChannelIdentifier PLUGIN_MESSAGE_IDENTIFIER = MinecraftChannelIdentifier.from("poopermc:joining");
 
-
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPluginMessage(@NotNull PluginMessageEvent event) {
@@ -87,7 +86,7 @@ public final class Joining {
             }
             targetServer = findServer(gamemode.left(), gamemode.right(), party.size());
             party.keySet().stream()
-                    .map(uuid -> Peelocity.SERVER.getPlayer(uuid))
+                    .map(uuid -> PeelocityPlugin.SERVER.getPlayer(uuid))
                     .forEach(m -> m.ifPresent(players::add));
         } else {
             targetServer = findServer(gamemode.left(), gamemode.right(), 1);
@@ -103,7 +102,7 @@ public final class Joining {
     // The following code is readable :D
 
     private static @Nullable RegisteredServer findServer(String serverNamespace, int playerLimit, int players) {
-        for (RegisteredServer server : Peelocity.SERVER.matchServer(serverNamespace)) {
+        for (RegisteredServer server : PeelocityPlugin.SERVER.matchServer(serverNamespace)) {
             if (server.getPlayersConnected().size() < (playerLimit - players))
                 return server;
         }
@@ -113,7 +112,7 @@ public final class Joining {
     private static void join(RegisteredServer server, @NotNull Player... players) {
         for (Player target : players) {
             target.createConnectionRequest(server).fireAndForget();
-            Peelocity.SERVER.getScheduler().buildTask(Peelocity.INSTANCE, () ->
+            PeelocityPlugin.SERVER.getScheduler().buildTask(PeelocityPlugin.INSTANCE, () ->
                     target.sendMessage(Translation.component(target.getEffectiveLocale(), "cmd.play.success.finish").color(NamedTextColor.GREEN))).delay(Duration.ofSeconds(2)).schedule();
         }
     }

@@ -1,6 +1,6 @@
 package com.marcpg.ink.common;
 
-import com.marcpg.common.util.AsyncScheduler;
+import com.marcpg.common.platform.AsyncScheduler;
 import com.marcpg.libpg.data.time.Time;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
