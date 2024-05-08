@@ -1,4 +1,7 @@
 
+[![PooperMC](https://marcpg.com/pooper/banner.png)](https://marcpg.com/pooper/)
+
+
 # PooperMC
 
 Formally known as Peelocity, is an all-in-one solution for your Minecraft server network, which aims to provide all the features you need inside just one simple plugin. Being lightweight and efficient, PooperMC tries to provide as many features as possible, while having a simple and easy-to-maintain codebase.  
