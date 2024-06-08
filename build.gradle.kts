@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.marcpg.poopermc"
-version = "1.1.1+build.1"
+version = "1.1.2+build.1"
 description = "An all-in-one solution for servers. Everything from administration tools, to moderation utilities and database support."
 
 java.sourceCompatibility = JavaVersion.VERSION_17
@@ -49,7 +49,7 @@ subprojects {
 
     dependencies {
         implementation("dev.dejvokep:boosted-yaml:1.3.2")
-        implementation("com.marcpg:libpg:0.1.0")
+        implementation("com.marcpg:libpg:0.1.1")
         if (project.name != "common")
             implementation(project(":common"))
         if (project.name != "setup")

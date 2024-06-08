@@ -1,7 +1,7 @@
 package com.marcpg.peelocity.features;
 
 import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.common.Pooper;
 import com.marcpg.common.storage.Storage;
 import com.mojang.brigadier.arguments.StringArgumentType;

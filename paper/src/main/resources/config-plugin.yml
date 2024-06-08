@@ -222,5 +222,120 @@ vein-mining:
 
 
 
+##  -------------------------------------------------------------------------  ##
+##                      ___            _                                       ##
+##                     | _ ) __ _  __ | |___  _  _ __  ___                     ##
+##                     | _ \/ _` |/ _|| / / || || '_ \(_-<                     ##
+##                     |___/\__,_|\__||_\_\\_,_|| .__//__/                     ##
+##                     The simple & easy backup |_| feature.                   ##
+##  -------------------------------------------------------------------------  ##
+backups:
+  # If the backup module is enabled or not.
+  enabled: false
+
+  # The interval between each backup. Should only be one time unit.
+  interval: 30min
+
+  # The method to store the backups.
+  #   Available Methods:
+  #     | -> local        : on your local machine
+  #     | -> google-drive : on Google Drive (https://drive.google.com/)
+  #     | -> onedrive     : on Microsoft OneDrive (https://onedrive.live.com/)
+  #     | -> database     : on the same database as all other data. Requires the 'storage-method' to be 'database'
+  storage-method: yaml
+
+
+
+
+##  -------------------------------------------------------------------------  ##
+##                     __  __          _        _                              ##
+##                    |  \/  | ___  __| | _  _ | | ___  ___                    ##
+##                    | |\/| |/ _ \/ _` || || || |/ -_)(_-<                    ##
+##                    |_|  |_|\___/\__,_| \_,_||_|\___|/__/                    ##
+##                Completely optional and configurable modules.                ##
+##  -------------------------------------------------------------------------  ##
+modules:
+
+  # ------------------------------------------------------------------------- #
+  #                              NO ANVIL XP CAP                              #
+  #            Removes the Anvil XP Cap when enchanting/repairing.            #
+  # ------------------------------------------------------------------------- #
+  no-anvil-cap: false
+
+  # ------------------------------------------------------------------------- #
+  #                               DEATH BANNING                               #
+  #        Bans players automatically whenever they die or get killed.        #
+  # ------------------------------------------------------------------------- #
+  death-banning:
+
+    # If the Death-Banning module is enabled or not.
+    enabled: false
+
+    # Will only ban a player if they got killed by someone else and ignore
+    # the death, if it was caused by something else.
+    only-killing: false
+
+    # If the death message should be included in the ban/kick screen.
+    show-death-message: true
+
+    # How long the player will be banned for. Should only use one time unit.
+    #   Set to "kick" to kick instead of ban.
+    #   Set to "permanent" to ban permanently.
+    duration: 1h
+
+  # ------------------------------------------------------------------------ #
+  #                                  MOB AI                                  #
+  #           Slightly improves the AI of most mobs on the server.           #
+  # ------------------------------------------------------------------------ #
+  better-mob-ai:
+
+    # If the Better-Mob-AI module is enabled or not.
+    enabled: false
+
+    # Makes groups of friendly mobs, like cows or sheep, all be alerted
+    # and flee together, if one of them gets hit.
+    panicking-groups: true
+
+    # Gives normally friendly mobs the ability to protect themselves, if you attack them.
+    # Not implemented yet!
+    fighting-instinct: false
+
+    # Configures the various mobs that can have improved AI.
+    # Not implemented yet!
+    mobs:
+      example: true
+
+  # ------------------------------------------------------------------------ #
+  #                               BETTER SLEEP                               #
+  #                   Improves how the sleep system works.                   #
+  # ------------------------------------------------------------------------ #
+  # Not implemented yet!
+  better-sleep:
+
+    # If the Better-Sleep module is enabled or not.
+    # Not implemented yet!
+    enabled: false
+
+    # How the night will go by.
+    #   Available Modes:
+    #     | -> default     : will skip the night like in vanilla, so an instant time skip.
+    #     | -> sprint      : will just increase how fast time goes by if sleeping.
+    #     | -> full_sprint : will increase the whole game, also making player and mob speed increase.
+    #     | -> time_set    : will constantly set the time a certain amount later, to give the illusion of time going by.
+    # Not implemented yet!
+    mode: sprint
+
+    # How much faster the night will go. In vanilla, the night will be about 12 minutes.
+    # Setting it to 2.0 will reduce this to 6 minutes. Default: 24.0 (30 seconds)
+    # Not implemented yet!
+    realistic-sleep-multiplier: 24.0
+
+    # The required percentage of players who need to sleep in a world, for the night to be skipped.
+    # Not implemented yet!
+    players-required: 100.0
+
+
+
+
 ## DO NOT CHANGE THIS! ##
-version: 7
+version: 8

@@ -82,7 +82,8 @@ public class Configuration {
                 DumperSettings.DEFAULT,
                 UpdaterSettings.builder()
                         .setVersioning(new BasicVersioning("version"))
-                        .addIgnoredRoute("6", Route.fromString("gamemodes"))
+                        .addIgnoredRoute("7", Route.fromString("gamemodes"))
+                        .addIgnoredRoute("8", Route.fromString("gamemodes"))
                         .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
                         .build()
         );

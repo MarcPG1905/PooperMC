@@ -39,7 +39,6 @@ public final class Joining {
         }
     }
 
-    @Contract(" -> new")
     public static @NotNull BrigadierCommand joinCommand() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("join")
                 .requires(source -> source instanceof Player)
@@ -58,7 +57,6 @@ public final class Joining {
         );
     }
 
-    @Contract(" -> new")
     public static @NotNull BrigadierCommand hubCommand() {
         return new BrigadierCommand(LiteralArgumentBuilder.<CommandSource>literal("hub")
                 .requires(source -> source instanceof Player)

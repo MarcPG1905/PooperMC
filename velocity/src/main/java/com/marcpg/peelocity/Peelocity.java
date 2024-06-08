@@ -4,16 +4,15 @@ import com.alessiodp.libby.LibraryManager;
 import com.marcpg.common.Configuration;
 import com.marcpg.common.Pooper;
 import com.marcpg.common.features.MessageLogging;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.common.platform.CommandManager;
 import com.marcpg.common.platform.EventManager;
 import com.marcpg.common.platform.FaviconHandler;
 import com.marcpg.common.storage.DatabaseStorage;
+import com.marcpg.libpg.util.Randomizer;
 import com.marcpg.peelocity.common.VelocityCommandManager;
 import com.marcpg.peelocity.common.VelocityEventManager;
-import com.marcpg.peelocity.features.VelocityChatUtilities;
-import com.marcpg.peelocity.features.VelocityPrivateMessaging;
-import com.marcpg.peelocity.features.VelocityServerList;
-import com.marcpg.peelocity.features.VelocityWhitelist;
+import com.marcpg.peelocity.features.*;
 import com.marcpg.peelocity.moderation.*;
 import com.marcpg.peelocity.social.VelocityFriendSystem;
 import com.marcpg.peelocity.social.VelocityPartySystem;
@@ -21,8 +20,15 @@ import com.velocitypowered.api.command.Command;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.LoginEvent;
+import com.velocitypowered.api.proxy.Player;
+import net.kyori.adventure.audience.Audience;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 import static com.marcpg.common.Configuration.doc;
 
@@ -40,6 +46,7 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
     @Override
     public void additionalLogic() {
         PeelocityPlugin.SERVER.getChannelRegistrar().register(Joining.PLUGIN_MESSAGE_IDENTIFIER);
+        PeelocityPlugin.SERVER.getChannelRegistrar().register(BackendChecker.CHANNEL);
         try {
             PlayerCache.load();
         } catch (IOException e) {
@@ -61,11 +68,12 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
     @Override
     public void events(EventManager<Object, PeelocityPlugin> manager) {
         super.events(manager);
+        manager.register(plugin, new BackendChecker());
+        manager.register(plugin, new BasicEvents());
+        manager.register(plugin, new Joining());
         manager.register(plugin, new VelocityBanning());
         manager.register(plugin, new VelocityMuting());
-        manager.register(plugin, new BasicEvents());
         manager.register(plugin, new VelocityPartySystem());
-        manager.register(plugin, new Joining());
 
         if (Configuration.chatUtilities.getBoolean("enabled"))
             manager.register(plugin, new VelocityChatUtilities());
@@ -98,11 +106,41 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
         manager.register(plugin, "peelocity", PeelocityPlugin.command(), "velocity-plugin", "pooper-velocity");
         manager.register(plugin, "report", VelocityReporting.command(), "snitch");
         manager.register(plugin, "staff", VelocityStaffChat.command(), "staff-chat", "sc");
+        manager.register(plugin, "timer", VelocityTimer.command());
         manager.register(plugin, "unmute", VelocityMuting.unmuteCommand());
         manager.register(plugin, "w", VelocityPrivateMessaging.wCommand(), "reply");
+
         if (Configuration.whitelist)
             manager.register(plugin, "whitelist", VelocityWhitelist.command());
         if (MessageLogging.enabled)
             manager.register(plugin, "msg-hist", Commands.msgHist(), "message-history", "chat-activity");
+    }
+
+    @Override
+    public Locale getLocale(Audience audience) {
+        return audience instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
+    }
+
+    @Override
+    public Audience parseAudience(@NotNull String[] args, Audience sender) {
+        List<Audience> audiences = new ArrayList<>();
+        for (String arg : args) {
+            switch (arg) {
+                case "@a" -> audiences.add(PeelocityPlugin.SERVER);
+                case "@s" -> audiences.add(sender);
+                case "@r" -> {
+                    if (PeelocityPlugin.SERVER.getAllPlayers().isEmpty())
+                        throw new IllegalArgumentException(arg);
+                    audiences.add(Randomizer.fromCollection(PeelocityPlugin.SERVER.getAllPlayers()));
+                }
+                default -> {
+                    Optional<Player> player = PeelocityPlugin.SERVER.getPlayer(arg);
+                    if (player.isEmpty())
+                        throw new IllegalArgumentException(arg);
+                    audiences.add(player.get());
+                }
+            }
+        }
+        return Audience.audience(audiences);
     }
 }

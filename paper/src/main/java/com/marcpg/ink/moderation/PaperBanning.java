@@ -1,14 +1,15 @@
 package com.marcpg.ink.moderation;
 
-import com.marcpg.libpg.data.time.Time;
-import com.marcpg.libpg.lang.Translation;
-import com.marcpg.libpg.text.Completer;
-import com.marcpg.ink.common.PaperPlayer;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.moderation.Banning;
 import com.marcpg.common.util.InvalidCommandArgsException;
+import com.marcpg.ink.common.PaperPlayer;
+import com.marcpg.libpg.data.time.Time;
+import com.marcpg.libpg.lang.Translation;
+import com.marcpg.libpg.text.Completer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -41,13 +42,14 @@ public class PaperBanning implements Listener {
             Banning.STORAGE.remove(uuid);
             player.sendMessage(Translation.component(l, "moderation.ban.expired.msg").color(NamedTextColor.GREEN));
         } else {
+            Component reason = LegacyComponentSerializer.legacySection().deserialize((String) ban.get("reason"));
             event.disallow(PlayerLoginEvent.Result.KICK_BANNED, Translation.component(l, "moderation.ban.join.title").color(NamedTextColor.RED)
                     .appendNewline().appendNewline()
                     .append(Translation.component(l, "moderation.expiration", "").color(NamedTextColor.GRAY)
                             .append((Boolean) ban.get("permanent") ? Translation.component(l, "moderation.time.permanent").color(NamedTextColor.RED) :
                                     Component.text(Time.preciselyFormat((Long) ban.get("expires") - Instant.now().getEpochSecond()), NamedTextColor.BLUE)))
                     .appendNewline()
-                    .append(Translation.component(l, "moderation.reason", "").color(NamedTextColor.GRAY).append(Component.text((String) ban.get("reason"), NamedTextColor.BLUE)))
+                    .append(Translation.component(l, "moderation.reason", "").color(NamedTextColor.GRAY).append(reason.hasStyling() ? reason : reason.color(NamedTextColor.BLUE)))
             );
         }
     }
@@ -66,7 +68,7 @@ public class PaperBanning implements Listener {
             try {
                 if (target.isOnline()) {
                     Banning.ban(sender instanceof Player player ? player.getName() : "Console",
-                            new PaperPlayer(target.getPlayer()), permanent, time, reason);
+                            new PaperPlayer(target.getPlayer()), permanent, time, Component.text(reason));
                 } else {
                     Banning.ban(sender instanceof Player player ? player.getName() : "Console",
                             new OfflinePlayer(target.getName(), target.getUniqueId()), permanent, time, reason);

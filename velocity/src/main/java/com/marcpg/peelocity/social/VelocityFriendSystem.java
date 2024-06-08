@@ -7,7 +7,7 @@ import com.marcpg.common.util.InvalidCommandArgsException;
 import com.marcpg.common.util.ThrowingBiConsumer;
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.peelocity.PeelocityPlugin;
-import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -99,10 +99,7 @@ public final class VelocityFriendSystem {
                                 player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.list.none").color(YELLOW));
                             } else {
                                 player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.list.list", friendships.size()).color(GREEN));
-                                friendships.forEach(m -> {
-                                    UUID friend = (UUID) (m.get("player1").equals(playerUuid) ? m.get("player2") : m.get("player1"));
-                                    player.sendMessage(Component.text("- " + PlayerCache.PLAYERS.get(friend)));
-                                });
+                                friendships.forEach(m -> player.sendMessage(Component.text("- " + PlayerCache.PLAYERS.get((UUID) (m.get("player1").equals(playerUuid) ? m.get("player2") : m.get("player1"))))));
                             }
                             return 1;
                         })

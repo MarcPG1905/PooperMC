@@ -1,13 +1,13 @@
 package com.marcpg.peelocity.moderation;
 
-import com.marcpg.libpg.data.time.Time;
-import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.PlayerCache;
-import com.marcpg.peelocity.PeelocityPlugin;
-import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.moderation.Muting;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.common.util.InvalidCommandArgsException;
+import com.marcpg.libpg.data.time.Time;
+import com.marcpg.libpg.lang.Translation;
+import com.marcpg.peelocity.PeelocityPlugin;
+import com.marcpg.peelocity.common.VelocityPlayer;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -22,11 +22,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public final class VelocityMuting {
-    private static final List<String> TIME_TYPES = List.of("sec", "min", "h", "d", "wk", "mo");
-
     @Subscribe(order = PostOrder.FIRST)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         Player player = event.getPlayer();
@@ -65,7 +66,7 @@ public final class VelocityMuting {
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("time", StringArgumentType.word())
                                 .suggests((context, builder) -> {
                                     String input = context.getArguments().size() == 2 ? builder.getInput().split(" ")[0] : "";
-                                    TIME_TYPES.forEach(string -> builder.suggest(input.replaceAll("[^-\\d.]+", "") + string));
+                                    Muting.TIME_UNITS.forEach(string -> builder.suggest(input.replaceAll("[^-\\d.]+", "") + string));
                                     return builder.buildFuture();
                                 })
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("reason", StringArgumentType.greedyString())

@@ -1,4 +1,4 @@
-package com.marcpg.peelocity;
+package com.marcpg.common.optional;
 
 import com.marcpg.libpg.color.Ansi;
 import com.marcpg.common.Pooper;

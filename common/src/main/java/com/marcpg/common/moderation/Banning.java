@@ -12,10 +12,12 @@ import com.marcpg.libpg.web.discord.Embed;
 import com.marcpg.libpg.web.discord.Webhook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,8 +28,8 @@ public class Banning {
     public static final Storage<UUID> STORAGE = Storage.storageType.createStorage("bans", "player");
     public static final Time MAX_TIME = new Time(5, Time.Unit.YEARS);
 
-    public static void ban(String sourceName, @NotNull OnlinePlayer<?> player, boolean permanent, @NotNull Time time, String reason) throws InvalidCommandArgsException {
-        ban(sourceName, OfflinePlayer.of(player), permanent, time, reason);
+    public static void ban(String sourceName, @NotNull OnlinePlayer<?> player, boolean permanent, @NotNull Time time, Component reason) throws InvalidCommandArgsException {
+        ban(sourceName, OfflinePlayer.of(player), permanent, time, LegacyComponentSerializer.legacySection().serialize(reason));
 
         Locale l = player.locale();
         player.disconnect(Translation.component(l, "moderation.ban.msg.title").color(NamedTextColor.RED)
@@ -35,7 +37,7 @@ public class Banning {
                 .append(Translation.component(l, "moderation.expiration", "").color(NamedTextColor.GRAY))
                 .append(permanent ? Translation.component(l, "moderation.time.permanent").color(NamedTextColor.RED) : Component.text(time.getOneUnitFormatted(), NamedTextColor.BLUE))
                 .appendNewline()
-                .append(Translation.component(l, "moderation.reason", "").color(NamedTextColor.GRAY)).append(Component.text(reason, NamedTextColor.BLUE))
+                .append(Translation.component(l, "moderation.reason", "").color(NamedTextColor.GRAY)).append(reason.hasStyling() ? reason : reason.color(NamedTextColor.BLUE))
         );
     }
 
@@ -51,7 +53,7 @@ public class Banning {
         STORAGE.add(Map.of(
                 "player", player.uuid(),
                 "permanent", permanent,
-                "expires", System.currentTimeMillis() / 2 + time.get(),
+                "expires", Instant.now().getEpochSecond() + time.get(),
                 "duration", time.get(),
                 "reason", reason
         ));

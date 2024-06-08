@@ -3,7 +3,7 @@ package com.marcpg.peelocity.social;
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.libpg.util.Randomizer;
 import com.marcpg.peelocity.PeelocityPlugin;
-import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OnlinePlayer;
 import com.marcpg.common.features.MessageLogging;

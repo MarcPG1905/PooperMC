@@ -1,7 +1,7 @@
 package com.marcpg.peelocity.moderation;
 
 import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.moderation.Reporting;

@@ -7,10 +7,9 @@ base {
 }
 
 dependencies {
+    implementation("com.alessiodp.libby:libby-velocity:2.0.0-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    implementation("com.alessiodp.libby:libby-velocity:2.0.0-SNAPSHOT")
-    implementation("org.bstats:bstats-velocity:3.0.2")
 }
 
 tasks {

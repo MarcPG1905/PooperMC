@@ -11,7 +11,7 @@ version: ${version}
 main: com.marcpg.ink.InkPlugin
 
 ### PaperAPI Version ###
-api-version: '1.20'
+api-version: '1.16'
 
 ### Developers of the Plugin ###
 authors:
@@ -109,3 +109,10 @@ commands:
     description: Gets someone else's message history.
     permission: poo.msg-hist
     permission-message: You do not have access to message history!
+
+  ## Custom Timer ##
+  timer:
+    usage: /<command> (start|stop|info|pause|resume) <id> [time] [renderer] [audience]
+    description: Timer-related stuff.
+    permission: poo.timer
+    permission-message: You cannot manage timers!

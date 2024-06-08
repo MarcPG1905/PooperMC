@@ -2,7 +2,7 @@ package com.marcpg.peelocity.moderation;
 
 import com.marcpg.libpg.data.time.Time;
 import com.marcpg.libpg.lang.Translation;
-import com.marcpg.peelocity.PlayerCache;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OfflinePlayer;
@@ -95,7 +95,7 @@ public final class VelocityBanning {
                                                 try {
                                                     if (target.isPresent()) {
                                                         Banning.ban(source instanceof Player player ? player.getUsername() : "Console",
-                                                                new VelocityPlayer(target.get()), permanent, time, reason);
+                                                                new VelocityPlayer(target.get()), permanent, time, Component.text(reason));
                                                     } else {
                                                         Banning.ban(source instanceof Player player ? player.getUsername() : "Console",
                                                                 new OfflinePlayer(targetArg, targetUuid), permanent, time, reason);

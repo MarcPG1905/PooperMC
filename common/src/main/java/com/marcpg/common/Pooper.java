@@ -4,12 +4,12 @@ import com.alessiodp.libby.LibraryManager;
 import com.marcpg.common.logger.Logger;
 import com.marcpg.common.moderation.Banning;
 import com.marcpg.common.moderation.Muting;
+import com.marcpg.common.platform.AsyncScheduler;
 import com.marcpg.common.platform.CommandManager;
 import com.marcpg.common.platform.EventManager;
+import com.marcpg.common.platform.FaviconHandler;
 import com.marcpg.common.social.FriendSystem;
 import com.marcpg.common.storage.DatabaseStorage;
-import com.marcpg.common.platform.AsyncScheduler;
-import com.marcpg.common.platform.FaviconHandler;
 import com.marcpg.common.util.UpdateChecker;
 import com.marcpg.libpg.color.Ansi;
 import com.marcpg.libpg.lang.Translation;
@@ -21,14 +21,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 public abstract class Pooper<P, E, C> {
     // ++++++++++ CONSTANTS ++++++++++
-    public static final String VERSION = "1.1.1";
+    public static final String VERSION = "1.1.2";
     public static final int BUILD = 1;
-    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(6, VERSION + "+build." + BUILD, "ERROR");
+    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(7, VERSION + "+build." + BUILD, "ERROR");
 
     // ++++++++++ PLUGIN INSTANCE ++++++++++
     public static Platform PLATFORM = Platform.UNKNOWN;
@@ -98,6 +99,7 @@ public abstract class Pooper<P, E, C> {
     // ++++++++++ INSTANCE METHODS ++++++++++
     // ++++++++++++++++++++++++++++++++++++++
 
+    public static final List<String> SUPPORTED_AUDIENCES = List.of("@a", "@s", "@r");
     public static Pooper<?, ?, ?> INSTANCE;
     public static Object PLUGIN;
 
@@ -177,4 +179,7 @@ public abstract class Pooper<P, E, C> {
     public void commands(CommandManager<C, P> manager) {
         LOG.info(Ansi.gray("Registering Commands..."));
     }
+
+    public abstract Locale getLocale(Audience audience);
+    public abstract Audience parseAudience(String[] args, Audience sender);
 }

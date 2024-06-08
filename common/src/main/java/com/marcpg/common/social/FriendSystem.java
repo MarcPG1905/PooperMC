@@ -34,6 +34,8 @@ public class FriendSystem {
             REQUESTS.put(target.uuid(), new HashSet<>(Set.of(player.uuid())));
         }
 
+        player.sendMessage(Translation.component(player.locale(), "friend.add.confirm", target.name()).color(NamedTextColor.GREEN));
+
         if (target instanceof OnlinePlayer<?> t) {
             t.sendMessage(Translation.component(t.locale(), "friend.add.msg.1", player.name()).color(NamedTextColor.GREEN).appendSpace()
                     .append(Translation.component(t.locale(), "friend.add.msg.2").color(NamedTextColor.YELLOW)
@@ -64,6 +66,7 @@ public class FriendSystem {
 
     public static void deny(@NotNull OnlinePlayer<?> player, IdentifiablePlayer target) throws InvalidCommandArgsException {
         handleRequests(REQUESTS.get(player.uuid()), player.uuid(), target);
+        player.sendMessage(Translation.component(player.locale(), "friend.deny.confirm", target.name()).color(NamedTextColor.YELLOW));
         if (target instanceof OnlinePlayer<?> t)
             t.sendMessage(Translation.component(t.locale(), "friend.deny.msg", player.name()).color(NamedTextColor.YELLOW));
     }
