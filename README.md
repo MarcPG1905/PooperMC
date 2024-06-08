@@ -1,5 +1,6 @@
 
-[![PooperMC](https://marcpg.com/pooper/banner.png)](https://marcpg.com/pooper/)
+
+![PooperMC](https://marcpg.com/pooper/banner.png)
 
 
 # PooperMC
@@ -7,7 +8,7 @@
 Formally known as Peelocity, is an all-in-one solution for your Minecraft server network, which aims to provide all the features you need inside just one simple plugin. Being lightweight and efficient, PooperMC tries to provide as many features as possible, while having a simple and easy-to-maintain codebase.  
 The modern codebase using Java 17+ allows for fast response times and always up-to-date code.  
 Although the plugin is still in development, it is already a valid choice for any server network, that needs a working and lightweight plugin.  
-Read more at https://marcpg.com/poopermc (soon...)!
+Read more at https://marcpg.com/pooper (soon...)!
 
 ## Requirements
 
@@ -30,12 +31,14 @@ Most features can be enabled/disabled in the configuration.
 Some aren't enabled by default, so make sure to check out the configuration!
 
 ### Chat Utilities
+Some stuff that imroves the chatting experience.
 - **Message Logging:** All messages are logged and can be seen by moderators using `/msg-hist`
 - **Private Messaging:** You can globally message someone using `/msg PlayerName` or `/w` to reply.
 - **Mentions:** By writing `@PlayerName`, you can ping another player or `@everyone`.
 - **Chat Colors:** You can use MiniMessage's colors and styles in the chat.
 
 ### Custom Server List
+Refers to everything you see when looking at the server in your multiplayer server list.
 - **Better MotD:** Simple custom MotDs, that use MiniMessage and can be randomized.
 - **Better Favicons:** Custom server icons from image links, that can be randomized.
 - **Online Player-Count:** You can set a custom/fake online player count, although that's dishonest and not recommended.
@@ -43,53 +46,32 @@ Some aren't enabled by default, so make sure to check out the configuration!
 
 ### Moderation
 Everything moderation-related is also sent/logged to a Discord-Webhook.
-- Better Bans with expiration, permanent bans, and reasons.
-- Better Kicks with reasons.
-- Mutes with expiration and reasons.
-- Easy Reports that can be used by anyone and are pretty easy to use.
-- A staff chat, where all staff members (pee.staff permission) can chat privately.
+- **Banning:** Better Bans with expiration, permanent bans, and reasons.
+- **Kicking:** Better Kicks with reasons.
+- **Muting:** Mutes with expiration and reasons.
+- **Reporting:** Easy Reports that can be used by anyone and are pretty easy to use.
+- **Staff-Chat:** A staff chat, where all staff members (pee.staff permission) can chat privately.
 
 ### Social Stuff
-- A simple friend system with friend requests and not much usage.
-- A simple party system with invites, joining matches together, and party chatting.
+Some social-stuff that's nice for bigger servers with multiple game modes.
+- **Friend-System:** A simple friend system with friend requests and not much usage.
+- **Party-System:** A simple party system with invites, joining matches together, and party chatting.
 
-### Plugin-Only
-- Optional **Vein-Mining**, which is fully configurable with animation, proper item damage, etc.
+### Paper-Modules
+All modules are disabled by default and are fully optional. You can enable them in the configuration under `modules`.
+- **Vein-Mining:** Fully configurable vein-mining with animation, proper item damage, etc.
+- **Better Mob-AI:** Allows for stuff like whole groups panicking if one gets hit or generally a more intelligent AI.
+- **Death-Banning:** Will ban or kick a player if they die or get killed. Fully customizable.
+- **No Anvil-Cap:** Will remove the anvil cost limit and instead just make the cost grow slower, starting at level 40, to not reach absurd costs like 500 levels.
+- **Better Sleep:** Will optimize sleep based on configuration, like more realistically skipping the night, more robust required player calculations or even dreams.
+- **Custom AFK:** A simple AFK feature that can be configured to your liking.
+- **Global Ender Chest:** A global ender chest that everyone from the server can access. Acts like a community chest.
 
 ### Other
-- A global whitelist for the whole proxy, with a command and storage.
-- Join logic to join a game mode configured in the configuration and also supports a plugin message using `pooper:joining`, for lobby plugins.
-- Player-Cache to also have access to offline players instead of only online players.
-- An easy-to-use setup that ships right with the plugin JAR. See below for more info!
-
-## Setup
-
-PeeUp, which is a simple configuration setup, is an easy and fast way of setting up your PooperMC configuration for your server.
-
-### Running PeeUp
-
-To run PeeUp, you just have to follow a few simple steps:
-
-1. Download the Setup JAR file.
-2. Move the JAR file into your plugins folder or your server folder.
-3. Run the Setup:
-```shell
-java -jar PooperMC-VERSION-Setup.jar
-#         ^^^^^^^^^^^^^^^^^^^^^^ <- Your JAR File!
-```
-
-Make sure to replace the `PooperMC-VERSION-Setup.jar` with the actual JAR file!
-
-### Requirements
-
-- Running on any Windows or UNIX-based (macOS, Linux, etc.) machine.
-- Running in a proper environment. Will not work in IDE or embedded consoles.
-- A working keyboard with at least the basic alphabetical and numeral keys.
-
-### Limitations
-
-- Things like the custom MotDs and Favicons need to be configured manually.
-- That's it.
+Some stuff that can't be categorized, but is still nice to have.
+- **Global Whitelist:** A whitelist that works on the proxy, instead of only the backend servers.
+- **Custom Join-Logic:** Utilities for joining a game mode configured in the configuration, which also support plugin messaging over `pooper:joining`, for lobby plugins.
+- **Player-Cache:** Caches all players with their name and UUID for later use, even if they are offline.
 
 ## Usage
 
@@ -119,14 +101,13 @@ Some of the major features that we hope to add in the future are:
 ### Discord
 
 You can join one of my Discord communities and just ping me, for a quick response:
-- [.gg/hectus](https://discord.gg/hectus)
-- [.gg/XWfa7gvCJ5](https://discord.gg/XWfa7gvCJ5)
+- [Hectus Discord](https://discord.gg/txYEmBafB7)
 
 ### Direct Contact
 
 If you don't use Discord or like to contact me otherwise, please rely on one of these methods:
 - E-Mail: [me@marcpg.com](mailto:me@marcpg.com)
-- Discord: @marcpg1905
+- Discord: `@marcpg1905`
 
 ## For Developers
 
