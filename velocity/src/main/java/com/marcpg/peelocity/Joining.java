@@ -17,7 +17,6 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,12 +27,12 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class Joining {
-    public static final MinecraftChannelIdentifier PLUGIN_MESSAGE_IDENTIFIER = MinecraftChannelIdentifier.from("poopermc:joining");
+    public static final MinecraftChannelIdentifier JOINING_CHANNEL = MinecraftChannelIdentifier.from("poopermc:joining");
 
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPluginMessage(@NotNull PluginMessageEvent event) {
-        if (event.getSource() instanceof ServerConnection connection && event.getIdentifier() == PLUGIN_MESSAGE_IDENTIFIER) {
+        if (event.getSource() instanceof ServerConnection connection && event.getIdentifier() == JOINING_CHANNEL) {
             String gamemode = ByteStreams.newDataInput(event.getData()).readUTF();
             runLogic(connection.getPlayer(), Pair.of(gamemode, Configuration.gamemodes.get(gamemode)));
         }

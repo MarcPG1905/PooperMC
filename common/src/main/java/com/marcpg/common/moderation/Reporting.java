@@ -13,7 +13,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
-public class Reporting {
+public final class Reporting {
     public static final List<String> REASONS = List.of("cheats", "spam", "swearing", "exploiting", "other");
 
     public static void report(OnlinePlayer<?> reporter, OfflinePlayer player, String reason, String info) throws InvalidCommandArgsException {

@@ -2,12 +2,12 @@ package com.marcpg.peelocity.social;
 
 import com.marcpg.common.entity.IdentifiablePlayer;
 import com.marcpg.common.entity.OfflinePlayer;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.common.social.FriendSystem;
 import com.marcpg.common.util.InvalidCommandArgsException;
-import com.marcpg.common.util.ThrowingBiConsumer;
 import com.marcpg.libpg.lang.Translation;
+import com.marcpg.libpg.util.ThrowingBiConsumer;
 import com.marcpg.peelocity.PeelocityPlugin;
-import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.peelocity.common.VelocityPlayer;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -112,6 +112,8 @@ public final class VelocityFriendSystem {
         UUID targetUuid = PlayerCache.getUuid(target);
         if (targetUuid == null) {
             player.sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", target).color(RED));
+        } else if (player.getUsername().equals(target)) {
+            player.sendMessage(Translation.component(player.getEffectiveLocale(), "friend.self").color(YELLOW));
         } else {
             try {
                 Optional<Player> p = PeelocityPlugin.SERVER.getPlayer(targetUuid);

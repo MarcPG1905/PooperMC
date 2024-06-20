@@ -1,11 +1,11 @@
 package com.marcpg.peelocity.moderation;
 
-import com.marcpg.libpg.lang.Translation;
-import com.marcpg.common.optional.PlayerCache;
-import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.moderation.Reporting;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.common.util.InvalidCommandArgsException;
+import com.marcpg.libpg.lang.Translation;
+import com.marcpg.peelocity.common.VelocityPlayer;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -37,7 +37,7 @@ public final class VelocityReporting {
                                             Player player = (Player) context.getSource();
                                             String targetArg = context.getArgument("player", String.class);
 
-                                            if (PlayerCache.PLAYERS.containsValue(targetArg)) {
+                                            if (!PlayerCache.PLAYERS.containsValue(targetArg)) {
                                                 context.getSource().sendMessage(Translation.component(player.getEffectiveLocale(), "cmd.player_not_found", targetArg).color(NamedTextColor.RED));
                                                 return 1;
                                             }

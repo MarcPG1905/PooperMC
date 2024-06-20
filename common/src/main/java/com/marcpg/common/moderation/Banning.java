@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-public class Banning {
+public final class Banning {
     public static final List<String> TIME_UNITS = List.of("min", "h", "d", "wk", "mo", "yr");
     public static final Storage<UUID> STORAGE = Storage.storageType.createStorage("bans", "player");
     public static final Time MAX_TIME = new Time(5, Time.Unit.YEARS);

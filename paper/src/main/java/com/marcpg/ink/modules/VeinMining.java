@@ -1,4 +1,4 @@
-package com.marcpg.ink.features;
+package com.marcpg.ink.modules;
 
 import com.marcpg.ink.Ink;
 import com.marcpg.ink.InkPlugin;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class VeinMining implements Listener {
+public final class VeinMining implements Listener {
     public static final List<Material> veinBlocks = new ArrayList<>();
     public static boolean requireProperTool;
     public static boolean animated;

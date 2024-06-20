@@ -27,7 +27,7 @@ import java.util.Locale;
 
 import static com.marcpg.common.Configuration.doc;
 
-public class Commands {
+public final class Commands {
     public static class MsgHistCommand implements TabExecutor {
         @Override
         public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -84,7 +84,7 @@ public class Commands {
                     Pooper.INSTANCE.unload();
                     Pooper.INSTANCE.loadBasic(Configuration.serverListFavicons, new BukkitLibraryManager(InkPlugin.getPlugin(InkPlugin.class), Pooper.DATA_DIR.toString()));
                     sender.sendMessage(Translation.component(l, "cmd.reload.confirm").color(NamedTextColor.GREEN));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     sender.sendMessage(Translation.component(l, "cmd.reload.error").color(NamedTextColor.RED));
                 }
             } else {

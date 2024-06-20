@@ -116,3 +116,77 @@ commands:
     description: Timer-related stuff.
     permission: poo.timer
     permission-message: You cannot manage timers!
+
+  ## Open Anvil ##
+  anvil:
+    usage: /<command>
+    description: Will open an anvil.
+
+  ## Open Cartography Table ##
+  cartography-table:
+    usage: /<command>
+    description: Will open a cartography table.
+    aliases: cartography
+
+  ## Open Workbench ##
+  workbench:
+    usage: /<command>
+    description: Will open a workbench/crafting-table.
+    aliases:
+      - crafting
+      - crafting-table
+
+  ## Open Grindstone ##
+  grindstone:
+    usage: /<command>
+    description: Will open a grindstone.
+
+  ## Open Loom ##
+  loom:
+    usage: /<command>
+    description: Will open a loom.
+
+  ## Open Smithing Table ##
+  smithing-table:
+    usage: /<command>
+    description: Will open a smithing table.
+    aliases: smithing
+
+  ## Open Stonecutter ##
+  stonecutter:
+    usage: /<command>
+    description: Will open a stonecutter.
+
+  ## Open Enchanting Table ##
+  enchanting:
+    usage: /<command>
+    description: Will open an enchanting table.
+    aliases: enchanter
+
+  ## Open your Ender Chest ##
+  ender-chest:
+    usage: /<command>
+    description: Will open the player's ender chest.
+    aliases:
+      - ec
+      - ender
+
+  ## Open Trash/Rubbish ##
+  trash:
+    usage: /<command>
+    description: Will open a trash inventory, which will delete all items in it when closed.
+    aliases: rubbish
+
+  ## Opens the global Ender Chest, if enabled. ##
+  global-ender-chest:
+    usage: /<command>
+    description: Will open a global ender chest, which is shared between all players on the server.
+    aliases:
+      - gec
+      - global-ec
+      - g-ender
+
+  ## Makes you be AFK ##
+  afk:
+    usage: /<command>
+    description: Makes you be AFK.

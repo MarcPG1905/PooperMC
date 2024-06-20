@@ -1,9 +1,9 @@
 package com.marcpg.peelocity.features;
 
-import com.marcpg.libpg.lang.Translation;
 import com.marcpg.common.Configuration;
-import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.common.Pooper;
+import com.marcpg.libpg.lang.Translation;
+import com.marcpg.peelocity.PeelocityPlugin;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
@@ -17,6 +17,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.jetbrains.annotations.NotNull;
 

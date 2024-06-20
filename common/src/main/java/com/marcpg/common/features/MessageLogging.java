@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class MessageLogging {
+public final class MessageLogging {
     public record MessageData(Date time, String content, Type type, @Nullable String receiver) {
         public enum Type { NORMAL, STAFF, PRIVATE, PARTY }
 

@@ -25,7 +25,7 @@ import java.time.Instant;
 import java.util.*;
 
 @SuppressWarnings("deprecation") // Bukkit#getOfflinePlayer(String)
-public class PaperBanning implements Listener {
+public final class PaperBanning implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
         Player player = event.getPlayer();

@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-public class AntiBookBan implements Listener {
+public final class AntiBookBan implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onEntityPickupItem(@NotNull EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;

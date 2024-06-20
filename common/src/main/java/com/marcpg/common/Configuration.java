@@ -1,13 +1,15 @@
 package com.marcpg.common;
 
 import com.alessiodp.libby.LibraryManager;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.marcpg.common.features.MessageLogging;
+import com.marcpg.common.platform.FaviconHandler;
 import com.marcpg.common.storage.DatabaseStorage;
 import com.marcpg.common.storage.Storage;
-import com.marcpg.common.platform.FaviconHandler;
 import com.marcpg.libpg.color.Ansi;
 import com.marcpg.libpg.data.database.sql.SQLConnection;
-import com.marcpg.libpg.web.Downloads;
+import com.marcpg.libpg.lang.Translation;
 import com.marcpg.libpg.web.discord.Webhook;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
@@ -25,18 +27,17 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.marcpg.libpg.data.database.sql.SQLConnection.DatabaseType.*;
 
-public class Configuration {
+public final class Configuration {
     private static final List<SQLConnection.DatabaseType> SUPPORTED_DATABASES = List.of(POSTGRESQL, MYSQL, MARIADB, MS_SQL_SERVER, ORACLE);
 
     public static YamlDocument doc;
@@ -63,15 +64,13 @@ public class Configuration {
     // ------------ Server List ------------
 
     public static void createFileTree() throws IOException {
-        Files.createDirectories(Pooper.DATA_DIR.resolve("lang"));
-        Files.copy(Objects.requireNonNull(Pooper.class.getResourceAsStream("/en_US.properties")), Pooper.DATA_DIR.resolve("lang/en_US.properties"), StandardCopyOption.REPLACE_EXISTING);
         Files.createDirectories(Pooper.DATA_DIR.resolve("message-history"));
         try {
             Files.createFile(Pooper.DATA_DIR.resolve("playercache"));
         } catch (FileAlreadyExistsException ignored) {}
     }
 
-    public static void load(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException {
+    public static void load(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException, URISyntaxException, InterruptedException {
         Pooper.LOG.info(Ansi.gray("Loading the PooperMC Configuration..."));
 
         doc = YamlDocument.create(
@@ -82,8 +81,8 @@ public class Configuration {
                 DumperSettings.DEFAULT,
                 UpdaterSettings.builder()
                         .setVersioning(new BasicVersioning("version"))
-                        .addIgnoredRoute("7", Route.fromString("gamemodes"))
-                        .addIgnoredRoute("8", Route.fromString("gamemodes"))
+                        .addIgnoredRoute("6", Route.fromString("gamemodes")) // Proxy-Only!
+                        .addIgnoredRoute("7", Route.fromString("gamemodes")) // Proxy-Only!
                         .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
                         .build()
         );
@@ -151,7 +150,6 @@ public class Configuration {
         MessageLogging.enabled = doc.getBoolean("message-logging.enabled");
         MessageLogging.maxHistory = doc.getInt("message-logging.max-history");
 
-
         chatUtilities = doc.getSection("chatutility");
 
         // Server List Configuration
@@ -182,38 +180,13 @@ public class Configuration {
         Pooper.INSTANCE.extraConfiguration(doc);
 
         if (downloadTranslations) {
-            Pooper.SCHEDULER.schedule(new TranslationDownloadTask());
-        }
-    }
-
-    private final static class TranslationDownloadTask implements Runnable {
-        private final Path langFolder = Pooper.DATA_DIR.resolve("lang");
-        private static final int MAX_RETRIES = 3;
-
-        @Override
-        public void run() {
-            int attempt = 1;
-            while (attempt <= MAX_RETRIES) {
-                try {
-                    Downloads.simpleDownload(new URI("https://marcpg.com/pooper/translations/available_locales").toURL(), this.langFolder.resolve("available_locales.temp").toFile());
-                    for (String locale : Files.readAllLines(this.langFolder.resolve("available_locales.temp"))) {
-                        Downloads.simpleDownload(new URI("https://marcpg.com/pooper/translations/" + locale).toURL(), this.langFolder.resolve(locale).toFile());
-                    }
-                    Files.deleteIfExists(this.langFolder.resolve("available_locales.temp"));
-                    return;
-                } catch (IOException | URISyntaxException e) {
-                    if (attempt == MAX_RETRIES) {
-                        Pooper.LOG.error("Translation download failed. The maximum amount of retries (" + MAX_RETRIES + ") has been reached!");
-                    } else {
-                        Pooper.LOG.warn("Translation download failed on attempt " + attempt + ", retrying in 3 seconds...");
-                        try {
-                            Thread.sleep(3000); // Wait for 3s before retrying
-                        } catch (InterruptedException ignored) {}
-                    }
-                    attempt++;
-                }
-            }
-            Pooper.LOG.info("Downloaded and loaded all recent translations!");
+            HttpRequest request = HttpRequest.newBuilder(new URI("https://marcpg.com/pooper/lang/all")).GET().build();
+            String response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).body();
+            Translation.loadMaps(new Gson().fromJson(response, new TypeToken<Map<Locale, Map<String, String>>>(){}.getType()));
+        } else {
+            Properties properties = new Properties();
+            properties.load(Pooper.class.getResourceAsStream("/en_US.properties"));
+            Translation.loadSingleProperties(Locale.getDefault(), properties);
         }
     }
 }

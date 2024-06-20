@@ -7,7 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.util.CachedServerIcon;
 
-public class PaperServerList implements Listener {
+public final class PaperServerList implements Listener {
     @EventHandler
     public void onPaperServerListPing(PaperServerListPingEvent event) {
         // Custom/Random MotDs

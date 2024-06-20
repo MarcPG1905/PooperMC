@@ -9,9 +9,7 @@ import com.marcpg.ink.common.PaperFaviconHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
-
-public class InkPlugin extends JavaPlugin {
+public final class InkPlugin extends JavaPlugin {
     static {
         Pooper.PLATFORM = Platform.PAPER;
         try {
@@ -39,7 +37,7 @@ public class InkPlugin extends JavaPlugin {
         try { // The actual startup logic:
             new Ink(this);
             Pooper.INSTANCE.startup(new PaperFaviconHandler(), new BukkitLibraryManager(this, getDataFolder().getName()));
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

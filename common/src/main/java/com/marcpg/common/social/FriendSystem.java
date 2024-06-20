@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class FriendSystem {
+public final class FriendSystem {
     public static final HashMap<UUID, HashSet<UUID>> REQUESTS = new HashMap<>();
     public static final Storage<UUID> STORAGE = Storage.storageType.createStorage("friendships", "uuid");
 

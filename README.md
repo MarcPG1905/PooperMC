@@ -31,7 +31,7 @@ Most features can be enabled/disabled in the configuration.
 Some aren't enabled by default, so make sure to check out the configuration!
 
 ### Chat Utilities
-Some stuff that imroves the chatting experience.
+Some stuff that improves the chatting experience.
 - **Message Logging:** All messages are logged and can be seen by moderators using `/msg-hist`
 - **Private Messaging:** You can globally message someone using `/msg PlayerName` or `/w` to reply.
 - **Mentions:** By writing `@PlayerName`, you can ping another player or `@everyone`.
@@ -81,12 +81,12 @@ The configuration is designed to be simple and descriptive. You can find everyth
 
 ### Translations
 
-Translations are automatically downloaded over [a simple database](https://marcpg.com/poopermc/translations/), which means that you don't have to do anything, except have a stable internet connection. The downloads itself will only take a few kilobytes on each startup.
+Translations are automatically downloaded over [a simple database](https://marcpg.com/pooper/translations/), which means that you don't have to do anything, except have a stable internet connection. The downloads itself will only take a few kilobytes on each startup.
 
 ### Data Storing
 
 There are multiple ways of storing the data, that you can set in the configuration. YAML and RAM both don't require additional configuration.  
-But if you want to use a database, you will need to set it up yourself. For simple instructions, please visit the [database help page](https://marcpg.com/poopermc/database) (soon...)!
+But if you want to use a database, you will need to set it up yourself. For simple instructions, please visit the [database help page](https://marcpg.com/pooper/database) (soon...)!
 
 ## Future Goals
 

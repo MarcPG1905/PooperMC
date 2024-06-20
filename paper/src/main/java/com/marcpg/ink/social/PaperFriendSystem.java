@@ -4,10 +4,10 @@ import com.marcpg.common.entity.IdentifiablePlayer;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.social.FriendSystem;
 import com.marcpg.common.util.InvalidCommandArgsException;
-import com.marcpg.common.util.ThrowingBiConsumer;
 import com.marcpg.ink.common.PaperPlayer;
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.libpg.text.Completer;
+import com.marcpg.libpg.util.ThrowingBiConsumer;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -21,7 +21,7 @@ import java.util.*;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-public class PaperFriendSystem implements TabExecutor {
+public final class PaperFriendSystem implements TabExecutor {
     private static final List<String> SUBCOMMANDS = List.of("add", "remove", "accept", "deny", "list");
 
     @Override

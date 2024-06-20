@@ -6,7 +6,7 @@
 ##_______________|_|   \___/ \___/| .__/ \___|_|  |_|  |_|\____|_______________##
 ##                           Main |_| Configuration                            ##
 ##                                                                             ##
-##        WEBSITE:       https://marcpg.com/poopermc                           ##
+##        WEBSITE:       https://marcpg.com/pooper                             ##
 ##        SOURCE-CODE:   https://github.com/MarcPG1905/PooperMC                ##
 ##        BUGS & ISSUES: https://github.com/MarcPG1905/PooperMC/issues         ##
 ##                                                                             ##
@@ -157,6 +157,7 @@ server-list:
 
   # A list of all possible MotD that can be shown to the user, if custom-motd is enabled.
   # You can use the MiniMessage syntax for custom styling: https://docs.advntr.dev/minimessage/format.html
+  # If you only want one MotD, just put make this only contain that one MotD.
   custom-motd-messages:
     - "A simple MotD without any formatting!"
     - "<yellow>Another <red>example <black>MotD, <green>but <blue>with <white>colors."
@@ -167,8 +168,8 @@ server-list:
   custom-favicon: false
 
   # A list of all possible favicons (server icons) that can be shown to the user, if custom-favicon is enabled.
-  # Resolution has to be 128x128 pixels. Didn't find any good example image, so I just put some weird thing.
-  # Custom favicons are currently unstable and experimental. Use at your own risk!
+  # Resolution has to be 64x64 pixels. Favicons can currently only be from URLs. You can use services like Dropbox.
+  # If you only want one favicon, just put make this only contain that one favicon URL.
   custom-favicon-urls:
     - https://marcpg.com/pooper/example_server-icon.png
 
@@ -187,67 +188,6 @@ server-list:
 
 
 ##  -------------------------------------------------------------------------  ##
-##          __   __     _             __  __  _        _                       ##
-##          \ \ / /___ (_) _ _   ___ |  \/  |(_) _ _  (_) _ _   __ _           ##
-##           \ V // -_)| || ' \ |___|| |\/| || || ' \ | || ' \ / _` |          ##
-##            \_/ \___||_||_||_|     |_|  |_||_||_||_||_||_||_|\__, |          ##
-##                     The optional Better-Mining Feature.     |___/           ##
-##  -------------------------------------------------------------------------  ##
-# Vein-Mining will allow you to only break one block from an ore-vein,
-# which will result in the whole vein being destroyed.
-vein-mining:
-  # If the Vein-Mining module is enabled or not.
-  enabled: false
-
-  # Sets if you will need to use the right tool, for the vein mining to work.
-  require-proper-tool: true
-
-  # Sets if the vein will be destroyed with a little animation, which just
-  # makes the blocks be destroyed with a little delay between each block.
-  animated: true
-
-  # The maximum distance (radius) in blocks from the initially broken block
-  # that the vein will be destroyed.
-  max-distance: 10
-
-  # If this is enabled, all default ores in Minecraft will automatically be
-  # added to the 'ores' list. This contains all materials ending with "_ore".
-  auto-fill-ores: true
-
-  # A list of all materials that will be counted as a vein. See 'auto-fill'!
-  # Materials here should not contain the namespace (e.g. "minecraft:")!
-  ores:
-    - example_ore
-
-
-
-
-##  -------------------------------------------------------------------------  ##
-##                      ___            _                                       ##
-##                     | _ ) __ _  __ | |___  _  _ __  ___                     ##
-##                     | _ \/ _` |/ _|| / / || || '_ \(_-<                     ##
-##                     |___/\__,_|\__||_\_\\_,_|| .__//__/                     ##
-##                     The simple & easy backup |_| feature.                   ##
-##  -------------------------------------------------------------------------  ##
-backups:
-  # If the backup module is enabled or not.
-  enabled: false
-
-  # The interval between each backup. Should only be one time unit.
-  interval: 30min
-
-  # The method to store the backups.
-  #   Available Methods:
-  #     | -> local        : on your local machine
-  #     | -> google-drive : on Google Drive (https://drive.google.com/)
-  #     | -> onedrive     : on Microsoft OneDrive (https://onedrive.live.com/)
-  #     | -> database     : on the same database as all other data. Requires the 'storage-method' to be 'database'
-  storage-method: yaml
-
-
-
-
-##  -------------------------------------------------------------------------  ##
 ##                     __  __          _        _                              ##
 ##                    |  \/  | ___  __| | _  _ | | ___  ___                    ##
 ##                    | |\/| |/ _ \/ _` || || || |/ -_)(_-<                    ##
@@ -257,10 +197,45 @@ backups:
 modules:
 
   # ------------------------------------------------------------------------- #
+  #                                VEIN MINING                                #
+  #           Break one block of a vein and destroy the whole vein.           #
+  # ------------------------------------------------------------------------- #
+  vein-mining:
+
+    # If the Vein-Mining module is enabled or not.
+    enabled: false
+
+    # Sets if you will need to use the right tool, for the vein mining to work.
+    require-proper-tool: true
+
+    # Sets if the vein will be destroyed with a little animation, which just
+    # makes the blocks be destroyed with a little delay between each block.
+    animated: true
+
+    # The maximum distance (radius) in blocks from the initially broken block
+    # that the vein will be destroyed.
+    max-distance: 10
+
+    # If this is enabled, all default ores in Minecraft will automatically be
+    # added to the 'ores' list. This contains all materials ending with "_ore".
+    auto-fill-ores: true
+
+    # A list of all materials that will be counted as a vein. See 'auto-fill'!
+    # Materials here should NOT contain the namespace (e.g. "minecraft:")!
+    ores:
+      - example_ore
+
+  # ------------------------------------------------------------------------- #
   #                              NO ANVIL XP CAP                              #
   #            Removes the Anvil XP Cap when enchanting/repairing.            #
   # ------------------------------------------------------------------------- #
   no-anvil-cap: false
+
+  # ------------------------------------------------------------------------- #
+  #                         GLOBAL/SHARED ENDER CHEST                         #
+  #       Adds a global ender chest that is shared between all players.       #
+  # ------------------------------------------------------------------------- #
+  global-ender-chest: false
 
   # ------------------------------------------------------------------------- #
   #                               DEATH BANNING                               #
@@ -296,46 +271,57 @@ modules:
     # and flee together, if one of them gets hit.
     panicking-groups: true
 
-    # Gives normally friendly mobs the ability to protect themselves, if you attack them.
-    # Not implemented yet!
-    fighting-instinct: false
-
-    # Configures the various mobs that can have improved AI.
-    # Not implemented yet!
-    mobs:
-      example: true
-
   # ------------------------------------------------------------------------ #
-  #                               BETTER SLEEP                               #
-  #                   Improves how the sleep system works.                   #
+  #                                CUSTOM AFK                                #
+  #           Very simple, but yet customizable custom AFK system.           #
   # ------------------------------------------------------------------------ #
-  # Not implemented yet!
-  better-sleep:
+  # Still experimental without much configuration or additional support.
+  custom-afk:
 
-    # If the Better-Sleep module is enabled or not.
-    # Not implemented yet!
+    # If the Custom-AFK module is enabled or not.
     enabled: false
 
-    # How the night will go by.
-    #   Available Modes:
-    #     | -> default     : will skip the night like in vanilla, so an instant time skip.
-    #     | -> sprint      : will just increase how fast time goes by if sleeping.
-    #     | -> full_sprint : will increase the whole game, also making player and mob speed increase.
-    #     | -> time_set    : will constantly set the time a certain amount later, to give the illusion of time going by.
-    # Not implemented yet!
-    mode: sprint
+  # ------------------------------------------------------------------------ #
+  #                          UTILITY BLOCK COMMANDS                          #
+  #   Allows players to open utility blocks without needing to place them.   #
+  # ------------------------------------------------------------------------ #
+  utility-block-commands:
 
-    # How much faster the night will go. In vanilla, the night will be about 12 minutes.
-    # Setting it to 2.0 will reduce this to 6 minutes. Default: 24.0 (30 seconds)
-    # Not implemented yet!
-    realistic-sleep-multiplier: 24.0
+    # If the Utility-Block-Commands module is enabled or not.
+    enabled: false
 
-    # The required percentage of players who need to sleep in a world, for the night to be skipped.
-    # Not implemented yet!
-    players-required: 100.0
+    # Allows usage of /anvil, which will open an anvil.
+    anvil: true
+
+    # Allows usage of /cartography, which will open a cartography table.
+    cartography-table: true
+
+    # Allows usage of /workbench or /crafting, which will open a workbench/crafting-table.
+    workbench: true
+
+    # Allows usage of /grindstone, which will open a grindstone.
+    grindstone: true
+
+    # Allows usage of /loom, which will open a loom.
+    loom: true
+
+    # Allows usage of /smithing, which will open a smithing table.
+    smithing-table: true
+
+    # Allows usage of /stonecutter, which will open a stonecutter.
+    stonecutter: true
+
+    # Allows usage of /enchanting, which will open an enchanting table.
+    enchanting: true
+
+    # Allows usage of /ender-chest or /ec, which will open the player's ender chest.
+    ender-chest: true
+
+    # Allows usage of /trash, which will open a trash inventory, which will delete all items in it when closed.
+    trash: true
 
 
 
 
 ## DO NOT CHANGE THIS! ##
-version: 8
+version: 9

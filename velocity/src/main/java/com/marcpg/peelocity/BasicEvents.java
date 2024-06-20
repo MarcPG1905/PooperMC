@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 
-public class BasicEvents {
+public final class BasicEvents {
     @Subscribe(order = PostOrder.LAST)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         if (MessageLogging.enabled && event.getResult().isAllowed()) {

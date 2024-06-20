@@ -16,7 +16,7 @@ tasks {
     runVelocity {
         velocityVersion("3.3.0-SNAPSHOT")
         downloadPlugins {
-            url("https://download.luckperms.net/1534/velocity/LuckPerms-Velocity-5.4.121.jar")
+            url("https://download.luckperms.net/1544/velocity/LuckPerms-Velocity-5.4.131.jar")
             modrinth("7IbzD4Zm", "eeGwpMZV")
         }
     }

@@ -25,6 +25,7 @@ import net.kyori.adventure.audience.Audience;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -38,15 +39,14 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
     }
 
     @Override
-    public void loadBasic(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException {
+    public void loadBasic(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException, URISyntaxException, InterruptedException {
         super.loadBasic(faviconHandler, libraryManager);
         VelocityChatUtilities.signedVelocityInstalled = PeelocityPlugin.SERVER.getPluginManager().isLoaded("signedvelocity");
     }
 
     @Override
     public void additionalLogic() {
-        PeelocityPlugin.SERVER.getChannelRegistrar().register(Joining.PLUGIN_MESSAGE_IDENTIFIER);
-        PeelocityPlugin.SERVER.getChannelRegistrar().register(BackendChecker.CHANNEL);
+        PeelocityPlugin.SERVER.getChannelRegistrar().register(Joining.JOINING_CHANNEL);
         try {
             PlayerCache.load();
         } catch (IOException e) {
@@ -68,7 +68,6 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
     @Override
     public void events(EventManager<Object, PeelocityPlugin> manager) {
         super.events(manager);
-        manager.register(plugin, new BackendChecker());
         manager.register(plugin, new BasicEvents());
         manager.register(plugin, new Joining());
         manager.register(plugin, new VelocityBanning());
@@ -94,7 +93,7 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
     public void commands(CommandManager<Command, PeelocityPlugin> manager) {
         super.commands(manager);
         manager.register(plugin, "ban", VelocityBanning.banCommand());
-        manager.register(plugin, "config", PeelocityPlugin.configCommand(), "peelocity-configuration", "pooper-velocity-configuration");
+        manager.register(plugin, "config", Commands.configCommand(), "peelocity-configuration", "pooper-velocity-configuration");
         manager.register(plugin, "friend", VelocityFriendSystem.command());
         manager.register(plugin, "hub", Joining.hubCommand(), "lobby");
         manager.register(plugin, "join", Joining.joinCommand(), "play");
@@ -103,7 +102,7 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
         manager.register(plugin, "mute", VelocityMuting.muteCommand());
         manager.register(plugin, "pardon", VelocityBanning.pardonCommand(), "unban");
         manager.register(plugin, "party", VelocityPartySystem.command());
-        manager.register(plugin, "peelocity", PeelocityPlugin.command(), "velocity-plugin", "pooper-velocity");
+        manager.register(plugin, "peelocity", Commands.peelocityCommand(), "velocity-plugin", "pooper-velocity");
         manager.register(plugin, "report", VelocityReporting.command(), "snitch");
         manager.register(plugin, "staff", VelocityStaffChat.command(), "staff-chat", "sc");
         manager.register(plugin, "timer", VelocityTimer.command());
@@ -113,7 +112,7 @@ public class Peelocity extends Pooper<PeelocityPlugin, Object, Command> {
         if (Configuration.whitelist)
             manager.register(plugin, "whitelist", VelocityWhitelist.command());
         if (MessageLogging.enabled)
-            manager.register(plugin, "msg-hist", Commands.msgHist(), "message-history", "chat-activity");
+            manager.register(plugin, "msg-hist", Commands.msgHistCommand(), "message-history", "chat-activity");
     }
 
     @Override

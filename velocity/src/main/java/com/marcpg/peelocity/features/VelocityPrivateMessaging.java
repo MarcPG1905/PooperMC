@@ -1,9 +1,9 @@
 package com.marcpg.peelocity.features;
 
+import com.marcpg.common.features.MessageLogging;
 import com.marcpg.libpg.lang.Translation;
 import com.marcpg.peelocity.PeelocityPlugin;
 import com.marcpg.peelocity.common.VelocityPlayer;
-import com.marcpg.common.features.MessageLogging;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;

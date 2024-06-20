@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class DeathBanning implements Listener {
+public final class DeathBanning implements Listener {
     public static Time duration;
     public static boolean permanent;
     public static boolean onlyKilling;

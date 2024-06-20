@@ -1,13 +1,13 @@
 package com.marcpg.peelocity.moderation;
 
-import com.marcpg.libpg.data.time.Time;
-import com.marcpg.libpg.lang.Translation;
-import com.marcpg.common.optional.PlayerCache;
-import com.marcpg.peelocity.PeelocityPlugin;
-import com.marcpg.peelocity.common.VelocityPlayer;
 import com.marcpg.common.entity.OfflinePlayer;
 import com.marcpg.common.moderation.Banning;
+import com.marcpg.common.optional.PlayerCache;
 import com.marcpg.common.util.InvalidCommandArgsException;
+import com.marcpg.libpg.data.time.Time;
+import com.marcpg.libpg.lang.Translation;
+import com.marcpg.peelocity.PeelocityPlugin;
+import com.marcpg.peelocity.common.VelocityPlayer;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -131,7 +131,7 @@ public final class VelocityBanning {
                             Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                             String targetArg = context.getArgument("player", String.class);
 
-                            if (PlayerCache.PLAYERS.containsValue(targetArg)) {
+                            if (!PlayerCache.PLAYERS.containsValue(targetArg)) {
                                 source.sendMessage(Translation.component(l, "cmd.player_not_found", targetArg).color(NamedTextColor.RED));
                             } else {
                                 try {

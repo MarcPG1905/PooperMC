@@ -1,55 +1,53 @@
 package com.marcpg.common.util;
 
-import com.marcpg.libpg.color.Ansi;
-import com.marcpg.libpg.web.Downloads;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.marcpg.common.Pooper;
+import com.marcpg.libpg.color.Ansi;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.List;
 
 public final class UpdateChecker {
-    private static final Path PATH = Pooper.DATA_DIR.resolve(".latest_version");
-
     public static void checkUpdates() {
         Pooper.LOG.info(Ansi.gray("Checking for the latest version of PooperMC..."));
 
-        Version latest = getLatestVersion();
-        if (latest.updateIdentifier() > Pooper.CURRENT_VERSION.updateIdentifier()) {
-            Pooper.LOG.warn("You're " + (latest.updateIdentifier() - Pooper.CURRENT_VERSION.updateIdentifier()) + " build(s) behind!");
-            Pooper.LOG.warn("Latest version is " + latest.fullName() + ". Update at " + latest.link());
-        } else if (latest.updateIdentifier() == Pooper.CURRENT_VERSION.updateIdentifier()) {
+        List<Version> versions = getVersions();
+        Version latest = versions.get(versions.size() - 1);
+        if (Pooper.CURRENT_VERSION.equals(latest)) {
             Pooper.LOG.info(Ansi.formattedString("You're on the latest PooperMC version!"));
         } else {
-            Pooper.LOG.error("The version you're running is later than the newest version. Please report this bug to a developer!");
+            Pooper.LOG.warn("You're " + (versions.indexOf(latest) - versions.indexOf(Pooper.CURRENT_VERSION)) + " build(s) behind!");
+            Pooper.LOG.warn("Latest version is \"" + latest.fullName() + "\". Update at " + latest.link());
         }
     }
 
-    private static @NotNull Version getLatestVersion() {
+    private static @NotNull List<Version> getVersions() {
         try {
-            Downloads.simpleDownload(new URI("https://marcpg.com/pooper/latest_version").toURL(), PATH.toFile());
-            Files.setAttribute(PATH, "dos:hidden", true);
-            return Version.parseVersion(Files.readString(PATH));
-        } catch (IOException | URISyntaxException e) {
+            HttpRequest request = HttpRequest.newBuilder(new URI("https://marcpg.com/pooper/ver/all")).GET().build();
+            String response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).body();
+            return new Gson().fromJson(response, new TypeToken<List<Version>>(){}.getType());
+        } catch (Exception e) {
             Pooper.LOG.error("There was an issue while checking for the newest version of PooperMC!");
-            return Pooper.CURRENT_VERSION;
+            return List.of(Pooper.CURRENT_VERSION);
         }
     }
 
-    public record Version(int updateIdentifier, String fullName, String modrinthVersionId) {
-        @Contract("_ -> new")
-        public static @NotNull Version parseVersion(@NotNull String commaSeparated) {
-            String[] parts = commaSeparated.split(", ");
-            return new Version(Integer.parseInt(parts[0]), parts[1], parts[2].strip());
-        }
-
+    public record Version(String version, String fullName, String modrinthVersionId) {
         @Contract(pure = true)
         public @NotNull String link() {
             return "https://modrinth.com/plugin/pooper/version/" + modrinthVersionId;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            return obj instanceof Version ver && fullName.equals(ver.fullName);
         }
     }
 }

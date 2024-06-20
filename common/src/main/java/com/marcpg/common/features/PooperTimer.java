@@ -49,6 +49,9 @@ public class PooperTimer extends Timer {
                 start();
             } else {
                 RUNNING_TIMERS.remove(this);
+
+                if (renderer == Renderer.BOSSBAR)
+                    ((BossBar) renderingObject).removeViewer(audience);
             }
         }, new Time(1));
     }

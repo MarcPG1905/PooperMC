@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Date;
 
-public class BasicEvents implements Listener {
+public final class BasicEvents implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onAsyncChat(AsyncChatEvent event) {
         if (MessageLogging.enabled) {

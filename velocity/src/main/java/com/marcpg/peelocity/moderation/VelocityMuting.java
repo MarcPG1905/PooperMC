@@ -124,7 +124,7 @@ public final class VelocityMuting {
                             Locale l = source instanceof Player player ? player.getEffectiveLocale() : Locale.getDefault();
                             String targetArg = context.getArgument("player", String.class);
 
-                            if (PlayerCache.PLAYERS.containsValue(targetArg)) {
+                            if (!PlayerCache.PLAYERS.containsValue(targetArg)) {
                                 source.sendMessage(Translation.component(l, "cmd.player_not_found", targetArg).color(NamedTextColor.RED));
                             } else {
                                 try {

@@ -53,7 +53,7 @@ public class VelocityTimer {
                                                                         context.getArgument("id", String.class),
                                                                         time,
                                                                         PooperTimer.Renderer.valueOf(context.getArgument("renderer", String.class).toUpperCase()),
-                                                                        Pooper.INSTANCE.parseAudience(context.getArgument("audiences", String.class).split(" "), context.getSource())
+                                                                        Pooper.INSTANCE.parseAudience(context.getArgument("audience", String.class).split(" "), context.getSource())
                                                                 ).start();
                                                             } catch (IllegalArgumentException e) {
                                                                 context.getSource().sendMessage(Translation.component(Pooper.INSTANCE.getLocale(context.getSource()), "cmd.player_not_found", e.getMessage()));

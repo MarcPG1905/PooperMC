@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PaperChatUtilities implements Listener {
+public final class PaperChatUtilities implements Listener {
     private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
 
     @EventHandler(ignoreCancelled = true)

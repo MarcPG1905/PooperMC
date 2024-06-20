@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class BetterMobAI implements Listener {
+public final class BetterMobAI implements Listener {
     public enum Mode {
         REVENGE, // Hit Once
         REVENGE_WITH_OTHERS, // Find others, then each hit once.
@@ -23,12 +23,12 @@ public class BetterMobAI implements Listener {
         KILL_WITH_OTHERS // Kill Attacker with Help of other Mobs.
     }
 
-    private static final Random RANDOM = new Random();
+    public static final Random RANDOM = new Random();
+    public static final Map<EntityType, Boolean> enabledMobs = new HashMap<>();
 
     public static boolean panickingGroups;
     public static boolean fightingInstinct;
     public static Mode fightingInstinctMode;
-    public static Map<EntityType, Boolean> enabledMobs = new HashMap<>();
 
     @EventHandler
     private void onEntityAddToWorld(@NotNull EntityAddToWorldEvent event) {

@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-public class Kicking {
+public final class Kicking {
     public static void kick(String sourceName, @NotNull OnlinePlayer<?> player, String reason) {
         Locale l = player.locale();
         player.disconnect(Translation.component(l, "moderation.kick.msg.title").color(NamedTextColor.GOLD)

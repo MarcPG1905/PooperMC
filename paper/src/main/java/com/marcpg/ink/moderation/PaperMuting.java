@@ -25,7 +25,7 @@ import java.time.Instant;
 import java.util.*;
 
 @SuppressWarnings("deprecation") // Bukkit#getOfflinePlayer(String)
-public class PaperMuting implements Listener {
+public final class PaperMuting implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onAsyncChat(@NotNull AsyncChatEvent event) {
         Player player = event.getPlayer();

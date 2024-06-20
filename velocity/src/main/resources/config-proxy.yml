@@ -6,7 +6,7 @@
 ##_______________|_|   \___/ \___/| .__/ \___|_|  |_|  |_|\____|_______________##
 ##                           Main |_| Configuration                            ##
 ##                                                                             ##
-##        WEBSITE:       https://marcpg.com/poopermc                           ##
+##        WEBSITE:       https://marcpg.com/pooper                             ##
 ##        SOURCE-CODE:   https://github.com/MarcPG1905/PooperMC                ##
 ##        BUGS & ISSUES: https://github.com/MarcPG1905/PooperMC/issues         ##
 ##                                                                             ##
@@ -177,6 +177,7 @@ server-list:
 
   # A list of all possible MotD that can be shown to the user, if custom-motd is enabled.
   # You can use the MiniMessage syntax for custom styling: https://docs.advntr.dev/minimessage/format.html
+  # If you only want one MotD, just put make this only contain that one MotD.
   custom-motd-messages:
     - "A simple MotD without any formatting!"
     - "<yellow>Another <red>example <black>MotD, <green>but <blue>with <white>colors."
@@ -187,8 +188,8 @@ server-list:
   custom-favicon: false
 
   # A list of all possible favicons (server icons) that can be shown to the user, if custom-favicon is enabled.
-  # Resolution has to be 128x128 pixels. Didn't find any good example image, so I just put some weird thing.
-  # Custom favicons are currently unstable and experimental. Use at your own risk!
+  # Resolution has to be 64x64 pixels. Favicons can currently only be from URLs. You can use services like Dropbox.
+  # If you only want one favicon, just put make this only contain that one favicon URL.
   custom-favicon-urls:
     - https://marcpg.com/pooper/example_server-icon.png
 

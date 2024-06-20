@@ -19,7 +19,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
@@ -27,9 +27,9 @@ import java.util.UUID;
 
 public abstract class Pooper<P, E, C> {
     // ++++++++++ CONSTANTS ++++++++++
-    public static final String VERSION = "1.1.2";
+    public static final String VERSION = "1.1.3";
     public static final int BUILD = 1;
-    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(7, VERSION + "+build." + BUILD, "ERROR");
+    public static final UpdateChecker.Version CURRENT_VERSION = new UpdateChecker.Version(VERSION + "+build." + BUILD, "Pooper " + VERSION + " (Build " + BUILD + ")", "ERROR");
 
     // ++++++++++ PLUGIN INSTANCE ++++++++++
     public static Platform PLATFORM = Platform.UNKNOWN;
@@ -115,7 +115,7 @@ public abstract class Pooper<P, E, C> {
         PLUGIN = plugin;
     }
 
-    public void loadBasic(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException {
+    public void loadBasic(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException, URISyntaxException, InterruptedException {
         Configuration.createFileTree();
         Configuration.load(faviconHandler, libraryManager);
 
@@ -130,17 +130,16 @@ public abstract class Pooper<P, E, C> {
             Pooper.LOG.error("The downloaded translations are corrupted or missing, so the translations couldn't be loaded!");
         }
 
-        try {
-            Path path = DATA_DIR.resolve(".no_setup");
-            if (path.toFile().createNewFile()) {
-                Files.setAttribute(path, "dos:hidden", true);
-                LOG.info(Ansi.formattedString("Please consider checking out the PooperMC setup: https://github.com/MarcPG1905/PooperMC#setup!", Ansi.BRIGHT_BLUE, Ansi.BLINK));
-            }
-        } catch (IOException ignored) {
-        } // Shouldn't really happen and if it does, just ignoring it is probably the best option.
+        // TODO: try {
+        //     Path path = DATA_DIR.resolve(".no_setup");
+        //     if (path.toFile().createNewFile()) {
+        //         Files.setAttribute(path, "dos:hidden", true);
+        //         LOG.info(Ansi.formattedString("Please consider checking out the PooperMC setup: https://github.com/MarcPG1905/PooperMC#setup!", Ansi.BRIGHT_BLUE, Ansi.BLINK));
+        //     }
+        // } catch (IOException ignored) {} // Shouldn't really happen and if it does, just ignoring it is probably the best option.
     }
 
-    public final void startup(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException {
+    public final void startup(FaviconHandler<?> faviconHandler, LibraryManager libraryManager) throws IOException, URISyntaxException, InterruptedException {
         long start = System.currentTimeMillis();
 
         if (Locale.getDefault() == null) Locale.setDefault(new Locale("en", "US"));
@@ -159,7 +158,7 @@ public abstract class Pooper<P, E, C> {
     public void additionalLogic() {}
 
     /** Gets executed at the end of the configuration loading, but still before the translation download. */
-    public void extraConfiguration(YamlDocument doc) {}
+    public void extraConfiguration(YamlDocument doc) throws IOException {}
 
     public void unload() {
         eventManager.reset(plugin);

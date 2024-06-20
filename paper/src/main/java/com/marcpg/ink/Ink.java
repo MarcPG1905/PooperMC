@@ -7,15 +7,17 @@ import com.marcpg.common.platform.CommandManager;
 import com.marcpg.common.platform.EventManager;
 import com.marcpg.ink.common.PaperCommandManager;
 import com.marcpg.ink.common.PaperEventManager;
-import com.marcpg.ink.features.*;
+import com.marcpg.ink.features.AntiBookBan;
+import com.marcpg.ink.features.PaperChatUtilities;
+import com.marcpg.ink.features.PaperServerList;
+import com.marcpg.ink.features.PaperTimer;
 import com.marcpg.ink.moderation.*;
-import com.marcpg.ink.modules.BetterMobAI;
-import com.marcpg.ink.modules.DeathBanning;
-import com.marcpg.ink.modules.NoAnvilCap;
+import com.marcpg.ink.modules.*;
 import com.marcpg.ink.social.PaperFriendSystem;
 import com.marcpg.libpg.data.time.Time;
 import com.marcpg.libpg.util.Randomizer;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -24,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,36 +38,20 @@ public class Ink extends Pooper<InkPlugin, Listener, CommandExecutor> {
     }
 
     @Override
-    public void additionalLogic() {
-        plugin.getServer().getMessenger().registerOutgoingPluginChannel(plugin, PeelocityChecker.CHANNEL);
-        plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, PeelocityChecker.CHANNEL, new PeelocityChecker());
-
-        Pooper.SCHEDULER.delayed(() -> Bukkit.getOnlinePlayers().stream().findFirst().ifPresent(PeelocityChecker::check), new Time(1, Time.Unit.MINUTES));
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-
-        plugin.getServer().getMessenger().unregisterOutgoingPluginChannel(plugin, PeelocityChecker.CHANNEL);
-        plugin.getServer().getMessenger().unregisterIncomingPluginChannel(plugin, PeelocityChecker.CHANNEL);
-    }
-
-    @Override
-    public void extraConfiguration(@NotNull YamlDocument doc) {
-        if (doc.getBoolean("vein-mining.enabled")) {
-            if (doc.getBoolean("vein-mining.auto-fill-ores")) {
+    public void extraConfiguration(@NotNull YamlDocument doc) throws IOException {
+        if (doc.getBoolean("modules.vein-mining.enabled")) {
+            if (doc.getBoolean("modules.vein-mining.auto-fill-ores")) {
                 VeinMining.veinBlocks.addAll(Arrays.stream(Material.values()).filter(m -> m.name().endsWith("_ORE")).toList());
             }
-            for (String materialName : doc.getStringList("vein-mining.ores")) {
+            for (String materialName : doc.getStringList("modules.vein-mining.ores")) {
                 try {
                     VeinMining.veinBlocks.add(Material.valueOf(materialName.toUpperCase().replace(" ", "_").replace("-", "_")));
                 } catch (IllegalArgumentException ignored) {}
             }
 
-            VeinMining.requireProperTool = doc.getBoolean("vein-mining.require-proper-tool");
-            VeinMining.animated = doc.getBoolean("vein-mining.animated");
-            VeinMining.maximumDistance = doc.getInt("vein-mining.max-distance");
+            VeinMining.requireProperTool = doc.getBoolean("modules.vein-mining.require-proper-tool");
+            VeinMining.animated = doc.getBoolean("modules.vein-mining.animated");
+            VeinMining.maximumDistance = doc.getInt("modules.vein-mining.max-distance");
         }
 
         if (doc.getBoolean("modules.death-banning.enabled")) {
@@ -86,17 +73,11 @@ public class Ink extends Pooper<InkPlugin, Listener, CommandExecutor> {
             }
         }
 
+        if (Configuration.doc.getBoolean("modules.global-ender-chest"))
+            GlobalEnderChest.load();
+
         if (doc.getBoolean("modules.better-mob-ai.enabled")) {
             BetterMobAI.panickingGroups = doc.getBoolean("modules.better-mob-ai.panicking-groups");
-            // TODO: BetterMobAI.fightingInstinct = doc.getBoolean("modules.better-mob-ai.fighting-instinct");
-
-            // TODO: for (Map.Entry<String, Object> entity : doc.getSection("modules.better-mob-ai.mobs").getStringRouteMappedValues(false).entrySet()) {
-            //     try {
-            //         BetterMobAI.enabledMobs.put(EntityType.valueOf(entity.getKey().toUpperCase()), (Boolean) entity.getValue());
-            //     } catch (IllegalArgumentException e) {
-            //         Pooper.LOG.warn("Invalid entity type in the configuration at \"modules.better-mob-ai.mobs." + entity.getKey() + "\"!");
-            //     }
-            // }
         }
 
         // TODO: if (doc.getBoolean("modules.better-sleep.enabled")) {
@@ -104,6 +85,13 @@ public class Ink extends Pooper<InkPlugin, Listener, CommandExecutor> {
         //     BetterSleep.realisticSleepMultiplier = doc.getDouble("modules.better-sleep.realistic-sleep-multiplier");
         //     BetterSleep.playersRequired = doc.getDouble("modules.better-sleep.players-required");
         // }
+    }
+
+    @Override
+    public void shutdown() {
+        if (Configuration.doc.getBoolean("modules.global-ender-chest"))
+            GlobalEnderChest.save();
+        super.shutdown();
     }
 
     @Override
@@ -118,12 +106,14 @@ public class Ink extends Pooper<InkPlugin, Listener, CommandExecutor> {
             manager.register(plugin, new PaperChatUtilities());
         if (Configuration.doc.getBoolean("server-list.enabled"))
             manager.register(plugin, new PaperServerList());
-        if (Configuration.doc.getBoolean("vein-mining.enabled"))
+        if (Configuration.doc.getBoolean("modules.vein-mining.enabled"))
             manager.register(plugin, new VeinMining());
         if (Configuration.doc.getBoolean("modules.death-banning.enabled"))
             manager.register(plugin, new DeathBanning());
         if (Configuration.doc.getBoolean("modules.better-mob-ai.enabled"))
             manager.register(plugin, new BetterMobAI());
+        if (Configuration.doc.getBoolean("modules.custom-afk.enabled"))
+            manager.register(plugin, new CustomAFK());
         if (Configuration.doc.getBoolean("modules.no-anvil-cap"))
             manager.register(plugin, new NoAnvilCap());
     }
@@ -145,6 +135,34 @@ public class Ink extends Pooper<InkPlugin, Listener, CommandExecutor> {
 
         if (MessageLogging.enabled)
             manager.register(plugin, "msg-hist", new Commands.MsgHistCommand());
+        if (Configuration.doc.getBoolean("modules.custom-afk.enabled"))
+            manager.register(plugin, "afk", new CustomAFK());
+        if (Configuration.doc.getBoolean("modules.global-ender-chest"))
+            manager.register(plugin, "global-ender-chest", new GlobalEnderChest());
+
+        if (Configuration.doc.getBoolean("modules.utility-block-commands.enabled")) {
+            Section utilityBlockCommands = Configuration.doc.getSection("modules.utility-block-commands");
+            if (utilityBlockCommands.getBoolean("anvil"))
+                manager.register(plugin, "anvil", UtilityBlockCommand.ANVIL);
+            if (utilityBlockCommands.getBoolean("cartography-table"))
+                manager.register(plugin, "cartography-table", UtilityBlockCommand.CARTOGRAPHY_TABLE, "cartography");
+            if (utilityBlockCommands.getBoolean("workbench"))
+                manager.register(plugin, "workbench", UtilityBlockCommand.WORKBENCH, "crafting", "crafting-table");
+            if (utilityBlockCommands.getBoolean("grindstone"))
+                manager.register(plugin, "grindstone", UtilityBlockCommand.GRINDSTONE);
+            if (utilityBlockCommands.getBoolean("loom"))
+                manager.register(plugin, "loom", UtilityBlockCommand.LOOM);
+            if (utilityBlockCommands.getBoolean("smithing-table"))
+                manager.register(plugin, "smithing-table", UtilityBlockCommand.SMITHING_TABLE, "smithing");
+            if (utilityBlockCommands.getBoolean("stonecutter"))
+                manager.register(plugin, "stonecutter", UtilityBlockCommand.STONECUTTER);
+            if (utilityBlockCommands.getBoolean("enchanting"))
+                manager.register(plugin, "enchanting", UtilityBlockCommand.ENCHANTING, "enchanter");
+            if (utilityBlockCommands.getBoolean("ender-chest"))
+                manager.register(plugin, "ender-chest", UtilityBlockCommand.ENDER_CHEST, "ec", "ender");
+            if (utilityBlockCommands.getBoolean("trash"))
+                manager.register(plugin, "trash", UtilityBlockCommand.TRASH, "rubbish");
+        }
     }
 
     @Override

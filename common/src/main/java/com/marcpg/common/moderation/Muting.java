@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-public class Muting {
+public final class Muting {
     public static final List<String> TIME_UNITS = List.of("s", "min", "h", "d", "wk", "mo");
     public static final Storage<UUID> STORAGE = Storage.storageType.createStorage("mutes", "player");
     public static final Time MAX_TIME = new Time(1, Time.Unit.YEARS);

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NoAnvilCap implements Listener {
+public final class NoAnvilCap implements Listener {
     private static final int VANILLA_CAP = 39;
     private final Map<AnvilInventory, Integer> realMaxRepairCosts = new HashMap<>();
 
